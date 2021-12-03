@@ -14,6 +14,7 @@ export vi_shift, vi_rate
 export sample_shift, sample_rate
 
 include("SpecialDistributions/SpecialDistributions.jl")
+using .SpecialDistributions
 
 include("likelihoods/bernoulli.jl")
 
