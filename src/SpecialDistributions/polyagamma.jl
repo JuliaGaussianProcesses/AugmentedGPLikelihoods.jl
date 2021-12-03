@@ -20,7 +20,13 @@ Base.eltype(::PolyaGamma{T,Tc}) where {T,Tc} = Tc
 
 Distributions.params(d::PolyaGamma) = (d.b, d.c)
 
-Statistics.mean(d::PolyaGamma) = d.b / (2 * d.c) * tanh(d.c / 2)
+function Statistics.mean(d::PolyaGamma)
+    if iszero(d.c)
+        return d.b / 4
+    else
+        return d.b / (2 * d.c) * tanh(d.c / 2)
+    end
+end
 
 Base.minimum(d::PolyaGamma) = zero(eltype(d))
 Base.maximum(::PolyaGamma) = Inf

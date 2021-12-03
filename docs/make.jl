@@ -16,7 +16,7 @@ Literate.markdown(
     joinpath(bernoulli_folder, "bernoulli.jl"),
     joinpath(@__DIR__, "src/examples");
     execute=true,
-    flavor=Literate.DocumenterFlavor(),
+    # flavor=Literate.DocumenterFlavor(),
 )
 Pkg.activate(@__DIR__)
 
