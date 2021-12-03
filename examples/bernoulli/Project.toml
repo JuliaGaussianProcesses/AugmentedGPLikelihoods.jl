@@ -1,7 +1,5 @@
 [deps]
 AbstractGPs = "99985d1d-32ba-4be9-9821-2ec096f28918"
-AbstractGPsMakie = "7834405d-1089-4985-bd30-732a30b92057"
 ApproximateGPs = "298c2ebc-0411-48ad-af38-99e88101b606"
 AugmentedGPLikelihoods = "4689c64d-1a23-4d3c-ad26-1c612d54a282"
-CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"

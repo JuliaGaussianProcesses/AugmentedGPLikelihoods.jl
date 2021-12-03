@@ -7,8 +7,7 @@ using AugmentedGPLikelihoods
 using Distributions
 using LinearAlgebra
 # Plotting libraries
-using CairoMakie
-using AbstractGPsMakie
+using Plots
 
 # We create some random data (sorted for plotting reasons)
 N = 100
@@ -19,11 +18,8 @@ lik = BernoulliLikelihood()
 lf = LatentGP(gp, lik, 1e-6)
 f, y = rand(lf(x))
 # We plot the sampled data
-fig, axis, plt = scatter(x, y; label="Data")
-lines!(axis, x, f; color=:red, label="Latent GP")
-axislegend(axis)
-save("data.png", fig); nothing #hide
-# ![](data.png)
+plt = scatter(x, y; label="Data")
+lines!(plt, axis, x, f; color=:red, label="Latent GP")
 # ## CAVI Updates
 # We write our CAVI algorithmm
 function u_posterior(fz, m, S)
@@ -48,17 +44,11 @@ S = Matrix{Float64}(I(N))
 fz = gp(x, 1e-8)
 # And visualize the current posterior
 x_te = -10:0.01:10
-plot!(axis, x_te, u_posterior(fz, m, S); color=(:blue, 0.3), label="Initial VI Posterior")
-axislegend(axis)
-save("init_post.png", fig); nothing #hide
-# ![](init_post.png)
+plot!(plt, x_te, u_posterior(fz, m, S); color=(:blue, 0.3), label="Initial VI Posterior")
 # We run CAVI for 3-4 iterations
 cavi!(fz, x, y, m, S, Ω; niter=4)
 # And visualize the obtained posterior
-plot!(axis, x_te, u_posterior(fz, m, S); color=(:darkgreen, 0.3), label="Final VI Posterior")
-axislegend(axis)
-save("final_post.png", fig); nothing #hide
-# ![](final_post.png)
+plot!(plt, x_te, u_posterior(fz, m, S); color=(:darkgreen, 0.3), label="Final VI Posterior")
 
 # ## Gibbs Sampling
 # Let's piggy back on the AbstractMCMC interface
@@ -78,7 +68,6 @@ f = randn(N)
 Ω = init_aux_variables(lik, N)
 fs = gibbs_sample(fz, f, Ω)
 for f in fs
-    lines!(axis, x, f; color=(:blue, 0.07))
+    lines!(plt, x, f; color=(:blue, 0.07), label="")
 end
-save("sampling.png", fig); nothing #hide
-# ![](sampling.png)
+plt
