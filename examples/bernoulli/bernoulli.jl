@@ -22,7 +22,7 @@ f, y = rand(lf(x))
 fig, axis, plt = scatter(x, y; label="Data")
 lines!(axis, x, f; color=:red, label="Latent GP")
 axislegend(axis)
-fig
+display(MIME"image/png", fig)
 # ## CAVI Updates
 # We write our CAVI algorithmm
 function u_posterior(fz, m, S)
@@ -49,13 +49,13 @@ fz = gp(x, 1e-8)
 x_te = -10:0.01:10
 plot!(axis, x_te, u_posterior(fz, m, S); color=(:blue, 0.3), label="Initial VI Posterior")
 axislegend(axis)
-fig
+display(MIME"image/png", fig)
 # We run CAVI for 3-4 iterations
 cavi!(fz, x, y, m, S, Ω; niter=4)
 # And visualize the obtained posterior
 plot!(axis, x_te, u_posterior(fz, m, S); color=(:darkgreen, 0.3), label="Final VI Posterior")
 axislegend(axis)
-fig
+display(MIME"image/png", fig)
 
 # ## Gibbs Sampling
 # Let's piggy back on the AbstractMCMC interface
@@ -77,4 +77,4 @@ fs = gibbs_sample(fz, f, Ω)
 for f in fs
     lines!(axis, x, f; color=(:blue, 0.07))
 end
-fig
+display(MIME"image/png", fig)
