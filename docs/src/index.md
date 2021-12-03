@@ -92,6 +92,8 @@ and we have [`sample_shift`](@ref) $$\equiv a(\Omega)$$ and [`sample_rate`](@ref
 
 CAVI updates work exactly the same way as the Gibbs Sampling, except we 
 are now working with posterior distributions instead of samples.
+We work with the variational family $$q(f)\prod_{i=1}^N q(\Omega_i)$$, i.e. we make the [__mean-field__](https://en.wikipedia.org/wiki/Mean-field_theory) assumption that our new auxiliary variables are independent of each other and independent of $$f$$.
+
 Similarly there are also 4 main functions
 
 ```@docs
@@ -100,3 +102,25 @@ aux_posterior!
 vi_shift
 vi_rate
 ```
+
+[`init_aux_posterior`](@ref) initializes the posterior $$\prod_{i=1}^Nq(\Omega_i)$$ as a `NamedTuple`.
+[`aux_posterior!`](@ref) updates the variational posterior distributions given the marginals $$q(f)$$.
+Finally [`vi_shift`](@ref) and [`vi_rate`](@ref) gives us the elements needed to update the variational distribution $$q(f)$$.
+In a similar fashion to [Gibbs Sampling](@ref), we have the following optimal
+variational distribution:
+```math
+\begin{align*}
+    q^*(f) =& \mathcal{N}(f|m,S)\\
+    S =& \left(K^{-1} + \operatorname{Diagonal}(r)\right)^{-1}\\
+    m =& S \left(t + K^{-1}\mu_0\right)
+\end{align*}
+```
+where $$r$$ is given by [`vi_rate`](@ref) and $$t$$ is given by [`vi_shift`](@ref).
+Note that if you work with __Sparse__ GPs, the updates should be:
+```math
+\begin{align*}
+    S =& \left(K_{Z}{-1} + \kappa\operator{Diagonal}(r)\kappa^\top)^{-1},\\
+    m =& S \left(\kappa t + K_Z^{-1}\mu_0(Z)\right),
+\end{align*}
+```
+where $$\kappa=K_{Z}^{-1}K_{Z,X}$$.
