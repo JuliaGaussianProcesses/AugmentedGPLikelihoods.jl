@@ -3,11 +3,15 @@ uuid = "4689c64d-1a23-4d3c-ad26-1c612d54a282"
 authors = ["Théo Galy-Fajou <theo.galyfajou@gmail.com> and contributors"]
 version = "0.1.0"
 
-[extras]
-Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+[deps]
+GPLikelihoods = "6031954c-0455-49d7-b3b9-3e1c99afaf40"
+Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 
 [compat]
 julia = "1.6"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
 test = ["Test"]

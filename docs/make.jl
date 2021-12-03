@@ -1,5 +1,6 @@
 using AugmentedGPLikelihoods
 using Documenter
+using DocumenterCitations
 
 DocMeta.setdocmeta!(AugmentedGPLikelihoods, :DocTestSetup, :(using AugmentedGPLikelihoods); recursive=true)
 
@@ -21,4 +22,5 @@ makedocs(;
 deploydocs(;
     repo="github.com/theogf/AugmentedGPLikelihoods.jl",
     devbranch="main",
+    push_preview=true,
 )
