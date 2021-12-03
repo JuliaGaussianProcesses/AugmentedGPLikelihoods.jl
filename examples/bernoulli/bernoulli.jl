@@ -19,7 +19,7 @@ lf = LatentGP(gp, lik, 1e-6)
 f, y = rand(lf(x))
 # We plot the sampled data
 plt = scatter(x, y; label="Data")
-plot!(plt, axis, x, f; color=:red, label="Latent GP")
+plot!(plt, x, f; color=:red, label="Latent GP")
 # ## CAVI Updates
 # We write our CAVI algorithmm
 function u_posterior(fz, m, S)
