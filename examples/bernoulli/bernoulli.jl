@@ -19,7 +19,7 @@ lf = LatentGP(gp, lik, 1e-6)
 f, y = rand(lf(x))
 # We plot the sampled data
 plt = scatter(x, y; label="Data")
-lines!(plt, axis, x, f; color=:red, label="Latent GP")
+plot!(plt, axis, x, f; color=:red, label="Latent GP")
 # ## CAVI Updates
 # We write our CAVI algorithmm
 function u_posterior(fz, m, S)
@@ -68,6 +68,6 @@ f = randn(N)
 Ω = init_aux_variables(lik, N)
 fs = gibbs_sample(fz, f, Ω)
 for f in fs
-    lines!(plt, x, f; color=(:blue, 0.07), label="")
+    plot!(plt, x, f; color=(:blue, 0.07), label="")
 end
 plt
