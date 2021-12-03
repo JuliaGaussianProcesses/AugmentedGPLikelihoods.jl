@@ -56,6 +56,8 @@ Although an automatic way is proposed in [galy20](@cite), most of the
 augmentations require some hand derivations.
 This package provides the results of these derivations (as well as the derivations)
 and propose a unified framework to obtain the distributions of interest.
+Generally values (either samples or distributions) of the auxiliary variables need to be carried around.
+Since, each likelihood can have a different structure of auxiliary variables, they are uniformly moved as $$\Omega$$, which is a `NamedTuple` containing `Vector`s of either samples or distributions.
 
 ### Gibbs Sampling
 

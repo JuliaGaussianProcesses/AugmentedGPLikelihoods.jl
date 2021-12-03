@@ -2,7 +2,7 @@ function init_aux_variables(rng::AbstractRNG, ::BernoulliLikelihood{<:LogisticLi
     return (;ω=rand(rng, PolyaGamma(1, 0.0), n))
 end
 
-function init_aux_posterior(n)
+function init_aux_posterior(::BernoulliLikelihood{<:LogisticLink}, n::Int)
     return (;ω=[PolyaGamma(1, 0.0) for _ in 1:n])
 end
 

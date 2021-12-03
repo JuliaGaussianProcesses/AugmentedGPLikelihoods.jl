@@ -5,6 +5,7 @@ using Reexport
 
 using Distributions
 @reexport using GPLikelihoods
+using GPLikelihoods: AbstractLikelihood
 using Random: AbstractRNG, GLOBAL_RNG
 
 export init_aux_variables, init_aux_posterior
@@ -14,6 +15,7 @@ export vi_shift, vi_rate
 export sample_shift, sample_rate
 
 include("api.jl")
+include("generic.jl")
 include("SpecialDistributions/SpecialDistributions.jl")
 using .SpecialDistributions
 
