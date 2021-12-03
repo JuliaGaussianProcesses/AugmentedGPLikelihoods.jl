@@ -13,6 +13,7 @@ export aux_posterior, aux_posterior!
 export vi_shift, vi_rate
 export sample_shift, sample_rate
 
+include("SpecialDistributions/SpecialDistributions.jl")
 
 include("likelihoods/bernoulli.jl")
 
