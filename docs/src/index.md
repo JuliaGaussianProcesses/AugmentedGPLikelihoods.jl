@@ -21,7 +21,7 @@ and are not always guaranteed to converge.
 
 
 ## The augmentation
-An alternative proposed in [galy-fajou20](@cite) is to represent these non-conjugate
+An alternative proposed in [galy20](@cite) is to represent these non-conjugate
 likelihoods as scale-mixtures (sometimes requiring multiple steps) to obtain
 a __conditionally conjugate likelihood__.
 More concretely, some likelihoods can be written as:
@@ -52,7 +52,7 @@ to compute the optimal variational distribution.
 
 ## What this package does
 
-Although an automatic way is proposed in [galy-fajou20](@cite), most of the 
+Although an automatic way is proposed in [galy20](@cite), most of the 
 augmentations require some hand derivations.
 This package provides the results of these derivations (as well as the derivations)
 and propose a unified framework to obtain the distributions of interest.
@@ -62,10 +62,10 @@ and propose a unified framework to obtain the distributions of interest.
 We give an example in the Gibbs Sampling tutorial using `AbstractMCMC`.
 But the API can be reduced to 4 main functions:
 ```@docs
-    init_aux_variables
-    aux_sample!
-    sample_shift
-    sample_rate
+init_aux_variables
+aux_sample!
+sample_shift
+sample_rate
 ```
 First [`init_aux_variables`](@ref) properly initializes a `NamedTuple` of `Vector`(s) of
 auxiliary variables to be modified in place during sampling.
@@ -74,8 +74,8 @@ The full-conditional from $$f$$ are given by
 ```math
 \begin{align*}
     p(f|y,\Omega) =& \mathcal{N}(f|m,S)\\
-    S = \left(K^{-1} + \operatorname{Diagonal}(r)\right)\\
-    m = S \left(t + K^{-1}\mu_0\right)
+    S =& \left(K^{-1} + \operatorname{Diagonal}(r)\right)^{-1}\\
+    m =& S \left(t + K^{-1}\mu_0\right)
 \end{align*}
 ```
 which can be adapted in function of the context.
@@ -95,8 +95,8 @@ are now working with posterior distributions instead of samples.
 Similarly there are also 4 main functions
 
 ```@docs
-    init_aux_posterior
-    aux_posterior!
-    post_shift
-    post_rate
+init_aux_posterior
+aux_posterior!
+vi_shift
+vi_rate
 ```

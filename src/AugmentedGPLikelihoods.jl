@@ -2,7 +2,10 @@ module AugmentedGPLikelihoods
 
 
 using Reexport
+
+using Distributions
 @reexport using GPLikelihoods
+using Random: AbstractRNG, GLOBAL_RNG
 
 export init_aux_variables, init_aux_posterior
 export aux_sample, aux_sample!

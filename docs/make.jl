@@ -4,7 +4,9 @@ using DocumenterCitations
 
 DocMeta.setdocmeta!(AugmentedGPLikelihoods, :DocTestSetup, :(using AugmentedGPLikelihoods); recursive=true)
 
-makedocs(;
+bib = CitationBibliography(joinpath(@__DIR__, "references.bib"))
+
+makedocs(bib;
     modules=[AugmentedGPLikelihoods],
     authors="Théo Galy-Fajou <theo.galyfajou@gmail.com> and contributors",
     repo="https://github.com/JuliaGaussianProcesses/AugmentedGPLikelihoods.jl/blob/{commit}{path}#{line}",
@@ -16,6 +18,10 @@ makedocs(;
     ),
     pages=[
         "Home" => "index.md",
+        "Likelihoods" => [
+            "Bernoulli" => "likelihoods/bernoulli.md",
+        ],
+        "References" => "references.md"
     ],
 )
 
