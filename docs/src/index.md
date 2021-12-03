@@ -64,6 +64,7 @@ But the API can be reduced to 4 main functions:
 ```@docs
 init_aux_variables
 aux_sample!
+aux_sample
 sample_shift
 sample_rate
 ```
@@ -84,9 +85,9 @@ and [`sample_rate`](@ref) returns the `Tuple` representing the `Vector`(s) $$\{r
 
 The general rule, is that the augmented likelihood will have the form
 ```math
-    p(y|f,\Omega) \propto \exp\left(a(\Omega)f + b(\Omega)f^2\right),
+    p(y|f,\Omega) \propto \exp\left(a(\Omega,y)f + b(\Omega,y)f^2\right),
 ```
-and we have [`sample_shift`](@ref) $$\equiv a(\Omega)$$ and [`sample_rate`](@ref) $$\equiv 2b(\Omega)$$.
+and we have [`sample_shift`](@ref) $$\equiv a(\Omega,y)$$ and [`sample_rate`](@ref) $$\equiv 2b(\Omega,y)$$.
 
 ### Coordinate Ascent Variational Inference
 
@@ -99,6 +100,7 @@ Similarly there are also 4 main functions
 ```@docs
 init_aux_posterior
 aux_posterior!
+aux_posterior
 vi_shift
 vi_rate
 ```
