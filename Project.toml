@@ -1,0 +1,13 @@
+name = "AugmentedGPLikelihoods"
+uuid = "4689c64d-1a23-4d3c-ad26-1c612d54a282"
+authors = ["Théo Galy-Fajou <theo.galyfajou@gmail.com> and contributors"]
+version = "0.1.0"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[compat]
+julia = "1.6"
+
+[targets]
+test = ["Test"]
