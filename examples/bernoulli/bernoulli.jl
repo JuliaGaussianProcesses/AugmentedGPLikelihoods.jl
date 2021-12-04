@@ -44,11 +44,11 @@ S = Matrix{Float64}(I(N))
 fz = gp(x, 1e-8)
 # And visualize the current posterior
 x_te = -10:0.01:10
-plot!(plt, x_te, u_posterior(fz, m, S); color=(:blue, 0.3), label="Initial VI Posterior")
+plot!(plt, x_te, u_posterior(fz, m, S); color=:blue, alpha=0.3, label="Initial VI Posterior")
 # We run CAVI for 3-4 iterations
 cavi!(fz, x, y, m, S, Ω; niter=4)
 # And visualize the obtained posterior
-plot!(plt, x_te, u_posterior(fz, m, S); color=(:darkgreen, 0.3), label="Final VI Posterior")
+plot!(plt, x_te, u_posterior(fz, m, S); color=:darkgreen, alpha=0.3, label="Final VI Posterior")
 
 # ## Gibbs Sampling
 # Let's piggy back on the AbstractMCMC interface
@@ -68,6 +68,6 @@ f = randn(N)
 Ω = init_aux_variables(lik, N)
 fs = gibbs_sample(fz, f, Ω)
 for f in fs
-    plot!(plt, x, f; color=(:blue, 0.07), label="")
+    plot!(plt, x, f; color=:blue, alpha=0.07, label="")
 end
 plt
