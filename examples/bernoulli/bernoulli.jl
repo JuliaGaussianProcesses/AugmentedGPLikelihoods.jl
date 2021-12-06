@@ -71,3 +71,11 @@ for f in fs
     plot!(plt, x, f; color=(:blue, 0.07), label="")
 end
 plt
+# ## ELBO
+# How can one compute the Augmented ELBO?
+# Again AugmentedGPLikelihoods provides helper functions
+# to not have to compute everything yourself
+function aug_elbo(lik, u_post, Ω, x, y)
+    qf = marginals(u_post(x))
+    aug_expected_loglik(lik, Ω, y, qf) - kl_term(lik, Ω, y) - kl_term(u_post.q, u_post.fz)
+end

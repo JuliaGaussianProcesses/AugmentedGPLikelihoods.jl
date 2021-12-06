@@ -89,3 +89,35 @@ Return two times the shift of the second natural parameter $\eta_2=-\frac{1}{2}\
 given the auxiliary posteriors contained in `\Omega` and the observations `y`
 """
 vi_rate
+
+
+@doc raw"""
+    aug_loglik(lik::Likelihood, Ω, y, f) -> Real
+
+Return the augmented log-likelihood with the given parameters.
+Note that it will not compute the prior, so for example if 
+$$p(y,\Omega|f) = l(y,\Omega,f)p(\Omega)$$,
+this function will return $$(l(y,\Omega,f)).
+For the prior part see [`aux_prior`](@ref).
+See also [`aug_expected_loglik`](@ref) for the expectation of $$l(y,\Omega,f)$$ 
+given $$q(f,\Omega)$$.
+"""
+aug_loglik
+
+
+@doc raw"""
+    aug_expected_loglik(lik::Likelihood, Ω, y, qf) -> Real
+
+Compute the analytical expectation of the augmented likelihood [`aug_loglik`](@ref) given $$q(f)$$ and $$q(\Omega)$$.
+As mentionned in [`aug_loglik`](@ref), the prior part ([`aux_prior`](@ref)) is not used.
+To compute the KL divergence between $$q(\Omega)$$ and $$p(\Omega)$$ use
+[`kl_term`](@ref) instead.
+"""
+aug_expected_loglik
+
+@doc raw"""
+    aux_prior(lik::Likelihood, y) -> NamedTuple
+
+Returns a `NamedTuple` of distributions with the same structure as [`aux_posterior`](@ref).
+"""
+aux_prior

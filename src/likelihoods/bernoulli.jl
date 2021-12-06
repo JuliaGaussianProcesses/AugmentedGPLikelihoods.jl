@@ -42,6 +42,10 @@ function aug_loglik(::BernoulliLikelihood{<:LogisticLink}, Ω, y, f)
     end
 end
 
+function aux_prior(::BernoulliLikelihood{<:LogisticLink}, y)
+    return (;ω=[PolyaGamma(1, 0.0) for _ in 1:length(y)])
+end
+
 function aug_expected_loglik(::BernoulliLikelihood{<:LogisticLink}, Ω, y, qf)
     return mapreduce(+, y, qf, Ω.ω) do y, f, ω
         m = mean(f)
@@ -53,6 +57,7 @@ function kl_term(::BernoulliLikelihood{<:LogisticLink}, Ω, y)
     return sum(kl_term, Ω.ω)
 end
 
+# Shortcut for computating KL(PG(ω|b, c)||PG(b, 0))
 function kl_term(q::PolyaGamma)
-    q.b * logcosh(q.c / 2) - abs2(q.c) * mean(q) / 2
+    return q.b * logcosh(q.c / 2) - abs2(q.c) * mean(q) / 2
 end
