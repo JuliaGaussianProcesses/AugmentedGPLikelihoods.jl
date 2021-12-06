@@ -49,7 +49,16 @@ plot!(plt, x_te, u_posterior(fz, m, S); color=:blue, alpha=0.3, label="Initial V
 cavi!(fz, x, y, m, S, Ω; niter=4)
 # And visualize the obtained variational posterior
 plot!(plt, x_te, u_posterior(fz, m, S); color=:darkgreen, alpha=0.3, label="Final VI Posterior")
+# ## ELBO
+# How can one compute the Augmented ELBO?
+# Again AugmentedGPLikelihoods provides helper functions
+# to not have to compute everything yourself
+function aug_elbo(lik, u_post, Ω, x, y)
+    qf = marginals(u_post(x))
+    return aug_expected_loglik(lik, Ω, y, qf) - kl_term(lik, Ω, y) - ApproximateGPs.kl_term(u_post.approx, u_post)
+end
 
+aug_elbo(lik, u_posterior(fz, m, S), Ω, x, y)
 # ## Gibbs Sampling
 # We create our Gibbs sampling algorithm (we could do something fancier with
 # AbstractMCMC)
@@ -76,11 +85,3 @@ for f in fs
     plot!(plt, x, f; color=:blue, alpha=0.07, label="")
 end
 plt
-# ## ELBO
-# How can one compute the Augmented ELBO?
-# Again AugmentedGPLikelihoods provides helper functions
-# to not have to compute everything yourself
-function aug_elbo(lik, u_post, Ω, x, y)
-    qf = marginals(u_post(x))
-    aug_expected_loglik(lik, Ω, y, qf) - kl_term(lik, Ω, y) - kl_term(u_post.q, u_post.fz)
-end

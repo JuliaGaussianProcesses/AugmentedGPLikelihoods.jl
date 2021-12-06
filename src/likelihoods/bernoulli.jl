@@ -59,5 +59,5 @@ end
 
 # Shortcut for computating KL(PG(ω|b, c)||PG(b, 0))
 function kl_term(q::PolyaGamma)
-    return q.b * logcosh(q.c / 2) - abs2(q.c) * mean(q) / 2
+    return q.b * log(cosh(q.c / 2)) - abs2(q.c) * mean(q) / 2
 end
