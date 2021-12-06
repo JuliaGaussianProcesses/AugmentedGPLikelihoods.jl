@@ -46,7 +46,8 @@ in closed-form.
 ## Bayesian Inference
 
 This new formulation leads to easier, more stable and faster inference.
-A natural algorithm following from this formulation is the [__Blocked Gibbs Sampling__](https://en.wikipedia.org/wiki/Gibbs_sampling#Blocked_Gibbs_sampler)
+A natural algorithm following from this formulation is the 
+[__Blocked Gibbs Sampling__](https://en.wikipedia.org/wiki/Gibbs_sampling#Blocked_Gibbs_sampler)
 but also the Coordinate Ascent VI (CAVI) algorithm where the conditionals are used
 to compute the optimal variational distribution.
 
@@ -56,13 +57,15 @@ Although an automatic way is proposed in [galy20](@cite), most of the
 augmentations require some hand derivations.
 This package provides the results of these derivations (as well as the derivations)
 and propose a unified framework to obtain the distributions of interest.
-Generally values (either samples or distributions) of the auxiliary variables need to be carried around.
-Since, each likelihood can have a different structure of auxiliary variables, they are uniformly moved as $$\Omega$$, which is a `NamedTuple` containing `Vector`s of either samples or distributions.
+Generally values (either samples or distributions) of the auxiliary variables
+need to be carried around. Since, each likelihood can have a different structure
+of auxiliary variables, they are uniformly moved as $$\Omega$$, which is 
+a `NamedTuple` containing `Vector`s of either samples or distributions.
 
-### Gibbs Sampling
+## Gibbs Sampling
 
 We give an example in the Gibbs Sampling tutorial using `AbstractMCMC`.
-But the API can be reduced to 4 main functions:
+But the API can be reduced to 5 main functions:
 ```@docs
 init_aux_variables
 aux_sample!
@@ -70,9 +73,11 @@ aux_sample
 sample_shift
 sample_rate
 ```
-First [`init_aux_variables`](@ref) properly initializes a `NamedTuple` of `Vector`(s) of
-auxiliary variables to be modified in place during sampling.
-[`aux_sample!`](@ref) will sample in-place from the full conditional $$p(\Omega|y,f)$$ and return another `NamedTuple`, for no-inplace operation see [`aux_sample`].
+First [`init_aux_variables`](@ref) initializes a `NamedTuple` 
+of `Vector`(s) of auxiliary variables to be modified in-place during sampling.
+[`aux_sample!`](@ref) will sample the auxiliary variables from the full 
+conditional $$p(\Omega|y,f)$$ and return the modified `NamedTuple`.
+For generating a new `NamedTuple` every time, see [`aux_sample`](@ref).
 The full-conditional from $$f$$ are given by
 ```math
 \begin{align*}
@@ -81,23 +86,30 @@ The full-conditional from $$f$$ are given by
     m =& S \left(t + K^{-1}\mu_0\right)
 \end{align*}
 ```
-which can be adapted in function of the context.
-[`sample_shift`](@ref) returns the `Tuple` representing the `Vector`(s) $$\{t_i\}$$
-and [`sample_rate`](@ref) returns the `Tuple` representing the `Vector`(s) $$\{r_i\}$$
+[`sample_shift`](@ref) returns a `Tuple` containing the `Vector` $$t$$,
+and [`sample_rate`](@ref) returns a `Tuple` containing the `Vector` $$r$$.
+For likelihoods requiring multiple latent GP (e.g. multi-class classification 
+or heteroscedastic likelihoods), [`sample_shift`](@ref) and [`sample_rate`](@ref)
+return a `Tuple` with the respective `Vector`s $$t$$ and $$r$$.
 
-The general rule, is that the augmented likelihood will have the form
+As a general rule, the augmented likelihood will have the form
 ```math
     p(y|f,\Omega) \propto \exp\left(a(\Omega,y)f + b(\Omega,y)f^2\right),
 ```
-and we have [`sample_shift`](@ref) $$\equiv a(\Omega,y)$$ and [`sample_rate`](@ref) $$\equiv 2b(\Omega,y)$$.
+and [`sample_shift`](@ref) $$\equiv a(\Omega,y)$$ while [`sample_rate`](@ref) 
+$$\equiv 2b(\Omega,y)$$.
 
-### Coordinate Ascent Variational Inference
+## Coordinate Ascent Variational Inference
 
-CAVI updates work exactly the same way as the Gibbs Sampling, except we 
-are now working with posterior distributions instead of samples.
-We work with the variational family $$q(f)\prod_{i=1}^N q(\Omega_i)$$, i.e. we make the [__mean-field__](https://en.wikipedia.org/wiki/Mean-field_theory) assumption that our new auxiliary variables are independent of each other and independent of $$f$$.
+[CAVI](https://en.wikipedia.org/wiki/Coordinate_descent) updates work exactly 
+the same way as the Gibbs Sampling, except we are now working with posterior 
+distributions instead of samples.
+We work with the variational family $$q(f)\prod_{i=1}^N q(\Omega_i)$$, i.e. 
+we make the [__mean-field__](https://en.wikipedia.org/wiki/Mean-field_theory) 
+assumption that our new auxiliary variables are independent of each other 
+and independent of $$f$$.
 
-Similarly there are also 4 main functions
+Like for [Gibbs Sampling](@ref), there are also 5 main functions
 
 ```@docs
 init_aux_posterior
@@ -107,11 +119,15 @@ vi_shift
 vi_rate
 ```
 
-[`init_aux_posterior`](@ref) initializes the posterior $$\prod_{i=1}^Nq(\Omega_i)$$ as a `NamedTuple`.
-[`aux_posterior!`](@ref) updates the variational posterior distributions given the marginals $$q(f)$$.
-Finally [`vi_shift`](@ref) and [`vi_rate`](@ref) gives us the elements needed to update the variational distribution $$q(f)$$.
-In a similar fashion to [Gibbs Sampling](@ref), we have the following optimal
-variational distribution:
+[`init_aux_posterior`](@ref) initializes the posterior 
+$$\prod_{i=1}^Nq(\Omega_i)$$ as a `NamedTuple`.
+[`aux_posterior!`](@ref) updates the variational posterior distributions in-place
+given the marginals $$q(f_i)$$ and return the modified `NamedTuple`.
+To get a new `NamedTuple` every time, use [`aux_posterior`](@ref).
+Finally, [`vi_shift`](@ref) and [`vi_rate`](@ref) 
+give us the elements needed to update the variational distribution $$q(f)$$.
+Like for [Gibbs Sampling](@ref), we have the following optimal
+variational distributions:
 ```math
 \begin{align*}
     q^*(f) =& \mathcal{N}(f|m,S)\\
@@ -128,3 +144,26 @@ Note that if you work with __Sparse__ GPs, the updates should be:
 \end{align*}
 ```
 where $$\kappa=K_{Z}^{-1}K_{Z,X}$$.
+
+## Likelihood and ELBO computations
+
+You might be interested in computing the [ELBO](https://en.wikipedia.org/wiki/Evidence_lower_bound),
+i.e. the lower bound on the evidence of the augmented model.
+The ELBO can be written as:
+```math
+\begin{align*}
+    \mathcal{L(q(f,\Omega)} =& E_{q(f)q(\Omega)}\left[\log p(y,\Omega|f)\right] - \operatorname{KL}\left(q(f)||p(f)\right)\\
+    =& E_{q(f)q(\Omega)}\left[\log p(y|\Omega,f)\right] - \operatorname{KL}\left(q(\Omega)||p(\Omega)\right) -\operatorname{KL}\left(q(f)||p(f)\right)
+\end{align*}
+```
+To work with all these terms, `AugmentedGPLikelihoods.jl` provide a series of
+helping functions:
+```@docs
+aug_loglik
+aug_expected_loglik
+aux_prior
+```
+[`aug_loglik`](@ref) is the equivalent of $$\log p(y|\Omega,f)$$, 
+[`aug_expected_loglik`](@ref) is the equivalent of 
+$$E_{q(f)q(\Omega)}\left[\log p(y|\Omega,f)\right]$$ and finally, [`aux_prior`](@ref)
+will return $$p(\Omega)$$ with the same structure as $$q(\Omega)$$.

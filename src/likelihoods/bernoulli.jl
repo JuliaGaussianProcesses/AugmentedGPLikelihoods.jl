@@ -53,11 +53,6 @@ function aug_expected_loglik(::BernoulliLikelihood{<:LogisticLink}, Ω, y, qf)
     end
 end
 
-function kl_term(::BernoulliLikelihood{<:LogisticLink}, Ω, y)
-    return sum(kl_term, Ω.ω)
-end
-
-# Shortcut for computating KL(PG(ω|b, c)||PG(b, 0))
-function kl_term(q::PolyaGamma)
-    return q.b * log(cosh(q.c / 2)) - abs2(q.c) * mean(q) / 2
+function kl_term(lik::BernoulliLikelihood{<:LogisticLink}, Ω, y)
+    return mapreduce(kldivergence, +, Ω.ω, aux_prior(lik, y).ω)
 end

@@ -43,6 +43,16 @@ function Distributions.pdf(d::PolyaGamma, x::Real)
     end
 end
 
+# Shortcut for computating KL(PG(ω|b, c)||PG(b, 0))
+function Distributions.kldivergence(q::PolyaGamma, p::PolyaGamma)
+    (q.b == p.b && iszero(p.c)) || error(
+        "cannot compute the KL divergence for Polya-Gamma distributions",
+        "with different parameter b, (q.b = $(q.b), p.b = $(p.b))",
+        " or if p.c ≠ 0 (p.c = $(p.c))",
+    )
+    return q.b * log(cosh(q.c / 2)) - abs2(q.c) * mean(q) / 2
+end
+
 function _tilt(ω, b, c)
     return cosh(c / 2)^b * exp(-c^2 / 2 * ω)
 end
