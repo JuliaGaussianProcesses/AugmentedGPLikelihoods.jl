@@ -13,3 +13,7 @@ end
 function init_aux_variables(lik::AbstractLikelihood, n::Int)
     init_aux_variables(GLOBAL_RNG, lik, n)
 end
+
+function aux_posterior(lik::AbstractLikelihood, y, qf)
+    aux_posterior!(init_aux_posterior(lik, length(y)), lik, y, qf)
+end

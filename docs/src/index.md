@@ -123,7 +123,7 @@ where $$r$$ is given by [`vi_rate`](@ref) and $$t$$ is given by [`vi_shift`](@re
 Note that if you work with __Sparse__ GPs, the updates should be:
 ```math
 \begin{align*}
-    S =& \left(K_{Z}{-1} + \kappa\operator{Diagonal}(r)\kappa^\top\right)^{-1},\\
+    S =& \left(K_{Z}^{-1} + \kappa\operatorname{Diagonal}(r)\kappa^\top\right)^{-1},\\
     m =& S \left(\kappa t + K_Z^{-1}\mu_0(Z)\right),
 \end{align*}
 ```

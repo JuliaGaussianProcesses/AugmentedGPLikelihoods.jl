@@ -44,14 +44,15 @@ S = Matrix{Float64}(I(N))
 fz = gp(x, 1e-8)
 # And visualize the current posterior
 x_te = -10:0.01:10
-plot!(plt, x_te, u_posterior(fz, m, S); color=(:blue, 0.3), label="Initial VI Posterior")
+plot!(plt, x_te, u_posterior(fz, m, S); color=:blue, alpha=0.3, label="Initial VI Posterior")
 # We run CAVI for 3-4 iterations
 cavi!(fz, x, y, m, S, Ω; niter=4)
-# And visualize the obtained posterior
-plot!(plt, x_te, u_posterior(fz, m, S); color=(:darkgreen, 0.3), label="Final VI Posterior")
+# And visualize the obtained variational posterior
+plot!(plt, x_te, u_posterior(fz, m, S); color=:darkgreen, alpha=0.3, label="Final VI Posterior")
 
 # ## Gibbs Sampling
-# Let's piggy back on the AbstractMCMC interface
+# We create our Gibbs sampling algorithm (we could do something fancier with
+# AbstractMCMC)
 function gibbs_sample(fz, f, Ω; nsamples=200)
     K = ApproximateGPs._chol_cov(fz)
     Σ = zeros(length(f), length(f))
@@ -63,12 +64,16 @@ function gibbs_sample(fz, f, Ω; nsamples=200)
         rand!(MvNormal(μ, Σ), f)
         return copy(f)
     end
-end
+end;
+# We initialize our random variables
 f = randn(N)
-Ω = init_aux_variables(lik, N)
-fs = gibbs_sample(fz, f, Ω)
+Ω = init_aux_variables(lik, N);
+# Run the sampling for default number of iterations (200)
+fs = gibbs_sample(fz, f, Ω);
+# And visualize the samples overlapped to the variational posterior
+# that we found earlier.
 for f in fs
-    plot!(plt, x, f; color=(:blue, 0.07), label="")
+    plot!(plt, x, f; color=:blue, alpha=0.07, label="")
 end
 plt
 # ## ELBO
