@@ -11,24 +11,24 @@ using Plots
 
 # We create some random data (sorted for plotting reasons)
 N = 100
-x = range(-10, 10; length = N)
+x = range(-10, 10; length=N)
 kernel = with_lengthscale(SqExponentialKernel(), 2.0)
 gp = GP(kernel)
 lik = BernoulliLikelihood()
 lf = LatentGP(gp, lik, 1e-6)
-f, y = rand(lf(x))
+f, y = rand(lf(x));
 # We plot the sampled data
-plt = scatter(x, y; label = "Data")
-plot!(plt, x, f; color = :red, label = "Latent GP")
-# ## CAVI Updates
+plt = scatter(x, y; label="Data")
+plot!(plt, x, f; color=:red, label="Latent GP")
+# ## Classification - CAVI Updates
 # We write our CAVI algorithmm
 function u_posterior(fz, m, S)
-    posterior(SparseVariationalApproximation(Centered(), fz, MvNormal(m, S)))
+    return posterior(SparseVariationalApproximation(Centered(), fz, MvNormal(m, S)))
 end
 
-function cavi!(fz::AbstractGPs.FiniteGP, x, y, m, S, qΩ; niter = 10)
+function cavi!(fz::AbstractGPs.FiniteGP, x, y, m, S, qΩ; niter=10)
     K = ApproximateGPs._chol_cov(fz)
-    for _ = 1:niter
+    for _ in 1:niter
         post_u = u_posterior(fz, m, S)
         post_fs = marginals(post_u(x))
         qΩ = aux_posterior!(qΩ, lik, y, post_fs)
@@ -41,29 +41,24 @@ end
 m = zeros(N)
 S = Matrix{Float64}(I(N))
 qΩ = init_aux_posterior(lik, N)
-fz = gp(x, 1e-8)
+fz = gp(x, 1e-8);
 # And visualize the current posterior
 x_te = -10:0.01:10
 plot!(
-    plt,
-    x_te,
-    u_posterior(fz, m, S);
-    color = :blue,
-    alpha = 0.3,
-    label = "Initial VI Posterior",
+    plt, x_te, u_posterior(fz, m, S); color=:blue, alpha=0.3, label="Initial VI Posterior"
 )
 # We run CAVI for 3-4 iterations
-cavi!(fz, x, y, m, S, qΩ; niter = 4)
+cavi!(fz, x, y, m, S, qΩ; niter=4);
 # And visualize the obtained variational posterior
 plot!(
     plt,
     x_te,
     u_posterior(fz, m, S);
-    color = :darkgreen,
-    alpha = 0.3,
-    label = "Final VI Posterior",
+    color=:darkgreen,
+    alpha=0.3,
+    label="Final VI Posterior",
 )
-# ## ELBO
+# ## Classification - ELBO
 # How can one compute the Augmented ELBO?
 # Again AugmentedGPLikelihoods provides helper functions
 # to not have to compute everything yourself
@@ -74,10 +69,10 @@ function aug_elbo(lik, u_post, qΩ, x, y)
 end
 
 aug_elbo(lik, u_posterior(fz, m, S), qΩ, x, y)
-# ## Gibbs Sampling
+# ## Classification - Gibbs Sampling
 # We create our Gibbs sampling algorithm (we could do something fancier with
 # AbstractMCMC)
-function gibbs_sample(fz, f, Ω; nsamples = 200)
+function gibbs_sample(fz, f, Ω; nsamples=200)
     K = ApproximateGPs._chol_cov(fz)
     Σ = zeros(length(f), length(f))
     μ = zeros(length(f))
@@ -97,6 +92,6 @@ fs = gibbs_sample(fz, f, Ω);
 # And visualize the samples overlapped to the variational posterior
 # that we found earlier.
 for f in fs
-    plot!(plt, x, f; color = :black, alpha = 0.07, label = "")
+    plot!(plt, x, f; color=:black, alpha=0.07, label="")
 end
 plt

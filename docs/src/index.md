@@ -89,8 +89,8 @@ The full-conditional from $$f$$ are given by
 where $$\lambda$$ is obtained via [`auglik_precision`](@ref) and $$h$$ is
 obtained via [`auglik_potential`](@ref).
 For likelihoods requiring multiple latent GP (e.g. multi-class classification 
-or heteroscedastic likelihoods), [`sample_shift`](@ref) and [`sample_rate`](@ref)
-return a `Tuple` with the respective `Vector`s $$t$$ and $$r$$.
+or heteroscedastic likelihoods), [`auglik_potential`](@ref) and [`auglik_precision`](@ref)
+return a `Tuple` with the respective `Vector`s $$\lambda$$ and $$h$$.
 
 As a general rule, the augmented likelihood will have the form
 ```math
@@ -124,7 +124,7 @@ $$\prod_{i=1}^Nq(\Omega_i)$$ as a `NamedTuple`.
 [`aux_posterior!`](@ref) updates the variational posterior distributions in-place
 given the marginals $$q(f_i)$$ and return the modified `NamedTuple`.
 To get a new `NamedTuple` every time, use [`aux_posterior`](@ref).
-Finally, [`vi_shift`](@ref) and [`vi_rate`](@ref) 
+Finally, [`expected_auglik_potential`](@ref) and [`expected_auglik_precision`](@ref) 
 give us the elements needed to update the variational distribution $$q(f)$$.
 Like for [Gibbs Sampling](@ref), we have the following optimal
 variational distributions:
