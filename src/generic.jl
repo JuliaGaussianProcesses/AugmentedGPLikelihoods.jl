@@ -24,9 +24,11 @@ function aug_loglik(lik::AbstractLikelihood, Ω, y, f)
     end
 end
 
-function expected_aug_loglik(lik::AbstractLikelihood, qΩ, y, qf)
-    return expected_logtilt(lik, qΩ, y, qf) + mapreduce(+, qΩ, aux_prior(lik, y)) do qω, pω
-        mapreduce(kldivergence, +, qω, pω)
+aux_kldivergence(lik::AbstractLikelihood, qΩ::NamedTuple, y) = aux_kldivergence(lik, qΩ, aux_prior(lik, y))
+
+function aux_kldivergence(::AbstractLikelihood, qΩ::NamedTuple, pΩ::NamedTuple)
+    return mapreduce(+, qΩ, pΩ) do qω, pω
+        mapreduce(Distributions.kldivergence, +, qω, pω)
     end
 end
 

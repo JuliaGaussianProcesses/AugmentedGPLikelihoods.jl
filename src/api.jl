@@ -121,14 +121,14 @@ specialized implementations are encouraged
 aug_expected_loglik
 
 @doc raw"""
-    aug_expected_loglik(lik::Likelihood, qΩ, y, qf) -> Real
+    aux_kldivergence(lik::Likelihood, qΩ::NamedTuple, pΩ::NamedTuple) -> Real
+    aux_kldivergence(lik::Likelihood, qΩ::NamedTuple, y) -> Real
 
-Compute the analytical expectation of the augmented likelihood [`aug_loglik`](@ref) given $$q(f)$$ and $$q(\Omega)$$.
-As mentionned in [`aug_loglik`](@ref), the prior part ([`aux_prior`](@ref)) is not used.
-To compute the KL divergence between $$q(\Omega)$$ and $$p(\Omega)$$ use
-[`kl_term`](@ref) instead.
+Compute the analytical KL divergence between the auxiliary variables posterior
+$$q(\Omega)$$, obtained with [`aux_posterior`](@ref) and prior
+$$p(\Omega)$$, obtained with [`aux_prior`](@ref).
 """
-aug_expected_loglik
+aux_kldivergence
 
 @doc raw"""
     aux_prior(lik::Likelihood, y) -> NamedTuple

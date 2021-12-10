@@ -52,6 +52,8 @@ function test_auglik(
         γs = expected_auglik_precision(lik, qΩ, y)
         @test all(x -> all(>(0), x), γs) # Check that the variance is positive
         @test length(γs) == length(βs) == nf # Check that there are n latent vectors
+        # TODO test that aux_posterior parameters return the minimizing
+        # parameters for expected_aug_loglik
 
         pΩ = aux_prior(lik, y)
         @test keys(pΩ) == keys(qΩ)
@@ -59,7 +61,7 @@ function test_auglik(
             @test kldivergence(first(getfield(qΩ, s)), first(getfield(pΩ, s))) isa Real
         end
         @test expected_logtilt(lik, qΩ, y, qf) isa Real
-        @test expected_aug_loglik(lik, qΩ, y, qf) isa Real
+        @test aux_kldivergence(lik, qΩ, pΩ) isa Real
     end
 end
 end

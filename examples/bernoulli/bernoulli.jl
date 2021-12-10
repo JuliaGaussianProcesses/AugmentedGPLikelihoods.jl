@@ -26,21 +26,21 @@ function u_posterior(fz, m, S)
     posterior(SparseVariationalApproximation(Centered(), fz, MvNormal(m, S)))
 end
 
-function cavi!(fz::AbstractGPs.FiniteGP, x, y, m, S, Ω; niter = 10)
+function cavi!(fz::AbstractGPs.FiniteGP, x, y, m, S, qΩ; niter = 10)
     K = ApproximateGPs._chol_cov(fz)
     for _ = 1:niter
         post_u = u_posterior(fz, m, S)
         post_fs = marginals(post_u(x))
-        Ω = aux_posterior!(Ω, lik, y, post_fs)
-        S .= inv(Symmetric(inv(K) + Diagonal(only(vi_rate(lik, Ω, y)))))
-        m .= S * (only(vi_shift(lik, Ω, y)) - K \ mean(fz))
+        qΩ = aux_posterior!(qΩ, lik, y, post_fs)
+        S .= inv(Symmetric(inv(K) + Diagonal(only(expected_loglike_precision(lik, qΩ, y)))))
+        m .= S * (only(expected_loglike_potential(lik, qΩ, y)) - K \ mean(fz))
     end
-    return m, S, Ω
+    return m, S, qΩ
 end
 # Now we just initialize the variational parameters
 m = zeros(N)
 S = Matrix{Float64}(I(N))
-Ω = init_aux_posterior(lik, N)
+qΩ = init_aux_posterior(lik, N)
 fz = gp(x, 1e-8)
 # And visualize the current posterior
 x_te = -10:0.01:10
@@ -53,7 +53,7 @@ plot!(
     label = "Initial VI Posterior",
 )
 # We run CAVI for 3-4 iterations
-cavi!(fz, x, y, m, S, Ω; niter = 4)
+cavi!(fz, x, y, m, S, qΩ; niter = 4)
 # And visualize the obtained variational posterior
 plot!(
     plt,
@@ -67,9 +67,9 @@ plot!(
 # How can one compute the Augmented ELBO?
 # Again AugmentedGPLikelihoods provides helper functions
 # to not have to compute everything yourself
-function aug_elbo(lik, u_post, Ω, x, y)
+function aug_elbo(lik, u_post, qΩ, x, y)
     qf = marginals(u_post(x))
-    return aug_expected_loglik(lik, Ω, y, qf) - kl_term(lik, Ω, y) -
+    return expected_logtilt(lik, qΩ, y, qf) - aux_kldivergence(lik, qΩ, y) -
            ApproximateGPs.kl_term(u_post.approx, u_post)
 end
 

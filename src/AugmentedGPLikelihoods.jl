@@ -3,6 +3,7 @@ module AugmentedGPLikelihoods
 using Reexport
 
 using Distributions
+using FillArrays
 @reexport using GPLikelihoods
 using GPLikelihoods: AbstractLikelihood
 using Random: AbstractRNG, GLOBAL_RNG
@@ -17,7 +18,7 @@ export expected_auglik_potential, expected_auglik_precision
 
 export logtilt, expected_logtilt
 export aux_prior
-export aug_loglik, expected_aug_loglik
+export aug_loglik, aux_kldivergence
 
 include("api.jl")
 include("generic.jl")

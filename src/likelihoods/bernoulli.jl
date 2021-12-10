@@ -3,7 +3,7 @@ function init_aux_variables(rng::AbstractRNG, ::BernoulliLikelihood{<:LogisticLi
 end
 
 function init_aux_posterior(::BernoulliLikelihood{<:LogisticLink}, n::Int)
-    return (; ω = [PolyaGamma(1, 0.0) for _ = 1:n])
+    return (; ω = [PolyaGamma(1, 0.0) for _ in 1:n])
 end
 
 function aux_sample!(
@@ -63,7 +63,7 @@ function logtilt(::BernoulliLikelihood{<:LogisticLink}, Ω, y, f)
 end
 
 function aux_prior(::BernoulliLikelihood{<:LogisticLink}, y)
-    return (; ω = [PolyaGamma(1, 0.0) for _ = 1:length(y)])
+    return (; ω = Fill(PolyaGamma(1, 0.0), length(y)))
 end
 
 function expected_logtilt(::BernoulliLikelihood{<:LogisticLink}, Ω, y, qf)
@@ -71,8 +71,4 @@ function expected_logtilt(::BernoulliLikelihood{<:LogisticLink}, Ω, y, qf)
         m = mean(f)
         -log(2) + (sign(y - 0.5) * m - (abs2(m) + var(f)) * mean(ω)) / 2
     end
-end
-
-function kl_term(lik::BernoulliLikelihood{<:LogisticLink}, Ω, y)
-    return mapreduce(kldivergence, +, Ω.ω, aux_prior(lik, y).ω)
 end
