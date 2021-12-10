@@ -1,19 +1,30 @@
 function init_aux_variables(rng::AbstractRNG, ::BernoulliLikelihood{<:LogisticLink}, n::Int)
-    return (;ω=rand(rng, PolyaGamma(1, 0.0), n))
+    return (; ω = rand(rng, PolyaGamma(1, 0.0), n))
 end
 
 function init_aux_posterior(::BernoulliLikelihood{<:LogisticLink}, n::Int)
-    return (;ω=[PolyaGamma(1, 0.0) for _ in 1:n])
+    return (; ω = [PolyaGamma(1, 0.0) for _ = 1:n])
 end
 
-function aux_sample!(rng::AbstractRNG, Ω, ::BernoulliLikelihood{<:LogisticLink}, ::AbstractVector, f::AbstractVector)
+function aux_sample!(
+    rng::AbstractRNG,
+    Ω,
+    ::BernoulliLikelihood{<:LogisticLink},
+    ::AbstractVector,
+    f::AbstractVector,
+)
     map!(Ω.ω, f) do f
         rand(rng, PolyaGamma(1, abs(f)))
     end
     return Ω
 end
 
-function aux_posterior!(Ω, ::BernoulliLikelihood{<:LogisticLink}, ::AbstractVector, qf::AbstractVector{<:Normal})
+function aux_posterior!(
+    Ω,
+    ::BernoulliLikelihood{<:LogisticLink},
+    ::AbstractVector,
+    qf::AbstractVector{<:Normal},
+)
     map!(Ω.ω, qf) do q
         PolyaGamma(1, sqrt(abs2(mean(q)) + var(q)))
     end
@@ -28,11 +39,19 @@ function auglik_precision(::BernoulliLikelihood{<:LogisticLink}, Ω, ::AbstractV
     (Ω.ω,)
 end
 
-function expected_auglik_potential(lik::BernoulliLikelihood{<:LogisticLink}, Ω, y::AbstractVector)
+function expected_auglik_potential(
+    lik::BernoulliLikelihood{<:LogisticLink},
+    Ω,
+    y::AbstractVector,
+)
     return auglik_potential(lik, Ω, y)
 end
 
-function expected_auglik_precision(::BernoulliLikelihood{<:LogisticLink}, Ω, ::AbstractVector)
+function expected_auglik_precision(
+    ::BernoulliLikelihood{<:LogisticLink},
+    Ω,
+    ::AbstractVector,
+)
     return (mean.(Ω.ω),)
 end
 
@@ -44,7 +63,7 @@ function logtilt(::BernoulliLikelihood{<:LogisticLink}, Ω, y, f)
 end
 
 function aux_prior(::BernoulliLikelihood{<:LogisticLink}, y)
-    return (;ω=[PolyaGamma(1, 0.0) for _ in 1:length(y)])
+    return (; ω = [PolyaGamma(1, 0.0) for _ = 1:length(y)])
 end
 
 function expected_logtilt(::BernoulliLikelihood{<:LogisticLink}, Ω, y, qf)

@@ -35,12 +35,14 @@ Distributions.insupport(::PolyaGamma, x::Real) = zero(x) <= x < Inf
 function Distributions.logpdf(d::PolyaGamma, x::Real)
     b, c = params(d)
     iszero(x) && return zero(x)
-    return logtilt(x, b, c) + (b - 1) * log(2) - loggamma(b) + log(sum(0:200) do n
-        ifelse(iseven(n), 1, -1) * exp(
-            loggamma(n + b) - loggamma(n + 1) + log(2n + b) - log(twoπ * x^3) / 2 -
-            (2n + b)^2 / (8x),
-        )
-    end)
+    return logtilt(x, b, c) + (b - 1) * log(2) - loggamma(b) + log(
+        sum(0:200) do n
+            ifelse(iseven(n), 1, -1) * exp(
+                loggamma(n + b) - loggamma(n + 1) + log(2n + b) - log(twoπ * x^3) / 2 -
+                (2n + b)^2 / (8x),
+            )
+        end,
+    )
 end
 
 # Shortcut for computating KL(PG(ω|b, c)||PG(b, 0))
@@ -86,7 +88,7 @@ function a(n::Int, x::Real)
     if x > pg_t
         return k * exp(-k^2 * x / 2)
     elseif x > 0
-        expnt = -3 / 2 * (log(halfπ) + log(x)) + log(k) - 2 * (n + 1//2)^2 / x
+        expnt = -3 / 2 * (log(halfπ) + log(x)) + log(k) - 2 * (n + 1 // 2)^2 / x
         return exp(expnt)
     else
         error("x should be a positive real")
@@ -156,7 +158,7 @@ function sample_pg1(rng::AbstractRNG, z::Real)
         if r > rand(rng) # sample from truncated exponential
             x = t + rand(rng, Exponential()) / K
         else # sample from truncated inverse Gaussian
-            x = rand_truncated_inverse_gaussian(rng,z)
+            x = rand_truncated_inverse_gaussian(rng, z)
         end
         s = a(0, x)
         y = rand(rng) * s

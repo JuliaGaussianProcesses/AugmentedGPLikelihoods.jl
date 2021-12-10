@@ -4,7 +4,12 @@ using DocumenterCitations
 using Literate
 using Pkg
 
-DocMeta.setdocmeta!(AugmentedGPLikelihoods, :DocTestSetup, :(using AugmentedGPLikelihoods); recursive=true)
+DocMeta.setdocmeta!(
+    AugmentedGPLikelihoods,
+    :DocTestSetup,
+    :(using AugmentedGPLikelihoods);
+    recursive = true,
+)
 
 bib = CitationBibliography(joinpath(@__DIR__, "references.bib"))
 
@@ -15,35 +20,32 @@ Pkg.instantiate()
 Literate.markdown(
     joinpath(bernoulli_folder, "bernoulli.jl"),
     joinpath(@__DIR__, "src/examples");
-    execute=true,
+    execute = true,
     # flavor=Literate.DocumenterFlavor(),
 )
 Pkg.activate(@__DIR__)
 
-makedocs(bib;
-    modules=[AugmentedGPLikelihoods],
-    authors="Théo Galy-Fajou <theo.galyfajou@gmail.com> and contributors",
-    repo="https://github.com/JuliaGaussianProcesses/AugmentedGPLikelihoods.jl/blob/{commit}{path}#{line}",
-    sitename="AugmentedGPLikelihoods.jl",
-    format=Documenter.HTML(;
-        prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://JuliaGaussianProcesses.github.io/AugmentedGPLikelihoods.jl",
-        assets=String[],
+makedocs(
+    bib;
+    modules = [AugmentedGPLikelihoods],
+    authors = "Théo Galy-Fajou <theo.galyfajou@gmail.com> and contributors",
+    repo = "https://github.com/JuliaGaussianProcesses/AugmentedGPLikelihoods.jl/blob/{commit}{path}#{line}",
+    sitename = "AugmentedGPLikelihoods.jl",
+    format = Documenter.HTML(;
+        prettyurls = get(ENV, "CI", "false") == "true",
+        canonical = "https://JuliaGaussianProcesses.github.io/AugmentedGPLikelihoods.jl",
+        assets = String[],
     ),
-    pages=[
+    pages = [
         "Home" => "index.md",
-        "Likelihoods" => [
-            "Bernoulli" => "likelihoods/bernoulli.md",
-        ],
-        "Examples" => [
-            "Bernoulli" => "examples/bernoulli.md",
-        ],
-        "References" => "references.md"
+        "Likelihoods" => ["Bernoulli" => "likelihoods/bernoulli.md"],
+        "Examples" => ["Bernoulli" => "examples/bernoulli.md"],
+        "References" => "references.md",
     ],
 )
 
 deploydocs(;
-    repo="github.com/JuliaGaussianProcesses/AugmentedGPLikelihoods.jl",
-    devbranch="main",
-    push_preview=true,
+    repo = "github.com/JuliaGaussianProcesses/AugmentedGPLikelihoods.jl",
+    devbranch = "main",
+    push_preview = true,
 )
