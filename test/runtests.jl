@@ -9,6 +9,7 @@ using Test
     @info "Testing likelihoods"
     @testset "Likelihoods" begin
         include("likelihoods/bernoulli.jl")
+        include("likelihoods/poisson.jl")
     end
 
     @info "Testing SpecialDistributions"

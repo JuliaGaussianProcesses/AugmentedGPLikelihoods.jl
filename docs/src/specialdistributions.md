@@ -4,4 +4,5 @@ CurrentModule = AugmentedGPLikelihoods.SpecialDistributions
 
 ```@docs
 PolyaGamma
+PolyaGammaPoisson
 ```

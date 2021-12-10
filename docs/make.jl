@@ -35,9 +35,13 @@ makedocs(
     ),
     pages=[
         "Home" => "index.md",
-        "Likelihoods" => ["Bernoulli" => "likelihoods/bernoulli.md"],
-        "Examples" => ["Bernoulli" => "examples/bernoulli.md"],
-        "Additional Distributions" => ["Polya-Gamma" => "dists/polyagamma.md"],
+        "Likelihoods" => [
+            "Bernoulli" => "likelihoods/bernoulli.md",
+            "Poisson" => "likelihoods/poisson.md",
+        ],
+        "Examples" =>
+            ["Bernoulli" => "examples/bernoulli.md", "Poisson" => "likelihoods/poisson.md"],
+        "Additional Distributions" => "specialdistributions.md",
         "References" => "references.md",
     ],
 )
