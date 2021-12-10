@@ -73,7 +73,7 @@ function aug_elbo(lik, u_post, qΩ, x, y)
            ApproximateGPs.kl_term(u_post.approx, u_post)
 end
 
-aug_elbo(lik, u_posterior(fz, m, S), Ω, x, y)
+aug_elbo(lik, u_posterior(fz, m, S), qΩ, x, y)
 # ## Gibbs Sampling
 # We create our Gibbs sampling algorithm (we could do something fancier with
 # AbstractMCMC)
@@ -97,6 +97,6 @@ fs = gibbs_sample(fz, f, Ω);
 # And visualize the samples overlapped to the variational posterior
 # that we found earlier.
 for f in fs
-    plot!(plt, x, f; color = :blue, alpha = 0.07, label = "")
+    plot!(plt, x, f; color = :black, alpha = 0.07, label = "")
 end
 plt
