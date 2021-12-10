@@ -89,7 +89,7 @@ The full-conditional from $$f$$ are given by
 where $$\lambda$$ is obtained via [`auglik_precision`](@ref) and $$h$$ is
 obtained via [`auglik_potential`](@ref).
 For likelihoods requiring multiple latent GP (e.g. multi-class classification 
-or heteroscedastic likelihoods), [`sample_shift`](@ref) and [`sample_rate`](@ref)
+or heteroscedastic likelihoods), [`auglik_potential`](@ref) and [`auglik_precision`](@ref)
 return a `Tuple` with the respective `Vector`s $$t$$ and $$r$$.
 
 As a general rule, the augmented likelihood will have the form

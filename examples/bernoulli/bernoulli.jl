@@ -20,7 +20,7 @@ f, y = rand(lf(x));
 # We plot the sampled data
 plt = scatter(x, y; label="Data")
 plot!(plt, x, f; color=:red, label="Latent GP")
-# ## CAVI Updates
+# ## Classification - CAVI Updates
 # We write our CAVI algorithmm
 function u_posterior(fz, m, S)
     return posterior(SparseVariationalApproximation(Centered(), fz, MvNormal(m, S)))
@@ -58,7 +58,7 @@ plot!(
     alpha=0.3,
     label="Final VI Posterior",
 )
-# ## ELBO
+# ## Classification - ELBO
 # How can one compute the Augmented ELBO?
 # Again AugmentedGPLikelihoods provides helper functions
 # to not have to compute everything yourself
@@ -69,7 +69,7 @@ function aug_elbo(lik, u_post, qΩ, x, y)
 end
 
 aug_elbo(lik, u_posterior(fz, m, S), qΩ, x, y)
-# ## Gibbs Sampling
+# ## Classification - Gibbs Sampling
 # We create our Gibbs sampling algorithm (we could do something fancier with
 # AbstractMCMC)
 function gibbs_sample(fz, f, Ω; nsamples=200)
