@@ -3,13 +3,15 @@ on:
   push:
     branches:
       - main
-    tags: '*'
+    # tags: '*'
   pull_request:
-concurrency:
+
+# concurrency:
   # Skip intermediate builds: always.
   # Cancel intermediate builds: only if it is a pull request build.
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
+  # group: ${{ github.workflow }}-${{ github.ref }}
+  # cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
+
 jobs:
   test:
     name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }} - ${{ github.event_name }}
@@ -19,7 +21,7 @@ jobs:
       matrix:
         version:
           - '1.6'
-          - '1.7'
+          - '1'
           - 'nightly'
         os:
           - ubuntu-latest
@@ -58,6 +60,7 @@ jobs:
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-docdeploy@v1
         env:
+          GKSwstype: nul # turn off GR's interactive plotting for notebooks
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
       - run: |
