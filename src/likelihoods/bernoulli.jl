@@ -1,9 +1,9 @@
 function init_aux_variables(rng::AbstractRNG, ::BernoulliLikelihood{<:LogisticLink}, n::Int)
-    return (; ω = rand(rng, PolyaGamma(1, 0.0), n))
+    return (; ω=rand(rng, PolyaGamma(1, 0.0), n))
 end
 
 function init_aux_posterior(::BernoulliLikelihood{<:LogisticLink}, n::Int)
-    return (; ω = [PolyaGamma(1, 0.0) for _ = 1:n])
+    return (; ω=[PolyaGamma(1, 0.0) for _ in 1:n])
 end
 
 function aux_sample!(
@@ -20,10 +20,7 @@ function aux_sample!(
 end
 
 function aux_posterior!(
-    Ω,
-    ::BernoulliLikelihood{<:LogisticLink},
-    ::AbstractVector,
-    qf::AbstractVector{<:Normal},
+    Ω, ::BernoulliLikelihood{<:LogisticLink}, ::AbstractVector, qf::AbstractVector{<:Normal}
 )
     map!(Ω.ω, qf) do q
         PolyaGamma(1, sqrt(abs2(mean(q)) + var(q)))
@@ -36,25 +33,20 @@ function auglik_potential(::BernoulliLikelihood{<:LogisticLink}, ::Any, y::Abstr
 end
 
 function auglik_precision(::BernoulliLikelihood{<:LogisticLink}, Ω, ::AbstractVector)
-    (Ω.ω,)
+    return (Ω.ω,)
 end
 
 function expected_auglik_potential(
-    lik::BernoulliLikelihood{<:LogisticLink},
-    Ω,
-    y::AbstractVector,
+    lik::BernoulliLikelihood{<:LogisticLink}, Ω, y::AbstractVector
 )
     return auglik_potential(lik, Ω, y)
 end
 
 function expected_auglik_precision(
-    ::BernoulliLikelihood{<:LogisticLink},
-    Ω,
-    ::AbstractVector,
+    ::BernoulliLikelihood{<:LogisticLink}, Ω, ::AbstractVector
 )
     return (mean.(Ω.ω),)
 end
-
 
 function logtilt(::BernoulliLikelihood{<:LogisticLink}, Ω, y, f)
     return mapreduce(+, y, f, Ω.ω) do y, f, ω
@@ -63,7 +55,7 @@ function logtilt(::BernoulliLikelihood{<:LogisticLink}, Ω, y, f)
 end
 
 function aux_prior(::BernoulliLikelihood{<:LogisticLink}, y)
-    return (; ω = Fill(PolyaGamma(1, 0.0), length(y)))
+    return (; ω=Fill(PolyaGamma(1, 0.0), length(y)))
 end
 
 function expected_logtilt(::BernoulliLikelihood{<:LogisticLink}, Ω, y, qf)
