@@ -90,7 +90,7 @@ where $$\lambda$$ is obtained via [`auglik_precision`](@ref) and $$h$$ is
 obtained via [`auglik_potential`](@ref).
 For likelihoods requiring multiple latent GP (e.g. multi-class classification 
 or heteroscedastic likelihoods), [`auglik_potential`](@ref) and [`auglik_precision`](@ref)
-return a `Tuple` with the respective `Vector`s $$t$$ and $$r$$.
+return a `Tuple` with the respective `Vector`s $$\lambda$$ and $$h$$.
 
 As a general rule, the augmented likelihood will have the form
 ```math

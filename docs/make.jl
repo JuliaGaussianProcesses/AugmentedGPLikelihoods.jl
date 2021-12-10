@@ -37,7 +37,7 @@ makedocs(
         "Home" => "index.md",
         "Likelihoods" => ["Bernoulli" => "likelihoods/bernoulli.md"],
         "Examples" => ["Bernoulli" => "examples/bernoulli.md"],
-        "Additional Distributions" => ["dists/polyagamma.md"],
+        "Additional Distributions" => ["Polya-Gamma" => "dists/polyagamma.md"],
         "References" => "references.md",
     ],
 )
