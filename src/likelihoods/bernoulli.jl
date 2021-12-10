@@ -3,7 +3,7 @@ function init_aux_variables(rng::AbstractRNG, ::BernoulliLikelihood{<:LogisticLi
 end
 
 function init_aux_posterior(::BernoulliLikelihood{<:LogisticLink}, n::Int)
-    return (; ω = [PolyaGamma(1, 0.0) for _ in 1:n])
+    return (; ω = [PolyaGamma(1, 0.0) for _ = 1:n])
 end
 
 function aux_sample!(

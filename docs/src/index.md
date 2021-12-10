@@ -70,8 +70,8 @@ But the API can be reduced to 5 main functions:
 init_aux_variables
 aux_sample!
 aux_sample
-sample_shift
-sample_rate
+auglik_potential
+auglik_precision
 ```
 First [`init_aux_variables`](@ref) initializes a `NamedTuple` 
 of `Vector`(s) of auxiliary variables to be modified in-place during sampling.
@@ -82,22 +82,22 @@ The full-conditional from $$f$$ are given by
 ```math
 \begin{align*}
     p(f|y,\Omega) =& \mathcal{N}(f|m,S)\\
-    S =& \left(K^{-1} + \operatorname{Diagonal}(r)\right)^{-1}\\
-    m =& S \left(t + K^{-1}\mu_0\right)
+    S =& \left(K^{-1} + \operatorname{Diagonal}(\lambda)\right)^{-1}\\
+    m =& S \left(h + K^{-1}\mu_0\right),
 \end{align*}
 ```
-[`sample_shift`](@ref) returns a `Tuple` containing the `Vector` $$t$$,
-and [`sample_rate`](@ref) returns a `Tuple` containing the `Vector` $$r$$.
+where $$\lambda$$ is obtained via [`auglik_precision`](@ref) and $$h$$ is
+obtained via [`auglik_potential`](@ref).
 For likelihoods requiring multiple latent GP (e.g. multi-class classification 
 or heteroscedastic likelihoods), [`sample_shift`](@ref) and [`sample_rate`](@ref)
 return a `Tuple` with the respective `Vector`s $$t$$ and $$r$$.
 
 As a general rule, the augmented likelihood will have the form
 ```math
-    p(y|f,\Omega) \propto \exp\left(a(\Omega,y)f + b(\Omega,y)f^2\right),
+    p(y|f,\Omega) \propto \exp\left(h(\Omega,y)f + \frac{\lambda(\Omega,y)}{2}f^2\right),
 ```
-and [`sample_shift`](@ref) $$\equiv a(\Omega,y)$$ while [`sample_rate`](@ref) 
-$$\equiv 2b(\Omega,y)$$.
+with [`auglik_potential`](@ref) $$\equiv h(\Omega,y)$$ while [`auglik_precision`](@ref) 
+$$\equiv \lambda(\Omega,y)$$.
 
 ## Coordinate Ascent Variational Inference
 
@@ -115,8 +115,8 @@ Like for [Gibbs Sampling](@ref), there are also 5 main functions
 init_aux_posterior
 aux_posterior!
 aux_posterior
-vi_shift
-vi_rate
+expected_auglik_potential
+expected_auglik_precision
 ```
 
 [`init_aux_posterior`](@ref) initializes the posterior 
@@ -131,11 +131,11 @@ variational distributions:
 ```math
 \begin{align*}
     q^*(f) =& \mathcal{N}(f|m,S)\\
-    S =& \left(K^{-1} + \operatorname{Diagonal}(r)\right)^{-1}\\
-    m =& S \left(t + K^{-1}\mu_0\right)
+    S =& \left(K^{-1} + \operatorname{Diagonal}(\lambda)\right)^{-1}\\
+    m =& S \left(h + K^{-1}\mu_0\right)
 \end{align*}
 ```
-where $$r$$ is given by [`vi_rate`](@ref) and $$t$$ is given by [`vi_shift`](@ref).
+where $$\lambda$$ is given by [`expected_auglik_precision`](@ref) and $$h$$ is given by [`expected_auglik_potential`](@ref).
 Note that if you work with __Sparse__ GPs, the updates should be:
 ```math
 \begin{align*}
@@ -160,10 +160,17 @@ To work with all these terms, `AugmentedGPLikelihoods.jl` provide a series of
 helping functions:
 ```@docs
 aug_loglik
-aug_expected_loglik
 aux_prior
+aux_kldivergence
+logtilt
+expected_logtilt
 ```
-[`aug_loglik`](@ref) is the equivalent of $$\log p(y|\Omega,f)$$, 
-[`aug_expected_loglik`](@ref) is the equivalent of 
-$$E_{q(f)q(\Omega)}\left[\log p(y|\Omega,f)\right]$$ and finally, [`aux_prior`](@ref)
-will return $$p(\Omega)$$ with the same structure as $$q(\Omega)$$.
+
+[`aug_loglik`](@ref) returns the augmented log-likelihood $$\log p(y,\Omega|f)$$,
+but one should avoid using it as computing $$p(\Omega)$$ can be expensive.
+[`aux_prior`](@ref) returns the prior on the auxiliary variables, note that it 
+can depend on the observations $$y$$.
+[`logtilt`](@ref) returns the log of the exponential part of the augmented likelihood, which is conjugate with $$f$$.
+[`aug_loglik`](@ref) is computed by default using [`logtilt`](@ref) + `logpdf(aux_prior, x)`.
+Finally, for variational inference purposes, [`aux_kldivergence`](@ref) computes 
+the KL divergence $$\operatorname{KL}(q(\Omega)||p(\Omega))$$ and [`expected_logtilt`](@ref) computes the expectation of [`logtilt`] analytically.
