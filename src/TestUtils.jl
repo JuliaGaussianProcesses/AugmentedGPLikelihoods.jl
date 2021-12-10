@@ -27,8 +27,14 @@ function test_auglik(
 
         βs = auglik_potential(lik, Ω, y)
         γs = auglik_precision(lik, Ω, y)
-        @test all(x -> all(>(0), x), γs) # Check that the variance is positive
+        β2, γ2 = auglik_potential_and_precision(lik, Ω, y)
         @test length(γs) == length(βs) == nf # Check that there are n latent vectors
+        @test first(βs) isa AbstractVector 
+        @test first(γs) isa AbstractVector
+        @test all(map(≈, βs, β2))
+        @test all(map(≈, γs, γ2))
+
+        @test all(x -> all(>(0), x), γs) # Check that the variance is positive
 
         pΩ = aux_prior(lik, y)
         @test keys(pΩ) == keys(Ω)
