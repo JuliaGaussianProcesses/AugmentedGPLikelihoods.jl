@@ -7,10 +7,10 @@ using Test
 # Test API for augmented likelihood
 function test_auglik(
     lik::AbstractLikelihood;
-    n = 10,
-    f = randn(n),
-    qf = Normal.(randn(n), 1.0),
-    rng::AbstractRNG = Random.GLOBAL_RNG,
+    n=10,
+    f=randn(n),
+    qf=Normal.(randn(n), 1.0),
+    rng::AbstractRNG=Random.GLOBAL_RNG,
 )
     y = rand.(rng, lik.(f))
     nf = nlatent(lik)

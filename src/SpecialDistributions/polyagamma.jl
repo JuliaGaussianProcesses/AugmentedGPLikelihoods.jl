@@ -88,7 +88,7 @@ function a(n::Int, x::Real)
     if x > pg_t
         return k * exp(-k^2 * x / 2)
     elseif x > 0
-        expnt = -3 / 2 * (log(halfπ) + log(x)) + log(k) - 2 * (n + 1 // 2)^2 / x
+        expnt = -3 / 2 * (log(halfπ) + log(x)) + log(k) - 2 * (n + 1//2)^2 / x
         return exp(expnt)
     else
         error("x should be a positive real")

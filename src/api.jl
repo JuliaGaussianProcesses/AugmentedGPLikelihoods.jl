@@ -18,7 +18,6 @@ See also [`init_aux_posterior`](@ref) for sampling.
 """
 init_aux_posterior
 
-
 @doc raw"""
     aux_sample!([rng::AbstractRNG], Ω, lik::Likelihood, y, f) -> NamedTuple
 
@@ -38,7 +37,6 @@ on the full-conditional associated with the likelihood.
 See als [`aux_sample!`](@ref) for an in-place version.
 """
 aux_sample
-
 
 @doc raw"""
     aux_posterior!(qΩ, lik::Likelihood, y, qf) -> NamedTuple
@@ -79,7 +77,7 @@ shift of the precision $\Lambda = \Sigma^{-1}$.
 The `Tuple` contains a `Vector` for each latent.
 See also [`expected_auglik_precision`](@ref) for variational inference.
 """
-auglike_precision
+auglik_precision
 
 @doc raw"""
     expected_auglik_potential(lik::Likelihood, qΩ, y) -> Tuple
@@ -92,7 +90,6 @@ See also [`auglik_potential`](@ref) for sampling.
 """
 expected_auglik_potential
 
-
 @doc raw"""
     expected_auglik_precision(lik::Likelihood, qΩ, y) -> Tuple
 
@@ -102,8 +99,7 @@ shift of the variational precision $\Lambda = \Sigma^{-1}$.
 The `Tuple` contains a `Vector` for each latent.
 See also [`auglik_precision`](@ref) for sampling.
 """
-expected_auglike_precision
-
+expected_auglik_precision
 
 @doc raw"""
     aug_loglik(lik::Likelihood, Ω, y, f) -> Real
@@ -118,7 +114,7 @@ given $$q(f,\Omega)$$.
 A generic fallback exists based on [`logtilt`](@ref) and [`aux_prior`](@ref) but
 specialized implementations are encouraged
 """
-aug_expected_loglik
+aug_loglik
 
 @doc raw"""
     aux_kldivergence(lik::Likelihood, qΩ::NamedTuple, pΩ::NamedTuple) -> Real
