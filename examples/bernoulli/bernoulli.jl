@@ -32,8 +32,8 @@ function cavi!(fz::AbstractGPs.FiniteGP, x, y, m, S, qΩ; niter = 10)
         post_u = u_posterior(fz, m, S)
         post_fs = marginals(post_u(x))
         qΩ = aux_posterior!(qΩ, lik, y, post_fs)
-        S .= inv(Symmetric(inv(K) + Diagonal(only(expected_loglike_precision(lik, qΩ, y)))))
-        m .= S * (only(expected_loglike_potential(lik, qΩ, y)) - K \ mean(fz))
+        S .= inv(Symmetric(inv(K) + Diagonal(only(expected_auglik_precision(lik, qΩ, y)))))
+        m .= S * (only(expected_auglik_potential(lik, qΩ, y)) - K \ mean(fz))
     end
     return m, S, qΩ
 end
@@ -83,8 +83,8 @@ function gibbs_sample(fz, f, Ω; nsamples = 200)
     μ = zeros(length(f))
     return map(1:nsamples) do _
         aux_sample!(Ω, lik, y, f)
-        Σ .= inv(Symmetric(inv(K) + Diagonal(only(sample_rate(lik, Ω, y)))))
-        μ .= Σ * (only(sample_shift(lik, Ω, y)) - K \ mean(fz))
+        Σ .= inv(Symmetric(inv(K) + Diagonal(only(auglik_precision(lik, Ω, y)))))
+        μ .= Σ * (only(auglik_potential(lik, Ω, y)) - K \ mean(fz))
         rand!(MvNormal(μ, Σ), f)
         return copy(f)
     end
