@@ -11,7 +11,7 @@
 
     p3 = PolyaGamma(1.2, 3.2)
     s = rand(p3, 10000)
-    # @test mean(s) ≈ mean(p3) atol=1e-2
+    @test_broken mean(s) ≈ mean(p3) atol=1e-2
 
     @test insupport(p1, 0)
     @test !insupport(p1, -1)
