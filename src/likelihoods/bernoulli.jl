@@ -13,30 +13,31 @@ function aux_sample!(rng::AbstractRNG, Ω, ::BernoulliLikelihood{<:LogisticLink}
     return Ω
 end
 
-function aux_posterior!(Ω, ::BernoulliLikelihood{<:LogisticLink}, ::AbstractVector, q_f::AbstractVector{<:Normal})
-    map!(Ω.ω, q_f) do q
+function aux_posterior!(Ω, ::BernoulliLikelihood{<:LogisticLink}, ::AbstractVector, qf::AbstractVector{<:Normal})
+    map!(Ω.ω, qf) do q
         PolyaGamma(1, sqrt(abs2(mean(q)) + var(q)))
     end
     return Ω
 end
 
-function vi_shift(::BernoulliLikelihood{<:LogisticLink}, ::Any, y::AbstractVector)
-    return (sign.(y .- 0.5),)
+function auglik_potential(::BernoulliLikelihood{<:LogisticLink}, ::Any, y::AbstractVector)
+    (sign.(y .- 0.5),)
 end
 
-function vi_rate(::BernoulliLikelihood{<:LogisticLink}, Ω, ::AbstractVector)
-    return (mean.(Ω.ω),)
-end
-
-function sample_shift(lik::BernoulliLikelihood{<:LogisticLink}, Ω, y::AbstractVector)
-    vi_shift(lik, Ω, y)
-end
-
-function sample_rate(::BernoulliLikelihood{<:LogisticLink}, Ω, ::AbstractVector)
+function auglik_precision(::BernoulliLikelihood{<:LogisticLink}, Ω, ::AbstractVector)
     (Ω.ω,)
 end
 
-function aug_loglik(::BernoulliLikelihood{<:LogisticLink}, Ω, y, f)
+function expected_auglik_potential(lik::BernoulliLikelihood{<:LogisticLink}, Ω, y::AbstractVector)
+    return auglik_potential(lik, Ω, y)
+end
+
+function expected_auglik_precision(::BernoulliLikelihood{<:LogisticLink}, Ω, ::AbstractVector)
+    return (mean.(Ω.ω),)
+end
+
+
+function logtilt(::BernoulliLikelihood{<:LogisticLink}, Ω, y, f)
     return mapreduce(+, y, f, Ω.ω) do y, f, ω
         -log(2) + (sign(y - 0.5) * f - abs2(f) * ω) / 2
     end
@@ -46,7 +47,7 @@ function aux_prior(::BernoulliLikelihood{<:LogisticLink}, y)
     return (;ω=[PolyaGamma(1, 0.0) for _ in 1:length(y)])
 end
 
-function aug_expected_loglik(::BernoulliLikelihood{<:LogisticLink}, Ω, y, qf)
+function expected_logtilt(::BernoulliLikelihood{<:LogisticLink}, Ω, y, qf)
     return mapreduce(+, y, qf, Ω.ω) do y, f, ω
         m = mean(f)
         -log(2) + (sign(y - 0.5) * m - (abs2(m) + var(f)) * mean(ω)) / 2

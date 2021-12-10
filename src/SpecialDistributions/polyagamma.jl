@@ -32,15 +32,15 @@ Base.minimum(d::PolyaGamma) = zero(eltype(d))
 Base.maximum(::PolyaGamma) = Inf
 Distributions.insupport(::PolyaGamma, x::Real) = zero(x) <= x < Inf
 
-function Distributions.pdf(d::PolyaGamma, x::Real)
+function Distributions.logpdf(d::PolyaGamma, x::Real)
     b, c = params(d)
     iszero(x) && return zero(x)
-    return _tilt(x, b, c) * 2^(b - 1) / gamma(b) * sum(0:200) do n
+    return logtilt(x, b, c) + (b - 1) * log(2) - loggamma(b) + log(sum(0:200) do n
         ifelse(iseven(n), 1, -1) * exp(
             loggamma(n + b) - loggamma(n + 1) + log(2n + b) - log(twoπ * x^3) / 2 -
             (2n + b)^2 / (8x),
         )
-    end
+    end)
 end
 
 # Shortcut for computating KL(PG(ω|b, c)||PG(b, 0))
@@ -50,11 +50,11 @@ function Distributions.kldivergence(q::PolyaGamma, p::PolyaGamma)
         "with different parameter b, (q.b = $(q.b), p.b = $(p.b))",
         " or if p.c ≠ 0 (p.c = $(p.c))",
     )
-    return q.b * log(cosh(q.c / 2)) - abs2(q.c) * mean(q) / 2
+    return logtilt(mean(q), q.b, q.c)
 end
 
-function _tilt(ω, b, c)
-    return cosh(c / 2)^b * exp(-c^2 / 2 * ω)
+function logtilt(ω, b, c)
+    return b * log(cosh(c / 2)) - abs2(c) * ω / 2
 end
 
 function Distributions.rand(rng::AbstractRNG, d::PolyaGamma)
