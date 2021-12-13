@@ -33,8 +33,7 @@ function test_auglik(
         @test first(γs) isa AbstractVector
         @test all(map(≈, βs, β2))
         @test all(map(≈, γs, γ2))
-
-        @test all(x -> all(>(0), x), γs) # Check that the variance is positive
+        @test all(x -> all(>=(0), x), γs) # Check that the variance is positive
 
         pΩ = aux_prior(lik, y)
         @test keys(pΩ) == keys(Ω)
@@ -63,7 +62,7 @@ function test_auglik(
         @test all(map(≈, βs, β2))
         @test all(map(≈, γs, γ2))
 
-        @test all(x -> all(>(0), x), γs) # Check that the variance is positive
+        @test all(x -> all(>=(0), x), γs) # Check that the variance is positive
 
         # TODO test that aux_posterior parameters return the minimizing
         pΩ = aux_prior(lik, y)

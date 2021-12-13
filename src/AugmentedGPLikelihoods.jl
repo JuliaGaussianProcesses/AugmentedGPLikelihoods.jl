@@ -6,9 +6,10 @@ using Distributions
 using FillArrays
 @reexport using GPLikelihoods
 using GPLikelihoods: AbstractLikelihood, AbstractLink
+using IrrationalConstants
+using LogExpFunctions
 using Random: AbstractRNG, GLOBAL_RNG
 using SpecialFunctions
-using LogExpFunctions
 
 export nlatent
 
