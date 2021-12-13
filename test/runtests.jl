@@ -1,9 +1,11 @@
 using AugmentedGPLikelihoods
 using AugmentedGPLikelihoods.SpecialDistributions
 using AugmentedGPLikelihoods.TestUtils: test_auglik
+const AGPL = AugmentedGPLikelihoods
 using Distributions
 using GPLikelihoods
-using StatsFuns
+using Random
+using LogExpFunctions
 using Test
 
 @testset "AugmentedGPLikelihoods.jl" begin

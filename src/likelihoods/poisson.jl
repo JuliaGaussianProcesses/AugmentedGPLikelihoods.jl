@@ -50,7 +50,7 @@ function expected_auglik_precision(::AugPoisson, Ω, ::AbstractVector)
     return (first.(mean.(Ω.ωn)),)
 end
 
-function expected_auglik_potential_and_precision(::AugPoisson, Ω, y::AbstractVector)
+function expected_auglik_potential_and_precision(::AugPoisson, qΩ, y::AbstractVector)
     θ = mean.(qΩ.ωn)
     return (first.(θ),), (last.(θ),)
 end

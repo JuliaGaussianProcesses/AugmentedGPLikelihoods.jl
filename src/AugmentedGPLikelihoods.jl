@@ -8,7 +8,7 @@ using FillArrays
 using GPLikelihoods: AbstractLikelihood, AbstractLink
 using Random: AbstractRNG, GLOBAL_RNG
 using SpecialFunctions
-using StatsFuns
+using LogExpFunctions
 
 export nlatent
 
