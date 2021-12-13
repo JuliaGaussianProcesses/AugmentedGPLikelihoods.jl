@@ -11,15 +11,17 @@ DocMeta.setdocmeta!(
 bib = CitationBibliography(joinpath(@__DIR__, "references.bib"))
 
 # TODO use the general approach of ApproximateGPs.jl
-bernoulli_folder = joinpath(pkgdir(AugmentedGPLikelihoods), "examples/bernoulli")
-Pkg.activate(bernoulli_folder)
-Pkg.instantiate()
-Literate.markdown(
-    joinpath(bernoulli_folder, "bernoulli.jl"),
-    joinpath(@__DIR__, "src/examples");
-    execute=true,
-    # flavor=Literate.DocumenterFlavor(),
-)
+for example in ["bernoulli", "poisson"]
+    folder = joinpath(pkgdir(AugmentedGPLikelihoods), "examples", example)
+    Pkg.activate(folder)
+    Pkg.instantiate()
+    Literate.markdown(
+        joinpath(bernoulli_folder, example * ".jl"),
+        joinpath(@__DIR__, "src/examples");
+        execute=true,
+        # flavor=Literate.DocumenterFlavor(),
+    )
+end
 Pkg.activate(@__DIR__)
 
 makedocs(
