@@ -56,11 +56,16 @@ function test_auglik(
 
         βs = expected_auglik_potential(lik, qΩ, y)
         γs = expected_auglik_precision(lik, qΩ, y)
-        @test all(x -> all(>(0), x), γs) # Check that the variance is positive
+        β2, γ2 = auglik_potential_and_precision(lik, Ω, y)
         @test length(γs) == length(βs) == nf # Check that there are n latent vectors
+        @test first(βs) isa AbstractVector
+        @test first(γs) isa AbstractVector
+        @test all(map(≈, βs, β2))        
+        @test all(map(≈, γs, γ2))
+                
+        @test all(x -> all(>(0), x), γs) # Check that the variance is positive
+        
         # TODO test that aux_posterior parameters return the minimizing
-        # parameters for expected_aug_loglik
-
         pΩ = aux_prior(lik, y)
         @test keys(pΩ) == keys(qΩ)
         for s in keys(pΩ)

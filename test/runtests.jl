@@ -3,6 +3,7 @@ using AugmentedGPLikelihoods.SpecialDistributions
 using AugmentedGPLikelihoods.TestUtils: test_auglik
 using Distributions
 using GPLikelihoods
+using StatsFuns
 using Test
 
 @testset "AugmentedGPLikelihoods.jl" begin
@@ -15,5 +16,8 @@ using Test
     @info "Testing SpecialDistributions"
     @testset "SpecialDistributions" begin
         include("SpecialDistributions/polyagamma.jl")
+        include("SpecialDistributions/polyagammapoisson.jl")
     end
+
+    include("utils.jl")
 end

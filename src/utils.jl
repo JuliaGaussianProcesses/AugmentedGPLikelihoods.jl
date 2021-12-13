@@ -9,7 +9,7 @@ function approx_expected_logistic(μ, c)
     halfc = c / 2
     if isfinite(exp(halfμ) / cosh(halfc))
         return exp(halfμ) / cosh(halfc) / 2
-    else # When μ is big, E[sigma(f)] = sigma(μ)
+    else # When μ is big, then abs(μ) ≈ c and E[sigma(f)] = sigma(μ)
         logistic(μ)
     end
 end
