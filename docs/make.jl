@@ -16,7 +16,7 @@ for example in ["bernoulli", "poisson"]
     Pkg.activate(folder)
     Pkg.instantiate()
     Literate.markdown(
-        joinpath(bernoulli_folder, example * ".jl"),
+        joinpath(folder, example * ".jl"),
         joinpath(@__DIR__, "src/examples");
         execute=true,
         # flavor=Literate.DocumenterFlavor(),
