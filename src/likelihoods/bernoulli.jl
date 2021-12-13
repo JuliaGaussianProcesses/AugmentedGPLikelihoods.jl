@@ -29,7 +29,7 @@ function aux_posterior!(
 end
 
 function auglik_potential(::BernoulliLikelihood{<:LogisticLink}, ::Any, y::AbstractVector)
-    return (sign.(y .- 0.5),)
+    (sign.(y .- 0.5) / 2,)
 end
 
 function auglik_precision(::BernoulliLikelihood{<:LogisticLink}, Ω, ::AbstractVector)

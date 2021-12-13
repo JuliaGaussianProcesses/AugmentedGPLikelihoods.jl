@@ -1,16 +1,56 @@
 # Bernoulli Likelihood (Logistic Link)
 
-The [`BernoulliLikelihood`](https://juliagaussianprocesses.github.io/GPLikelihoods.jl/dev/#GPLikelihoods.BernoulliLikelihood) with a [logistic](https://en.wikipedia.org/wiki/Logistic_function) link $$\sigma$$ is defined as
+The [`BernoulliLikelihood`](https://juliagaussianprocesses.github.io/GPLikelihoods.jl/dev/#GPLikelihoods.BernoulliLikelihood) with a [logistic](https://en.wikipedia.org/wiki/Logistic_function) link ``\sigma`` is defined as
 ```math
     p(y|f) = \operatorname{Bernoulli}(y|\sigma(f))
 ```
 
-In other terms 
+In other terms we have that ``p(y=1|f) = \sigma(yf) = \frac{\exp\left(\frac{yf}{2}\right)}{2\cosh\left(\frac{yf}{2}\right)}``,
+where we set ``y\in\{-1,1\}``.
 
 ## The augmentation
 
-
-
+We can rewrite the sigmoid function as:
+```math
+    \sigma(yf) = \frac{1}{2}\int_0^\infty \exp\left(\frac{yf}{2}-\frac{yf^2}{2}\right)\operatorname{PG}(\omega|1,0)d\omega,
+```
+where ``\operatorname{PG}(\omega|1,0)`` is the Polya-Gamma distribution.
+We can augment the likelihood as:
+```math
+    p(y,\omega|f) = \frac{1}{2}\exp\left(\frac{yf}{2}-\frac{yf^2}{2}\right)\operatorname{PG}(\omega|1,0).
+```
 ## Conditional distributions (Sampling)
 
+We are interested in the full-conditionals ``p(f|y,\omega)`` and ``p(\omega|y,f)``:
+```math
+\begin{align*}
+    p(f|y,\omega) =& \mathcal{N}(f|\mu,\Sigma)\\
+    \Sigma =& \left(K^{-1} + \operatorname{Diagonal}(\omega)\right)^{-1}\\
+    \mu =& \Sigma(\frac{y}{2} + K^{-1}\mu_0)
+\end{align*}
+```
+
 ## Variational distributions (Variational Inference)
+
+We define the variational distribution with a block mean-field approximation:
+```math
+    q(f,\omega) = q(f)\prod_{i=1}^Nq(\omega_i) = \mathcal{N}(f|m,S)\prod_{i=1}^N \operatorname{PG}(\omega_i|1, c_i).
+```
+The optimal variational parameters are given by:
+```math
+\begin{align*}
+    c_i =& \sqrt{\mu_i^2 + S_{ii}},\\
+    S =& \left(K^{-1} + \operatorname{Diagonal}(\theta)\right)^{-1},\\
+    m =& \Sigma(\frac{y}{2} + K^{-1}\mu_0),
+\end{align*}
+```
+where ``\theta_i = E_{q(\omega_i)}{\omega_i}``.
+
+We get the ELBO as
+```math
+    \mathcal{L} = -N\log(2) + \sum_{i=1}^N \frac{y_i m_i}{2} + \frac{m_i^2 + S_{ii}}{2}\theta_i - KL(q(\omega)||p(\omega)) - KL(q(f)||p(f)),
+```
+where
+```math
+    KL(q(\omega_i|1,c)||p(\omega_i|1,0)) = \log \cosh \left(\frac{c_i}{2}\right) - c_i^2\frac{\theta_i}{2}
+```
