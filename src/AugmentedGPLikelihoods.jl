@@ -15,8 +15,8 @@ export nlatent
 export init_aux_variables, init_aux_posterior
 export aux_sample, aux_sample!
 export aux_posterior, aux_posterior!
-export auglik_potential, auglik_precision, auglik_potential_and_precision,
-auglik_potential_and_precision
+export auglik_potential,
+    auglik_precision, auglik_potential_and_precision, auglik_potential_and_precision
 export expected_auglik_potential,
     expected_auglik_precision, expected_auglik_potential_and_precision
 

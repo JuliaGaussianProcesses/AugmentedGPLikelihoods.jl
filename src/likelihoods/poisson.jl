@@ -52,7 +52,7 @@ end
 
 function expected_auglik_potential_and_precision(::AugPoisson, qΩ, y::AbstractVector)
     θ = mean.(qΩ.ωn)
-    return (first.(θ),), (last.(θ),)
+    return ((y .- last.(θ)) / 2,), (first.(θ),)
 end
 
 function logtilt(lik::AugPoisson, Ω, y, f)
