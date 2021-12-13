@@ -11,15 +11,17 @@ DocMeta.setdocmeta!(
 bib = CitationBibliography(joinpath(@__DIR__, "references.bib"))
 
 # TODO use the general approach of ApproximateGPs.jl
-bernoulli_folder = joinpath(pkgdir(AugmentedGPLikelihoods), "examples/bernoulli")
-Pkg.activate(bernoulli_folder)
-Pkg.instantiate()
-Literate.markdown(
-    joinpath(bernoulli_folder, "bernoulli.jl"),
-    joinpath(@__DIR__, "src/examples");
-    execute=true,
-    # flavor=Literate.DocumenterFlavor(),
-)
+for example in ["bernoulli", "poisson"]
+    folder = joinpath(pkgdir(AugmentedGPLikelihoods), "examples", example)
+    Pkg.activate(folder)
+    Pkg.instantiate()
+    Literate.markdown(
+        joinpath(folder, example * ".jl"),
+        joinpath(@__DIR__, "src/examples");
+        execute=true,
+        # flavor=Literate.DocumenterFlavor(),
+    )
+end
 Pkg.activate(@__DIR__)
 
 makedocs(
@@ -35,9 +37,13 @@ makedocs(
     ),
     pages=[
         "Home" => "index.md",
-        "Likelihoods" => ["Bernoulli" => "likelihoods/bernoulli.md"],
-        "Examples" => ["Bernoulli" => "examples/bernoulli.md"],
-        "Additional Distributions" => ["Polya-Gamma" => "dists/polyagamma.md"],
+        "Likelihoods" => [
+            "Bernoulli" => "likelihoods/bernoulli.md",
+            "Poisson" => "likelihoods/poisson.md",
+        ],
+        "Examples" =>
+            ["Bernoulli" => "examples/bernoulli.md", "Poisson" => "examples/poisson.md"],
+        "Additional Distributions" => "specialdistributions.md",
         "References" => "references.md",
     ],
 )

@@ -92,6 +92,14 @@ See also [`expected_auglik_precision`](@ref) for variational inference.
 auglik_precision
 
 @doc raw"""
+    auglik_potential_and_precision(lik::Likelihood, Ω, y) -> Tuple{Tuple, Tuple}
+
+Returns both [`auglik_potential`](@ref) and [`auglik_precision`](@ref) when some 
+computation can be saved by doing both at the same time.
+"""
+auglik_potential_and_precision
+
+@doc raw"""
     expected_auglik_potential(lik::Likelihood, qΩ, y) -> Tuple
 
 Given the augmented likelihood ``l(\Omega,y,f) \propto \exp(\beta(\Omega,y) f + \frac{\gamma(\Omega,y)}{2}f^2)``,
@@ -114,6 +122,14 @@ The `Tuple` contains a `Vector` for each latent.
 See also [`auglik_precision`](@ref) for sampling.
 """
 expected_auglik_precision
+
+@doc raw"""
+    expected_auglik_potential_and_precision(lik::Likelihood, Ω, y) -> Tuple{Tuple, Tuple}
+
+Returns both [`expected_auglik_potential`](@ref) and [`expected_auglik_precision`](@ref) when some 
+computation can be saved by doing both at the same time.
+"""
+auglik_potential_and_precision
 
 @doc raw"""
     aug_loglik(lik::Likelihood, Ω, y, f) -> Real

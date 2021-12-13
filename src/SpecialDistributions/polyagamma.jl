@@ -1,7 +1,7 @@
 const pg_t = 0.64
 const pg_inv_t = inv(pg_t)
 
-"""
+@doc raw"""
     PolyaGamma(b::Real, c::Real) <: ContinuousUnivariateDistribution
 
 ## Arguments

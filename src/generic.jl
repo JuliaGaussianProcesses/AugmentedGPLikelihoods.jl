@@ -34,4 +34,12 @@ function aux_kldivergence(::AbstractLikelihood, qΩ::NamedTuple, pΩ::NamedTuple
     end
 end
 
+function auglik_potential_and_precision(lik::AbstractLikelihood, Ω, y)
+    return (auglik_potential(lik, Ω, y), auglik_precision(lik, Ω, y))
+end
+
+function expected_auglik_potential_and_precision(lik::AbstractLikelihood, qΩ, y)
+    return (expected_auglik_potential(lik, qΩ, y), expected_auglik_precision(lik, qΩ, y))
+end
+
 nlatent(::AbstractLikelihood) = 1

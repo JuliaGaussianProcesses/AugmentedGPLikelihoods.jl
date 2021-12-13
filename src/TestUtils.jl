@@ -15,7 +15,7 @@ function test_auglik(
     y = rand.(rng, lik.(f))
     nf = nlatent(lik)
     # Testing sampling
-    @testset "Testing sampling" begin
+    @testset "Sampling" begin
         Ω = init_aux_variables(lik, n)
         @test Ω isa NamedTuple
         @test length(first(Ω)) == n
@@ -27,8 +27,13 @@ function test_auglik(
 
         βs = auglik_potential(lik, Ω, y)
         γs = auglik_precision(lik, Ω, y)
-        @test all(x -> all(>(0), x), γs) # Check that the variance is positive
+        β2, γ2 = auglik_potential_and_precision(lik, Ω, y)
         @test length(γs) == length(βs) == nf # Check that there are n latent vectors
+        @test first(βs) isa AbstractVector
+        @test first(γs) isa AbstractVector
+        @test all(map(≈, βs, β2))
+        @test all(map(≈, γs, γ2))
+        @test all(x -> all(>=(0), x), γs) # Check that the variance is positive
 
         pΩ = aux_prior(lik, y)
         @test keys(pΩ) == keys(Ω)
@@ -37,7 +42,7 @@ function test_auglik(
     end
 
     #Testing variational inference
-    @testset "Testing Variational Inference" begin
+    @testset "Variational Inference" begin
         qΩ = init_aux_posterior(lik, n)
         @test qΩ isa NamedTuple
         @test length(first(qΩ)) == n
@@ -50,11 +55,16 @@ function test_auglik(
 
         βs = expected_auglik_potential(lik, qΩ, y)
         γs = expected_auglik_precision(lik, qΩ, y)
-        @test all(x -> all(>(0), x), γs) # Check that the variance is positive
+        β2, γ2 = expected_auglik_potential_and_precision(lik, qΩ, y)
         @test length(γs) == length(βs) == nf # Check that there are n latent vectors
-        # TODO test that aux_posterior parameters return the minimizing
-        # parameters for expected_aug_loglik
+        @test first(βs) isa AbstractVector
+        @test first(γs) isa AbstractVector
+        @test all(map(≈, βs, β2))
+        @test all(map(≈, γs, γ2))
 
+        @test all(x -> all(>=(0), x), γs) # Check that the variance is positive
+
+        # TODO test that aux_posterior parameters return the minimizing
         pΩ = aux_prior(lik, y)
         @test keys(pΩ) == keys(qΩ)
         for s in keys(pΩ)

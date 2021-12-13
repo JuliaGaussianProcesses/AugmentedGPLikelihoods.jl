@@ -11,5 +11,8 @@ using SpecialFunctions
 using IrrationalConstants: twoπ, halfπ, inv2π, fourinvπ
 
 export PolyaGamma
+export PolyaGammaPoisson
+
 include("polyagamma.jl")
+include("polyagammapoisson.jl")
 end
