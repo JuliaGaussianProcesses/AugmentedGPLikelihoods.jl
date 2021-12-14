@@ -10,6 +10,7 @@ using IrrationalConstants
 using LogExpFunctions
 using Random: AbstractRNG, GLOBAL_RNG
 using SpecialFunctions
+using TupleVectors
 
 export nlatent
 

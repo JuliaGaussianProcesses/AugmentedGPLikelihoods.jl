@@ -6,8 +6,8 @@ end
 
 const AugPoisson = PoissonLikelihood{<:ScaledLogistic}
 
-function init_aux_variables(rng::AbstractRNG, ::AugPoisson, n::Int)
-    return (; ωn=[(; ω=rand(rng, PolyaGamma(1, 0)), n=rand(rng, Poisson())) for _ in 1:n])
+function init_aux_variables(rng::AbstractRNG, ::AugPoisson, ndata::Int)
+    return TupleVector((;ω=rand(rng, PolyaGamma(1, 0), ndata), n=rand(rng, Poisson(), ndata)))
 end
 
 function init_aux_posterior(::AugPoisson, n::Int)
@@ -17,9 +17,13 @@ end
 function aux_sample!(
     rng::AbstractRNG, Ω, lik::AugPoisson, y::AbstractVector{<:Int}, f::AbstractVector
 )
-    map!(Ω.ωn, f, y) do f, y
-        rand(rng, PolyaGammaPoisson(y, abs(f), lik.invlink(f)))
+    for i in 1:length(Ω)
+        # map!(Ω.ωn, f, y) do f, y
+        n = rand(rng, lik.invlink(f[i]))
+        ω = rand(rng, PolyaGamma(n + y[i], abs(f[i])))
+        Ω[i] = (;n, ω)
     end
+    # end
     return Ω
 end
 
@@ -35,11 +39,11 @@ function aux_posterior!(
 end
 
 function auglik_potential(::AugPoisson, Ω, y::AbstractVector)
-    return ((y .- last.(Ω.ωn)) / 2,) # use
+    return ((y .- Ω.n) / 2,) # use
 end
 
 function auglik_precision(::AugPoisson, Ω, ::AbstractVector)
-    return (first.(Ω.ωn),)
+    return (Ω.ω,)
 end
 
 function expected_auglik_potential(::AugPoisson, Ω, y::AbstractVector)
