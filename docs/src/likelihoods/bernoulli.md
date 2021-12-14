@@ -12,12 +12,12 @@ where we set ``y\in\{-1,1\}``.
 
 We can rewrite the sigmoid function as:
 ```math
-    \sigma(yf) = \frac{1}{2}\int_0^\infty \exp\left(\frac{yf}{2}-\frac{yf^2}{2}\right)\operatorname{PG}(\omega|1,0)d\omega,
+    \sigma(yf) = \frac{1}{2}\int_0^\infty \exp\left(\frac{yf}{2}-\frac{yf^2}{2}\omega\right)\operatorname{PG}(\omega|1,0)d\omega,
 ```
 where ``\operatorname{PG}(\omega|1,0)`` is the Polya-Gamma distribution.
 We can augment the likelihood as:
 ```math
-    p(y,\omega|f) = \frac{1}{2}\exp\left(\frac{yf}{2}-\frac{yf^2}{2}\right)\operatorname{PG}(\omega|1,0).
+    p(y,\omega|f) = \frac{1}{2}\exp\left(\frac{yf}{2}-\frac{yf^2}{2}\omega\right)\operatorname{PG}(\omega|1,0).
 ```
 ## Conditional distributions (Sampling)
 
@@ -26,7 +26,9 @@ We are interested in the full-conditionals ``p(f|y,\omega)`` and ``p(\omega|y,f)
 \begin{align*}
     p(f|y,\omega) =& \mathcal{N}(f|\mu,\Sigma)\\
     \Sigma =& \left(K^{-1} + \operatorname{Diagonal}(\omega)\right)^{-1}\\
-    \mu =& \Sigma(\frac{y}{2} + K^{-1}\mu_0)
+    \mu =& \Sigma\left(\frac{y}{2} + K^{-1}\mu_0\right)\\
+    p(\omega|y,f) \propto& \exp(-\frac{f^2}{2}\omega)\operatorname{PG}(\omega|1,0)\\
+    =& \operatorname{PG}(\omega|1,c)
 \end{align*}
 ```
 
@@ -41,10 +43,10 @@ The optimal variational parameters are given by:
 \begin{align*}
     c_i =& \sqrt{\mu_i^2 + S_{ii}},\\
     S =& \left(K^{-1} + \operatorname{Diagonal}(\theta)\right)^{-1},\\
-    m =& \Sigma(\frac{y}{2} + K^{-1}\mu_0),
+    m =& \Sigma\left(\frac{y}{2} + K^{-1}\mu_0\right),
 \end{align*}
 ```
-where ``\theta_i = E_{q(\omega_i)}{\omega_i}``.
+where ``\theta_i = E_{q(\omega_i)}[\omega_i] = \frac{1}{2c}\tanh\left(\frac{c}{2}\right)``.
 
 We get the ELBO as
 ```math
