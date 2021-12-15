@@ -1,6 +1,14 @@
 const pg_t = 0.64
 const pg_inv_t = inv(pg_t)
 
+@parameterized PolyaGammaMT(b, c) ≪ posℝ
+
+typeof(PolyaGammaMT(1, 0))
+
+MeasureBase.logdensity(d::PolyaGammaMT, ω) = logpdf(PolyaGamma(d.b, d.c), ω)
+
+Base.rand(rng::AbstractRNG, T::Type, d::PolyaGammaMT) = T(rand(rng, PolyaGamma(d.b, d.c)))
+
 @doc raw"""
     PolyaGamma(b::Real, c::Real) <: ContinuousUnivariateDistribution
 
@@ -16,6 +24,7 @@ struct PolyaGamma{Tb,Tc} <: Distributions.ContinuousUnivariateDistribution
     c::Tc
 end
 
+
 Base.eltype(::PolyaGamma{T,Tc}) where {T,Tc} = Tc
 
 Distributions.params(d::PolyaGamma) = (d.b, d.c)
@@ -28,12 +37,20 @@ function Statistics.mean(d::PolyaGamma)
     end
 end
 
+function ntmean(d::PolyaGamma)
+    return (;ω=mean(d))
+end
+
+function tvmean(d::AbstractVector{<:PolyaGamma})
+    TupleVector((;ω=mean.(d)))
+end
+
 Base.minimum(d::PolyaGamma) = zero(eltype(d))
 Base.maximum(::PolyaGamma) = Inf
 Distributions.insupport(::PolyaGamma, x::Real) = zero(x) <= x < Inf
 
 function Distributions.logpdf(d::PolyaGamma, x::Real)
-    b, c = params(d)
+    b, c = Distributions.params(d)
     iszero(x) && return zero(x)
     return logtilt(x, b, c) + (b - 1) * log(2) - loggamma(b) + log(
         sum(0:200) do n
@@ -44,6 +61,10 @@ function Distributions.logpdf(d::PolyaGamma, x::Real)
         end,
     )
 end
+
+MeasureBase.logdensity(d::PolyaGamma, x) = logpdf(d, x)
+
+MeasureBase.basemeasure(::PolyaGamma) = Lebesgue(ℝ)
 
 Distributions.logpdf(d::PolyaGamma, x::NamedTuple{(:ω,), <:Tuple{<:Real}}) = logpdf(d, x.ω)
 
@@ -59,6 +80,15 @@ end
 
 function logtilt(ω, b, c)
     return b * log(cosh(c / 2)) - abs2(c) * ω / 2
+end
+
+function ntrand(rng::AbstractRNG, d::PolyaGamma)
+    return (;ω=rand(rng, d))
+end
+
+# Dispatch for MeasureTheory
+function Base.rand(rng::AbstractRNG, ::Type{T}, d::PolyaGamma) where {T}
+    ntrand(rng, d)
 end
 
 function Distributions.rand(rng::AbstractRNG, d::PolyaGamma)

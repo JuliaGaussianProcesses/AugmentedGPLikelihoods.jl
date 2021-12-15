@@ -1,5 +1,5 @@
 @doc raw"""
-    init_aux_variables([rng::AbstractRNG], ::Likelihood, n::Int) -> NamedTuple
+    init_aux_variables([rng::AbstractRNG], ::Likelihood, n::Int) -> TupleVector
 
 Initialize collections of `n` auxiliary variables in  a `NamedTuple` to be used
 in the context of sampling.
@@ -10,7 +10,7 @@ See also [`init_aux_posterior`](@ref) for variational inference.
 init_aux_variables
 
 @doc raw"""
-    init_aux_posterior(::Likelihood, n::Int) -> NamedTuple
+    init_aux_posterior(::Likelihood, n::Int) -> ProductMeasure
 
 Initialize collections of `n` (independent) posteriors for the auxiliary
 variables in the context of variational inference.
@@ -21,7 +21,7 @@ See also [`init_aux_posterior`](@ref) for sampling.
 init_aux_posterior
 
 @doc raw"""
-    aux_sample!([rng::AbstractRNG], Ω, lik::Likelihood, y, f) -> NamedTuple
+    aux_sample!([rng::AbstractRNG], Ω, lik::Likelihood, y, f) -> TupleVector
 
 Sample the auxiliary variables `Ω` in-place based on the full-conditional
 associated with the augmented likelihood:

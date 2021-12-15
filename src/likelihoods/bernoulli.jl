@@ -3,19 +3,22 @@ function init_aux_variables(rng::AbstractRNG, ::BernoulliLikelihood{<:LogisticLi
 end
 
 function init_aux_posterior(::BernoulliLikelihood{<:LogisticLink}, n::Int)
-    return [PolyaGamma(1, 0.0) for _ in 1:n]
+    return For(n) do _
+        PolyaGamma(1, 0.0)
+    end
 end
 
 function aux_sample!(
     rng::AbstractRNG,
     Ω,
-    ::BernoulliLikelihood{<:LogisticLink},
+    lik::BernoulliLikelihood{<:LogisticLink},
     ::AbstractVector,
     f::AbstractVector,
 )
-    return map!(Ω.ω, f) do f
+    map!(Ω.ω, f) do f
         rand(rng, aux_full_conditional(lik, nothing, f))
     end
+    return Ω
 end
 
 function aux_full_conditional(::BernoulliLikelihood{<:LogisticLink}, ::Any, f::Real)
@@ -25,9 +28,13 @@ end
 function aux_posterior!(
     qΩ, ::BernoulliLikelihood{<:LogisticLink}, ::AbstractVector, qf::AbstractVector{<:Normal}
 )
-    return map!(qΩ, qf) do q
-        PolyaGamma(1, sqrt(abs2(mean(q)) + var(q)))
+    return For(qf) do f
+        PolyaGamma(1, sqrt(second_moment(f))); # Update the c component
     end
+    # do f
+        # sqrt(second_moment(f))
+        # PolyaGamma(1, sqrt(abs2(mean(q)) + var(q)))
+    # end
 end
 
 function auglik_potential(::BernoulliLikelihood{<:LogisticLink}, ::Any, y::AbstractVector)
@@ -47,7 +54,7 @@ end
 function expected_auglik_precision(
     ::BernoulliLikelihood{<:LogisticLink}, qΩ, ::AbstractVector
 )
-    return (mean.(qΩ),)
+    return (tvmean(qΩ).ω,)
 end
 
 function logtilt(::BernoulliLikelihood{<:LogisticLink}, Ω, y, f)
@@ -57,11 +64,13 @@ function logtilt(::BernoulliLikelihood{<:LogisticLink}, Ω, y, f)
 end
 
 function aux_prior(::BernoulliLikelihood{<:LogisticLink}, y)
-    return Fill(PolyaGamma(1, 0.0), length(y))
+    return For(length(y)) do _
+        PolyaGamma(1, 0.0)
+    end
 end
 
 function expected_logtilt(::BernoulliLikelihood{<:LogisticLink}, qΩ, y, qf)
-    return mapreduce(+, y, qf, qΩ) do y, f, qω
+    return mapreduce(+, y, qf, marginals(qΩ)) do y, f, qω
         m = mean(f)
         -log(2) + (sign(y - 0.5) * m - (abs2(m) + var(f)) * mean(qω)) / 2
     end

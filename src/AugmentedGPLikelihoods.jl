@@ -8,6 +8,7 @@ using FillArrays
 using GPLikelihoods: AbstractLikelihood, AbstractLink
 using IrrationalConstants
 using LogExpFunctions
+using MeasureBase
 using Random: AbstractRNG, GLOBAL_RNG
 using SpecialFunctions
 using TupleVectors

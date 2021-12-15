@@ -16,15 +16,25 @@ struct PolyaGammaPoisson{Ty,Tc,Tλ}
     λ::Tλ # Poisson Parameter
 end
 
+
+
 Distributions.Poisson(d::PolyaGammaPoisson) = Poisson(d.λ)
 
 Distributions.length(::PolyaGammaPoisson) = 2
 
-function Distributions.rand(rng::AbstractRNG, d::PolyaGammaPoisson)
+function Base.rand(rng::AbstractRNG, ::Type{T}, d::PolyaGammaPoisson) where {T}
+    ntrand(rng, d)
+end
+
+function ntrand(rng::AbstractRNG, d::PolyaGammaPoisson)
     n = rand(rng, Poisson(d))
     ω = rand(rng, PolyaGamma.(n + d.y, d.c))
     return (; ω, n)
 end
+
+# MeasureBase.basemeasure()
+
+MeasureBase.logdensity(d::PolyaGammaPoisson, x::NamedTuple) = logpdf(d, x)
 
 function Distributions.logpdf(d::PolyaGammaPoisson, x::NamedTuple)
     logpdf_n = logpdf(Poisson(d), x.n)
@@ -32,7 +42,7 @@ function Distributions.logpdf(d::PolyaGammaPoisson, x::NamedTuple)
     return logpdf_ω + logpdf_n
 end
 
-function Distributions.mean(ds::AbstractVector{<:PolyaGammaPoisson})
+function tvmean(ds::AbstractVector{<:PolyaGammaPoisson})
     n = getfield.(ds, :λ)
     ω = map(ds, n) do d, n
         mean(PolyaGamma(d.y + n, d.c))
@@ -40,12 +50,12 @@ function Distributions.mean(ds::AbstractVector{<:PolyaGammaPoisson})
     return TupleVector((; ω, n))
 end
 
-function Distributions.mean(d::PolyaGammaPoisson)
+function ntmean(d::PolyaGammaPoisson)
     return (; ω=mean(PolyaGamma(d.y + d.λ, d.c)), n=d.λ)
 end
 
 function Distributions.kldivergence(q::PolyaGammaPoisson, p::PolyaGammaPoisson)
-    (p.c == 0 && p.y == q.y) || error("No solution for this prior")
+    (p.c == 0 && p.y == q.y) || error("No solution for this prior. qΩ = $q, pΩ = $p")
     return kldivergence(PolyaGamma(q.y + q.λ, q.c), PolyaGamma(q.y + q.λ, 0)) +
            kldivergence(Poisson(q), Poisson(p))
 end

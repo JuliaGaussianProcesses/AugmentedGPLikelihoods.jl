@@ -2,8 +2,10 @@ module TestUtils
 using AugmentedGPLikelihoods
 using Distributions
 using GPLikelihoods: AbstractLikelihood
+using MeasureBase
 using Random
 using Test
+using TupleVectors
 # Test API for augmented likelihood
 function test_auglik(
     lik::AbstractLikelihood;
@@ -40,25 +42,25 @@ function test_auglik(
         @test aug_loglik(lik, Ω, y, f) isa Real
 
         pΩ = aux_prior(lik, y)
-        @test sum(logpdf.(pΩ, Ω)) isa Real
+        @test logdensity(pΩ, Ω) isa Real
 
-        Ω₁ = rand(rng, pΩ)
-        Ω₂ = rand(rng, pΩ)
-        logC₁ = sum(logpdf(aux_full_conditional(lik, y, f), Ω₁)) - logtilt(lik, Ω₁, y, f) - sum(logpdf.(aux_prior(lik, n), Ω₁))
-        logC₂ = sum(logpdf(aux_full_conditional(lik, y, f), Ω₁)) - logtilt(lik, Ω₁, y, f) - sum(logpdf.(aux_prior(lik, n), Ω₁))
+        Ω₁ = init_aux_variables(rng, lik, n)
+        Ω₂ = init_aux_variables(rng, lik, n)
+        logC₁ = logdensity(aux_full_conditional(lik, y, f), Ω₁) - logtilt(lik, Ω₁, y, f) - logdensity(pΩ, Ω₁)
+        logC₂ = logdensity(aux_full_conditional(lik, y, f), Ω₂) - logtilt(lik, Ω₂, y, f) - logdensity(pΩ, Ω₂)
         @test logC₁ ≈ logC₂
     end
 
     #Testing variational inference
     @testset "Variational Inference" begin
         qΩ = init_aux_posterior(lik, n)
-        @test qΩ isa AbstractVector
-        @test length(qΩ) == n
+        @test qΩ isa ProductMeasure
+        @test_broken length(qΩ) == n
         qΩ = aux_posterior!(qΩ, lik, y, qf)
-        @test qΩ isa AbstractVector
+        @test qΩ isa ProductMeasure
         new_qΩ = aux_posterior(lik, y, qf)
-        @test new_qΩ isa AbstractVector
-        @test length(new_qΩ) == n
+        @test new_qΩ isa ProductMeasure
+        @test_broken length(new_qΩ) == n
 
         βs = expected_auglik_potential(lik, qΩ, y)
         γs = expected_auglik_precision(lik, qΩ, y)
@@ -74,10 +76,8 @@ function test_auglik(
         # TODO test that aux_posterior parameters return the minimizing
         # values of the ELBO
         pΩ = aux_prior(lik, y)
-        @test keys(pΩ) == keys(qΩ)
-        for s in keys(pΩ)
-            @test kldivergence(first(getfield(qΩ, s)), first(getfield(pΩ, s))) isa Real
-        end
+        @test pΩ isa ProductMeasure
+        @test kldivergence(first(marginals(qΩ)), first(marginals(pΩ))) isa Real
         @test expected_logtilt(lik, qΩ, y, qf) isa Real
         @test aux_kldivergence(lik, qΩ, pΩ) isa Real
     end
