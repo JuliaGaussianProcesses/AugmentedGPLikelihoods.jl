@@ -7,6 +7,7 @@ using GPLikelihoods
 using Random
 using LogExpFunctions
 using Test
+using TupleVectors
 
 @testset "AugmentedGPLikelihoods.jl" begin
     @info "Testing likelihoods"

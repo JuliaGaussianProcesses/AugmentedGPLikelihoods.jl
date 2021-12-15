@@ -32,6 +32,14 @@ function Distributions.logpdf(d::PolyaGammaPoisson, x::NamedTuple)
     return logpdf_ω + logpdf_n
 end
 
+function Distributions.mean(ds::AbstractVector{<:PolyaGammaPoisson})
+    n = getfield.(ds, :λ)
+    ω = map(ds, n) do d, n
+        mean(PolyaGamma(d.y + n, d.c))
+    end
+    return TupleVector((; ω, n))
+end
+
 function Distributions.mean(d::PolyaGammaPoisson)
     return (; ω=mean(PolyaGamma(d.y + d.λ, d.c)), n=d.λ)
 end

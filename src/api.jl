@@ -129,7 +129,7 @@ expected_auglik_precision
 Returns both [`expected_auglik_potential`](@ref) and [`expected_auglik_precision`](@ref) when some 
 computation can be saved by doing both at the same time.
 """
-auglik_potential_and_precision
+expected_auglik_potential_and_precision
 
 @doc raw"""
     aug_loglik(lik::Likelihood, Ω, y, f) -> Real

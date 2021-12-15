@@ -15,7 +15,7 @@ using TupleVectors
 export nlatent
 
 export init_aux_variables, init_aux_posterior
-export aux_sample, aux_sample!
+export aux_sample, aux_sample!, aux_full_conditional
 export aux_posterior, aux_posterior!
 export auglik_potential,
     auglik_precision, auglik_potential_and_precision, auglik_potential_and_precision

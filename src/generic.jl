@@ -10,6 +10,10 @@ function aux_sample(rng::AbstractRNG, lik::AbstractLikelihood, y, f)
     return aux_sample!(rng, init_aux_variables(lik, length(y)), lik, y, f)
 end
 
+function aux_full_conditional(lik::AbstractLikelihood, y, f)
+    return Product(aux_full_conditional.(Ref(lik), y, f))
+end
+
 function init_aux_variables(lik::AbstractLikelihood, n::Int)
     return init_aux_variables(GLOBAL_RNG, lik, n)
 end
@@ -20,7 +24,7 @@ end
 
 function aug_loglik(lik::AbstractLikelihood, Ω, y, f)
     return logtilt(lik, Ω, y, f) + mapreduce(+, Ω, aux_prior(lik, y)) do ω, pω
-        mapreduce(logpdf, +, pω, ω)
+        logpdf(pω, ω)
     end
 end
 
