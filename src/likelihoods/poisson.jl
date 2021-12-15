@@ -30,8 +30,8 @@ function aux_full_conditional(lik::AugPoisson, y::Int, f::Real)
     return PolyaGammaPoisson(y, abs(f), lik.invlink(f))
 end
 
-function aux_posterior!(
-    qΩ, lik::AugPoisson, y::AbstractVector{<:Int}, qf::AbstractVector{<:Normal}
+function aux_posterior(
+    lik::AugPoisson, y::AbstractVector{<:Int}, qf::AbstractVector{<:Normal}
 )
     λ = lik.invlink.λ
     return For(1:length(y)) do i # TODO fix this once the new dev version is merged

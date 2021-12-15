@@ -25,8 +25,7 @@ function aux_full_conditional(::BernoulliLikelihood{<:LogisticLink}, ::Any, f::R
     return PolyaGamma(1, abs(f))
 end
 
-function aux_posterior!(
-    qΩ,
+function aux_posterior(
     ::BernoulliLikelihood{<:LogisticLink},
     ::AbstractVector,
     qf::AbstractVector{<:Normal},
@@ -34,10 +33,6 @@ function aux_posterior!(
     return For(qf) do f
         PolyaGamma(1, sqrt(second_moment(f))) # Update the c component
     end
-    # do f
-    # sqrt(second_moment(f))
-    # PolyaGamma(1, sqrt(abs2(mean(q)) + var(q)))
-    # end
 end
 
 function auglik_potential(::BernoulliLikelihood{<:LogisticLink}, ::Any, y::AbstractVector)

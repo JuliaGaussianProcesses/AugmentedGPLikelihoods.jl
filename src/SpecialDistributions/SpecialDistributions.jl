@@ -21,22 +21,22 @@ posℝ = @half Lebesgue(ℝ)
 @doc raw"""
     ntrand(rng::AbstractRNG, d::Distribution) -> NamedTuple
 
-Return a sample as a `NamedTuple`
+Return a sample as a `NamedTuple`.
 """
 ntrand
 
 @doc raw"""
     ntmean(d::Distribution) -> NamedTuple
 
-Return the mean as a `NamedTuple`
+Return the mean as a `NamedTuple`.
 """
 ntmean
 
 @doc raw"""
-    vtmean(d::AbstractVector{<:Distribution})
-    vtmean(d::ProductMeasure)
+    tvmean(d::AbstractVector{<:Distribution}) -> TupleVector
+    tvmean(d::ProductMeasure)
 
-Return a collection of mean as a `TupleVector`
+Return a collection of mean as a `TupleVector`.
 """
 tvmean
 
