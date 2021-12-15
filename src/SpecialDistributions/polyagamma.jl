@@ -51,8 +51,8 @@ Distributions.insupport(::PolyaGamma, x::Real) = zero(x) <= x < Inf
 
 function Distributions.logpdf(d::PolyaGamma, x::Real)
     b, c = Distributions.params(d)
-    iszero(x) && return zero(x)
-    return logtilt(x, b, c) + (b - 1) * log(2) - loggamma(b) + log(
+    (iszero(b) && iszero(x)) && return Inf
+    iszero(x) ? (iszero(b) ? return Inf : return -Inf : return logtilt(x, b, c) + (b - 1) * log(2) - loggamma(b) + log(
         sum(0:200) do n
             ifelse(iseven(n), 1, -1) * exp(
                 loggamma(n + b) - loggamma(n + 1) + log(2n + b) - log(twoπ * x^3) / 2 -
