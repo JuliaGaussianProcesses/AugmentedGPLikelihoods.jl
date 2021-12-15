@@ -46,8 +46,12 @@ function test_auglik(
 
         Ω₁ = init_aux_variables(rng, lik, n)
         Ω₂ = init_aux_variables(rng, lik, n)
-        logC₁ = logdensity(aux_full_conditional(lik, y, f), Ω₁) - logtilt(lik, Ω₁, y, f) - logdensity(pΩ, Ω₁)
-        logC₂ = logdensity(aux_full_conditional(lik, y, f), Ω₂) - logtilt(lik, Ω₂, y, f) - logdensity(pΩ, Ω₂)
+        logC₁ =
+            logdensity(aux_full_conditional(lik, y, f), Ω₁) - logtilt(lik, Ω₁, y, f) -
+            logdensity(pΩ, Ω₁)
+        logC₂ =
+            logdensity(aux_full_conditional(lik, y, f), Ω₂) - logtilt(lik, Ω₂, y, f) -
+            logdensity(pΩ, Ω₂)
         @test logC₁ ≈ logC₂
     end
 

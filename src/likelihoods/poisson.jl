@@ -7,11 +7,13 @@ end
 const AugPoisson = PoissonLikelihood{<:ScaledLogistic}
 
 function init_aux_variables(rng::AbstractRNG, ::AugPoisson, ndata::Int)
-    return TupleVector((;ω=rand(rng, PolyaGamma(1, 0), ndata), n=rand(rng, Poisson(), ndata)))
+    return TupleVector((;
+        ω=rand(rng, PolyaGamma(1, 0), ndata), n=rand(rng, Poisson(), ndata)
+    ))
 end
 
 function init_aux_posterior(::AugPoisson, n::Int)
-    return For(n) do _ 
+    return For(n) do _
         PolyaGammaPoisson(1, 0.0, 1.0)
     end
 end

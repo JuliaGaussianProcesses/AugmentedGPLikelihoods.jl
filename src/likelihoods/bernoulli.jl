@@ -26,14 +26,17 @@ function aux_full_conditional(::BernoulliLikelihood{<:LogisticLink}, ::Any, f::R
 end
 
 function aux_posterior!(
-    qΩ, ::BernoulliLikelihood{<:LogisticLink}, ::AbstractVector, qf::AbstractVector{<:Normal}
+    qΩ,
+    ::BernoulliLikelihood{<:LogisticLink},
+    ::AbstractVector,
+    qf::AbstractVector{<:Normal},
 )
     return For(qf) do f
-        PolyaGamma(1, sqrt(second_moment(f))); # Update the c component
+        PolyaGamma(1, sqrt(second_moment(f))) # Update the c component
     end
     # do f
-        # sqrt(second_moment(f))
-        # PolyaGamma(1, sqrt(abs2(mean(q)) + var(q)))
+    # sqrt(second_moment(f))
+    # PolyaGamma(1, sqrt(abs2(mean(q)) + var(q)))
     # end
 end
 

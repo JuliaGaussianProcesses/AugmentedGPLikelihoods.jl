@@ -24,7 +24,6 @@ struct PolyaGamma{Tb,Tc} <: Distributions.ContinuousUnivariateDistribution
     c::Tc
 end
 
-
 Base.eltype(::PolyaGamma{T,Tc}) where {T,Tc} = Tc
 
 Distributions.params(d::PolyaGamma) = (d.b, d.c)
@@ -38,11 +37,11 @@ function Statistics.mean(d::PolyaGamma)
 end
 
 function ntmean(d::PolyaGamma)
-    return (;ω=mean(d))
+    return (; ω=mean(d))
 end
 
 function tvmean(d::AbstractVector{<:PolyaGamma})
-    TupleVector((;ω=mean.(d)))
+    return TupleVector((; ω=mean.(d)))
 end
 
 Base.minimum(d::PolyaGamma) = zero(eltype(d))
@@ -51,22 +50,26 @@ Distributions.insupport(::PolyaGamma, x::Real) = zero(x) <= x < Inf
 
 function Distributions.logpdf(d::PolyaGamma, x::Real)
     b, c = Distributions.params(d)
-    (iszero(b) && iszero(x)) && return Inf
-    iszero(x) ? (iszero(b) ? return Inf : return -Inf : return logtilt(x, b, c) + (b - 1) * log(2) - loggamma(b) + log(
-        sum(0:200) do n
-            ifelse(iseven(n), 1, -1) * exp(
-                loggamma(n + b) - loggamma(n + 1) + log(2n + b) - log(twoπ * x^3) / 2 -
-                (2n + b)^2 / (8x),
-            )
-        end,
-    )
+    if iszero(b)
+        return iszero(x) ? Inf : -Inf
+    else
+        iszero(x) && -Inf
+        return logtilt(x, b, c) + (b - 1) * log(2) - loggamma(b) + log(
+            sum(0:200) do n
+                ifelse(iseven(n), 1, -1) * exp(
+                    loggamma(n + b) - loggamma(n + 1) + log(2n + b) - log(twoπ * x^3) / 2 -
+                    abs2(2n + b) / (8x),
+                )
+            end,
+        )
+    end
 end
 
 MeasureBase.logdensity(d::PolyaGamma, x) = logpdf(d, x)
 
 MeasureBase.basemeasure(::PolyaGamma) = Lebesgue(ℝ)
 
-Distributions.logpdf(d::PolyaGamma, x::NamedTuple{(:ω,), <:Tuple{<:Real}}) = logpdf(d, x.ω)
+Distributions.logpdf(d::PolyaGamma, x::NamedTuple{(:ω,),<:Tuple{<:Real}}) = logpdf(d, x.ω)
 
 # Shortcut for computating KL(PG(ω|b, c)||PG(b, 0))
 function Distributions.kldivergence(q::PolyaGamma, p::PolyaGamma)
@@ -83,12 +86,12 @@ function logtilt(ω, b, c)
 end
 
 function ntrand(rng::AbstractRNG, d::PolyaGamma)
-    return (;ω=rand(rng, d))
+    return (; ω=rand(rng, d))
 end
 
 # Dispatch for MeasureTheory
 function Base.rand(rng::AbstractRNG, ::Type{T}, d::PolyaGamma) where {T}
-    ntrand(rng, d)
+    return ntrand(rng, d)
 end
 
 function Distributions.rand(rng::AbstractRNG, d::PolyaGamma)

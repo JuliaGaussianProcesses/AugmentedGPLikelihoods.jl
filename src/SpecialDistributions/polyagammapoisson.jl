@@ -16,14 +16,12 @@ struct PolyaGammaPoisson{Ty,Tc,Tλ}
     λ::Tλ # Poisson Parameter
 end
 
-
-
 Distributions.Poisson(d::PolyaGammaPoisson) = Poisson(d.λ)
 
 Distributions.length(::PolyaGammaPoisson) = 2
 
 function Base.rand(rng::AbstractRNG, ::Type{T}, d::PolyaGammaPoisson) where {T}
-    ntrand(rng, d)
+    return ntrand(rng, d)
 end
 
 function ntrand(rng::AbstractRNG, d::PolyaGammaPoisson)
