@@ -39,7 +39,7 @@ We are interested in the full-conditionals ``p(f|y,\omega, n, \lambda)`` and ``p
     p(f|y,\omega, n, \lambda) =& \mathcal{N}(f|\mu,\Sigma)\\
     \Sigma =& \left(K^{-1} + \operatorname{Diagonal}(\omega)\right)^{-1}\\
     \mu =& \Sigma\left(\frac{y - n}{2} + K^{-1}\mu_0\right)\\
-    p(\omega, n|y,f,\lambda) =& \operatorname{PG}(\omega|y + n, |f|)\operatorname{Po}(n|\lambda\sigma(f))
+    p(\omega_i, n_i|y_i,f_i,\lambda) =& \operatorname{PG}(\omega_i|y_i + n_i, |f_i|)\operatorname{Po}(n_i|\lambda\sigma(f_i))
 \end{align*}
 ```
 

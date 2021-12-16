@@ -12,11 +12,11 @@ using Statistics
 using SpecialFunctions
 using IrrationalConstants: twoπ, halfπ, inv2π, fourinvπ
 
-export PolyaGamma
+export PolyaGamma, PolyaGammaMT
 export PolyaGammaPoisson
+export ntrand, ntmean, tvmean
 
-export ntrand, ntmean, ntmeaninv
-export tvrand, tvmean, tvmeaninv
+posℝ = @half Lebesgue(ℝ)
 
 @doc raw"""
     ntrand(rng::AbstractRNG, d::Distribution) -> NamedTuple
@@ -24,13 +24,6 @@ export tvrand, tvmean, tvmeaninv
 Return a sample as a `NamedTuple`.
 """
 ntrand
-
-@doc raw"""
-    tvrand([rng::AbstractRNG], d::ProductMeasure) -> TupleVector
-
-"""
-tvrand(rng::AbstractRNG, d::ProductMeasure) = TupleVector(rand(rng, d))
-tvrand(d::ProductMeasure) = tvrand(GLOBAL_RNG, d)
 
 @doc raw"""
     ntmean(d::Distribution) -> NamedTuple
@@ -48,9 +41,7 @@ Return a collection of mean as a `TupleVector`.
 tvmean
 
 tvmean(qΩ::ProductMeasure) = tvmean(marginals(qΩ))
-tvmeaninv(qΩ::ProductMeasure) = tvmeaninv(marginals(qΩ))
 
-include("wrappers.jl")
 include("polyagamma.jl")
 include("polyagammapoisson.jl")
 end

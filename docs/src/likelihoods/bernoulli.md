@@ -27,8 +27,8 @@ We are interested in the full-conditionals ``p(f|y,\omega)`` and ``p(\omega|y,f)
     p(f|y,\omega) =& \mathcal{N}(f|\mu,\Sigma)\\
     \Sigma =& \left(K^{-1} + \operatorname{Diagonal}(\omega)\right)^{-1}\\
     \mu =& \Sigma\left(\frac{y}{2} + K^{-1}\mu_0\right)\\
-    p(\omega|y,f) \propto& \exp(-\frac{f^2}{2}\omega)\operatorname{PG}(\omega|1,0)\\
-    =& \operatorname{PG}(\omega|1,|f|)
+    p(\omega_i|y_i,f_i) \propto& \exp(-\frac{f_i^2}{2}\omega)\operatorname{PG}(\omega_i|1,0)\\
+    =& \operatorname{PG}(\omega_i|1,|f_i|)
 \end{align*}
 ```
 

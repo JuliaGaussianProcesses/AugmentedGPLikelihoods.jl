@@ -2,10 +2,6 @@ function second_moment(q::Normal)
     return abs2(mean(q)) + var(q)
 end
 
-function second_moment(q::Normal, y::Real)
-    return abs2(mean(q) - y) + var(q)
-end
-
 # This is not exactly an approximation but corresponds anyway
 # to the expectation of the function σ(f)
 function approx_expected_logistic(μ, c)
