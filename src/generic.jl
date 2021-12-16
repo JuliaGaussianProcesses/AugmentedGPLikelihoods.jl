@@ -10,6 +10,10 @@ function aux_sample(rng::AbstractRNG, lik::AbstractLikelihood, y, f)
     return aux_sample!(rng, init_aux_variables(lik, length(y)), lik, y, f)
 end
 
+function aux_posterior(lik::AbstractLikelihood, y, f)
+    aux_posterior!(init_aux_posterior(lik, length(y)), lik, y, f)
+end
+
 function aux_full_conditional(lik::AbstractLikelihood, y, f)
     return For(1:length(y)) do i
         aux_full_conditional(lik, y[i], f[i])

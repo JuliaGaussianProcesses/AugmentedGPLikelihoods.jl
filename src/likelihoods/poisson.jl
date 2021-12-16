@@ -13,8 +13,8 @@ function init_aux_variables(rng::AbstractRNG, ::AugPoisson, ndata::Int)
 end
 
 function init_aux_posterior(::AugPoisson, n::Int)
-    return For(n) do _
-        PolyaGammaPoisson(1, 0.0, 1.0)
+    return For(TupleVector(;y=zeros(Int, n), c=zeros(n), λ=zeros(n))) do q
+        PolyaGammaPoisson(q.y, q.c, q.λ)
     end
 end
 
@@ -30,14 +30,15 @@ function aux_full_conditional(lik::AugPoisson, y::Int, f::Real)
     return PolyaGammaPoisson(y, abs(f), lik.invlink(f))
 end
 
-function aux_posterior(
-    lik::AugPoisson, y::AbstractVector{<:Int}, qf::AbstractVector{<:Normal}
+function aux_posterior!(
+    qΩ, lik::AugPoisson, y::AbstractVector{<:Int}, qf::AbstractVector{<:Normal}
 )
     λ = lik.invlink.λ
-    return For(1:length(y)) do i # TODO fix this once the new dev version is merged
-        c = sqrt(second_moment(qf[i]))
-        PolyaGammaPoisson(y[i], c, λ * approx_expected_logistic(-mean(qf[i]), c))
-    end
+    φ = qΩ.pars
+    @. φ.c = sqrt(second_moment(qf))
+    @. φ.y = y
+    @. φ.λ = λ * approx_expected_logistic(-mean(qf), φ.c)
+    return qΩ
 end
 
 function auglik_potential(::AugPoisson, Ω, y::AbstractVector)

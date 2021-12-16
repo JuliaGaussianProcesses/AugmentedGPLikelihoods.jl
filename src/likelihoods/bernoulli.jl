@@ -3,8 +3,8 @@ function init_aux_variables(rng::AbstractRNG, ::BernoulliLikelihood{<:LogisticLi
 end
 
 function init_aux_posterior(::BernoulliLikelihood{<:LogisticLink}, n::Int)
-    return For(n) do _
-        PolyaGamma(1, 0.0)
+    return For(TupleVector(;c=zeros(n))) do φ
+        PolyaGamma(1, φ.c)
     end
 end
 
@@ -25,14 +25,14 @@ function aux_full_conditional(::BernoulliLikelihood{<:LogisticLink}, ::Any, f::R
     return PolyaGamma(1, abs(f))
 end
 
-function aux_posterior(
+function aux_posterior!(
+    qΩ,
     ::BernoulliLikelihood{<:LogisticLink},
     ::AbstractVector,
     qf::AbstractVector{<:Normal},
 )
-    return For(qf) do f
-        PolyaGamma(1, sqrt(second_moment(f))) # Update the c component
-    end
+    map!(sqrt ∘ second_moment, qΩ.pars.c, qf)
+    return qΩ
 end
 
 function auglik_potential(::BernoulliLikelihood{<:LogisticLink}, ::Any, y::AbstractVector)
