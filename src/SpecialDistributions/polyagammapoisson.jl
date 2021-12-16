@@ -8,7 +8,7 @@ A bivariate distribution, used as hierachical prior as:
 
 Random samples as well as statistics from the distribution will returned as `NamedTuple` : `(;ω, n)`.
 
-This structured distributions is needed for example for the [`PoissonLikelihood`](@ref).
+This structured distributions is needed for example for the [`PoissonLikelihood`](https://juliagaussianprocesses.github.io/GPLikelihoods.jl/dev/#GPLikelihoods.PoissonLikelihood).
 """
 struct PolyaGammaPoisson{Ty,Tc,Tλ}
     y::Ty # Intermediate first parameter for PG(y + n, c)
