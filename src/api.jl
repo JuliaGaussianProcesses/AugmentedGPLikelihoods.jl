@@ -1,7 +1,7 @@
 @doc raw"""
-    init_aux_variables([rng::AbstractRNG], ::Likelihood, n::Int) -> NamedTuple
+    init_aux_variables([rng::AbstractRNG], ::Likelihood, n::Int) -> TupleVector
 
-Initialize collections of `n` auxiliary variables in  a `NamedTuple` to be used
+Initialize collections of `n` auxiliary variables in  a `TupleVector` to be used
 in the context of sampling.
 `n` should be the number of data inputs.
 
@@ -10,20 +10,21 @@ See also [`init_aux_posterior`](@ref) for variational inference.
 init_aux_variables
 
 @doc raw"""
-    init_aux_posterior(::Likelihood, n::Int) -> NamedTuple
+    init_aux_posterior([T::DataType], lik::Likelihood, n::Int) -> ProductMeasure
 
 Initialize collections of `n` (independent) posteriors for the auxiliary
 variables in the context of variational inference.
 `n` should be the size of the data used every iteration.
+The real variational parameters will be given type `T` (`Float64` by default)
 
-See also [`init_aux_posterior`](@ref) for sampling.
+See also [`init_aux_variables`](@ref) for sampling.
 """
 init_aux_posterior
 
 @doc raw"""
-    aux_sample!([rng::AbstractRNG], Ω, lik::Likelihood, y, f) -> NamedTuple
+    aux_sample!([rng::AbstractRNG], Ω, lik::Likelihood, y, f) -> TupleVector
 
-Sample the auxiliary variables `Ω` in-place based on the full-conditional
+Sample the auxiliary variables `Ω` in-place based on the full-conditional [`aux_full_conditional`](@ref)
 associated with the augmented likelihood:
 ```math
     p(\Omega|y,f) \propto p(\Omega,y|f).
@@ -35,20 +36,28 @@ for variational inference.
 aux_sample!
 
 @doc raw"""
-    aux_sample([rng::AbstractRNG], lik::Likelihood, y, f) -> NamedTuple
+    aux_sample([rng::AbstractRNG], lik::Likelihood, y, f) -> TupleVector
 
-Sample and allocate the auxiliary variables `Ω` in a `NamedTuple` based
+Sample and allocate the auxiliary variables `Ω` in a `TupleVector` based
 on the full-conditional associated with the likelihood.
 
-See als [`aux_sample!`](@ref) for an in-place version.
+See [`aux_sample!`](@ref) for an in-place version.
 """
 aux_sample
 
 @doc raw"""
-    aux_posterior!(qΩ, lik::Likelihood, y, qf) -> NamedTuple
+    aux_full_conditional(lik::Likelihood, y, f::Real) -> Distribution
 
-Compute the optimal posterior of the auxiliary variables ``q^*(\Omega)`` given the marginal
-distributions `qf` in-place using the formula
+Given the observation `y` and latent `f`, returns the full conditional on the
+auxiliary variables `Ω`.
+"""
+
+@doc raw"""
+    aux_posterior!(qΩ, lik::Likelihood, y, qf) -> ProductMeasure
+
+Compute the optimal posterior of the auxiliary variables ``q^*(\Omega)`` given 
+the marginal distributions `qf` by updating the variational parameters
+in-place using the formula
 ```math
     q^*(\Omega) \propto \exp\left(E_{q(f)}\left[p(\Omega|f,y)\right]\right)
 ```
@@ -58,12 +67,12 @@ See also [`aux_posterior`](@ref) and [`aux_sample!`](@ref)
 aux_posterior!
 
 @doc raw"""
-    aux_posterior(lik::Likelihood, y, qf) -> NamedTuple
+    aux_posterior(lik::Likelihood, y, qf) -> ProductMeasure
 
 Compute the optimal posterior of the auxiliary variables in a new
-`NamedTuple`.
+`ProductMeasure`.
 
-See also [`aux_posterior!`](@ref)
+See [`aux_posterior!`](@ref) for more details
 """
 aux_posterior
 
@@ -129,7 +138,7 @@ expected_auglik_precision
 Returns both [`expected_auglik_potential`](@ref) and [`expected_auglik_precision`](@ref) when some 
 computation can be saved by doing both at the same time.
 """
-auglik_potential_and_precision
+expected_auglik_potential_and_precision
 
 @doc raw"""
     aug_loglik(lik::Likelihood, Ω, y, f) -> Real
@@ -148,8 +157,8 @@ specialized implementations are encouraged.
 aug_loglik
 
 @doc raw"""
-    aux_kldivergence(lik::Likelihood, qΩ::NamedTuple, pΩ::NamedTuple) -> Real
-    aux_kldivergence(lik::Likelihood, qΩ::NamedTuple, y) -> Real
+    aux_kldivergence(lik::Likelihood, qΩ::ProductMeasure, pΩ::ProductMeasure) -> Real
+    aux_kldivergence(lik::Likelihood, qΩ::ProductMeasure, y) -> Real
 
 Compute the analytical KL divergence between the auxiliary variables posterior
 ``q(\Omega)``, obtained with [`aux_posterior`](@ref) and prior
@@ -158,7 +167,7 @@ Compute the analytical KL divergence between the auxiliary variables posterior
 aux_kldivergence
 
 @doc raw"""
-    aux_prior(lik::Likelihood, y) -> NamedTuple
+    aux_prior(lik::Likelihood, y) -> ProductMeasure
 
 Returns a `NamedTuple` of distributions with the same structure as [`aux_posterior`](@ref),
 [`init_aux_posterior`](@ref) and [`init_aux_variables`](@ref).

@@ -2,8 +2,10 @@ module TestUtils
 using AugmentedGPLikelihoods
 using Distributions
 using GPLikelihoods: AbstractLikelihood
+using MeasureBase
 using Random
 using Test
+using TupleVectors
 # Test API for augmented likelihood
 function test_auglik(
     lik::AbstractLikelihood;
@@ -17,13 +19,14 @@ function test_auglik(
     # Testing sampling
     @testset "Sampling" begin
         Ω = init_aux_variables(lik, n)
-        @test Ω isa NamedTuple
-        @test length(first(Ω)) == n
+        @test Ω isa TupleVector
+        @test first(Ω) isa NamedTuple
+        @test length(Ω) == n
         Ω = aux_sample!(rng, Ω, lik, y, f)
-        @test Ω isa NamedTuple
+        @test Ω isa TupleVector
         new_Ω = aux_sample(rng, lik, y, f)
-        @test new_Ω isa NamedTuple
-        @test length(first(Ω)) == n
+        @test new_Ω isa TupleVector
+        @test length(Ω) == n
 
         βs = auglik_potential(lik, Ω, y)
         γs = auglik_precision(lik, Ω, y)
@@ -35,23 +38,33 @@ function test_auglik(
         @test all(map(≈, γs, γ2))
         @test all(x -> all(>=(0), x), γs) # Check that the variance is positive
 
-        pΩ = aux_prior(lik, y)
-        @test keys(pΩ) == keys(Ω)
         @test logtilt(lik, Ω, y, f) isa Real
         @test aug_loglik(lik, Ω, y, f) isa Real
+
+        pΩ = aux_prior(lik, y)
+        @test logdensity(pΩ, Ω) isa Real
+
+        Ω₁ = init_aux_variables(rng, lik, n)
+        Ω₂ = init_aux_variables(rng, lik, n)
+        logC₁ =
+            logdensity(aux_full_conditional(lik, y, f), Ω₁) - logtilt(lik, Ω₁, y, f) -
+            logdensity(pΩ, Ω₁)
+        logC₂ =
+            logdensity(aux_full_conditional(lik, y, f), Ω₂) - logtilt(lik, Ω₂, y, f) -
+            logdensity(pΩ, Ω₂)
+        @test logC₁ / n ≈ logC₂ / n atol = 1.0
     end
 
     #Testing variational inference
     @testset "Variational Inference" begin
         qΩ = init_aux_posterior(lik, n)
-        @test qΩ isa NamedTuple
-        @test length(first(qΩ)) == n
+        @test qΩ isa ProductMeasure
+        @test_broken length(qΩ) == n
         qΩ = aux_posterior!(qΩ, lik, y, qf)
-        @test qΩ isa NamedTuple
+        @test qΩ isa ProductMeasure
         new_qΩ = aux_posterior(lik, y, qf)
-        @test new_qΩ isa NamedTuple
-        @test length(first(new_qΩ)) == n
-        @test keys(qΩ) == keys(new_qΩ)
+        @test new_qΩ isa ProductMeasure
+        @test_broken length(new_qΩ) == n
 
         βs = expected_auglik_potential(lik, qΩ, y)
         γs = expected_auglik_precision(lik, qΩ, y)
@@ -65,11 +78,10 @@ function test_auglik(
         @test all(x -> all(>=(0), x), γs) # Check that the variance is positive
 
         # TODO test that aux_posterior parameters return the minimizing
+        # values of the ELBO
         pΩ = aux_prior(lik, y)
-        @test keys(pΩ) == keys(qΩ)
-        for s in keys(pΩ)
-            @test kldivergence(first(getfield(qΩ, s)), first(getfield(pΩ, s))) isa Real
-        end
+        @test pΩ isa ProductMeasure
+        @test kldivergence(first(marginals(qΩ)), first(marginals(pΩ))) isa Real
         @test expected_logtilt(lik, qΩ, y, qf) isa Real
         @test aux_kldivergence(lik, qΩ, pΩ) isa Real
     end

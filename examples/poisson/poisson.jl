@@ -32,11 +32,11 @@ function cavi!(fz::AbstractGPs.FiniteGP, x, y, m, S, qΩ; niter=10)
     for _ in 1:niter
         post_u = u_posterior(fz, m, S)
         post_fs = marginals(post_u(x))
-        qΩ = aux_posterior!(qΩ, lik, y, post_fs)
+        aux_posterior!(qΩ, lik, y, post_fs)
         S .= inv(Symmetric(inv(K) + Diagonal(only(expected_auglik_precision(lik, qΩ, y)))))
         m .= S * (only(expected_auglik_potential(lik, qΩ, y)) - K \ mean(fz))
     end
-    return m, S, qΩ
+    return m, S
 end
 # Now we just initialize the variational parameters
 m = zeros(N)
@@ -63,13 +63,14 @@ plot!(
 # How can one compute the Augmented ELBO?
 # Again AugmentedGPLikelihoods provides helper functions
 # to not have to compute everything yourself
-function aug_elbo(lik, u_post, qΩ, x, y)
+function aug_elbo(lik, u_post, x, y)
     qf = marginals(u_post(x))
+    qΩ = aux_posterior(lik, y, qf)
     return expected_logtilt(lik, qΩ, y, qf) - aux_kldivergence(lik, qΩ, y) -
            ApproximateGPs.kl_term(u_post.approx, u_post)
 end
 
-aug_elbo(lik, u_posterior(fz, m, S), qΩ, x, y)
+aug_elbo(lik, u_posterior(fz, m, S), x, y)
 # ## Classification - Gibbs Sampling
 # We create our Gibbs sampling algorithm (we could do something fancier with
 # AbstractMCMC)
