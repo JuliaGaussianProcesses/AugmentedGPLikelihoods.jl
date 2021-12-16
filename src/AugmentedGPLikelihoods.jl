@@ -3,7 +3,6 @@ module AugmentedGPLikelihoods
 using Reexport
 
 using Distributions
-using FillArrays
 @reexport using GPLikelihoods
 using GPLikelihoods: AbstractLikelihood, AbstractLink
 using IrrationalConstants
