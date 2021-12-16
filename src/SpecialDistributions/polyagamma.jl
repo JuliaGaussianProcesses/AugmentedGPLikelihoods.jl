@@ -1,14 +1,6 @@
 const pg_t = 0.64
 const pg_inv_t = inv(pg_t)
 
-@parameterized PolyaGammaMT(b, c) ≪ posℝ
-
-typeof(PolyaGammaMT(1, 0))
-
-MeasureBase.logdensity(d::PolyaGammaMT, ω) = logpdf(PolyaGamma(d.b, d.c), ω)
-
-Base.rand(rng::AbstractRNG, T::Type, d::PolyaGammaMT) = T(rand(rng, PolyaGamma(d.b, d.c)))
-
 @doc raw"""
     PolyaGamma(b::Real, c::Real) <: ContinuousUnivariateDistribution
 

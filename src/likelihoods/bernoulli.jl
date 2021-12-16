@@ -2,8 +2,8 @@ function init_aux_variables(rng::AbstractRNG, ::BernoulliLikelihood{<:LogisticLi
     return TupleVector((; ω=rand(rng, PolyaGamma(1, 0.0), n)))
 end
 
-function init_aux_posterior(::BernoulliLikelihood{<:LogisticLink}, n::Int)
-    return For(TupleVector(;c=zeros(n))) do φ
+function init_aux_posterior(T::DataType, ::BernoulliLikelihood{<:LogisticLink}, n::Int)
+    return For(TupleVector(; c=zeros(T, n))) do φ
         PolyaGamma(1, φ.c)
     end
 end

@@ -10,20 +10,21 @@ See also [`init_aux_posterior`](@ref) for variational inference.
 init_aux_variables
 
 @doc raw"""
-    init_aux_posterior(::Likelihood, n::Int) -> ProductMeasure
+    init_aux_posterior([T::DataType], lik::Likelihood, n::Int) -> ProductMeasure
 
 Initialize collections of `n` (independent) posteriors for the auxiliary
 variables in the context of variational inference.
 `n` should be the size of the data used every iteration.
+The real variational parameters will be given type `T` (`Float64` by default)
 
-See also [`init_aux_posterior`](@ref) for sampling.
+See also [`init_aux_variables`](@ref) for sampling.
 """
 init_aux_posterior
 
 @doc raw"""
     aux_sample!([rng::AbstractRNG], Ω, lik::Likelihood, y, f) -> TupleVector
 
-Sample the auxiliary variables `Ω` in-place based on the full-conditional
+Sample the auxiliary variables `Ω` in-place based on the full-conditional [`aux_full_conditional`](@ref)
 associated with the augmented likelihood:
 ```math
     p(\Omega|y,f) \propto p(\Omega,y|f).
@@ -40,15 +41,23 @@ aux_sample!
 Sample and allocate the auxiliary variables `Ω` in a `TupleVector` based
 on the full-conditional associated with the likelihood.
 
-See als [`aux_sample!`](@ref) for an in-place version.
+See [`aux_sample!`](@ref) for an in-place version.
 """
 aux_sample
 
 @doc raw"""
+    aux_full_conditional(lik::Likelihood, y, f::Real) -> Distribution
+
+Given the observation `y` and latent `f`, returns the full conditional on the
+auxiliary variables `Ω`.
+"""
+
+@doc raw"""
     aux_posterior!(qΩ, lik::Likelihood, y, qf) -> ProductMeasure
 
-Compute the optimal posterior of the auxiliary variables ``q^*(\Omega)`` given the marginal
-distributions `qf` in-place using the formula
+Compute the optimal posterior of the auxiliary variables ``q^*(\Omega)`` given 
+the marginal distributions `qf` by updating the variational parameters
+in-place using the formula
 ```math
     q^*(\Omega) \propto \exp\left(E_{q(f)}\left[p(\Omega|f,y)\right]\right)
 ```
@@ -63,7 +72,7 @@ aux_posterior!
 Compute the optimal posterior of the auxiliary variables in a new
 `ProductMeasure`.
 
-See also [`aux_posterior!`](@ref)
+See [`aux_posterior!`](@ref) for more details
 """
 aux_posterior
 

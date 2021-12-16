@@ -11,7 +11,7 @@ function aux_sample(rng::AbstractRNG, lik::AbstractLikelihood, y, f)
 end
 
 function aux_posterior(lik::AbstractLikelihood, y, f)
-    aux_posterior!(init_aux_posterior(lik, length(y)), lik, y, f)
+    return aux_posterior!(init_aux_posterior(lik, length(y)), lik, y, f)
 end
 
 function aux_full_conditional(lik::AbstractLikelihood, y, f)
@@ -22,6 +22,10 @@ end
 
 function init_aux_variables(lik::AbstractLikelihood, n::Int)
     return init_aux_variables(GLOBAL_RNG, lik, n)
+end
+
+function init_aux_posterior(lik::AbstractLikelihood, n::Int)
+    return init_aux_posterior(Float64, lik, n)
 end
 
 function aug_loglik(lik::AbstractLikelihood, Ω, y, f)

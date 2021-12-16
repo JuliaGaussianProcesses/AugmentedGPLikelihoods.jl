@@ -12,8 +12,8 @@ function init_aux_variables(rng::AbstractRNG, ::AugPoisson, ndata::Int)
     ))
 end
 
-function init_aux_posterior(::AugPoisson, n::Int)
-    return For(TupleVector(;y=zeros(Int, n), c=zeros(n), λ=zeros(n))) do q
+function init_aux_posterior(T::DataType, ::AugPoisson, n::Int)
+    return For(TupleVector(; y=zeros(Int, n), c=zeros(T, n), λ=zeros(T, n))) do q
         PolyaGammaPoisson(q.y, q.c, q.λ)
     end
 end

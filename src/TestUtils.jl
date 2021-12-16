@@ -52,7 +52,7 @@ function test_auglik(
         logC₂ =
             logdensity(aux_full_conditional(lik, y, f), Ω₂) - logtilt(lik, Ω₂, y, f) -
             logdensity(pΩ, Ω₂)
-        @test logC₁ / n ≈ logC₂ / n atol=1.0
+        @test logC₁ / n ≈ logC₂ / n atol = 1.0
     end
 
     #Testing variational inference
