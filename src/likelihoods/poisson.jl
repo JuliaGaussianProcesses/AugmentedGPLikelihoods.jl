@@ -85,7 +85,7 @@ function expected_logtilt(lik::AugPoisson, qΩ, y, qf)
         θ = ntmean(qω)
         m = mean(f)
         return -(y + θ.n) * logtwo +
-               (sign(y + θ.n) * m - (abs2(m) + var(f)) * θ.ω) / 2 +
+               ((y - θ.n) * m - (abs2(m) + var(f)) * θ.ω) / 2 +
                y * logλ +
                logfactorial(y)
     end

@@ -2,7 +2,7 @@
 
 The [`BernoulliLikelihood`](https://juliagaussianprocesses.github.io/GPLikelihoods.jl/dev/#GPLikelihoods.BernoulliLikelihood) with a [logistic](https://en.wikipedia.org/wiki/Logistic_function) link ``\sigma`` is defined as
 ```math
-    p(y|f) = \operatorname{Bernoulli}(y|\sigma(f))
+    p(y|f) = \operatorname{Bernoulli}(y|\sigma(f)).
 ```
 
 In other terms we have that ``p(y=1|f) = \sigma(yf) = \frac{\exp\left(\frac{yf}{2}\right)}{2\cosh\left(\frac{yf}{2}\right)}``,
@@ -46,7 +46,7 @@ The optimal variational parameters are given by:
     m =& \Sigma\left(\frac{y}{2} + K^{-1}\mu_0\right),
 \end{align*}
 ```
-where ``\theta_i = E_{q(\omega_i)}[\omega_i] = \frac{1}{2c}\tanh\left(\frac{c}{2}\right)``.
+where ``\theta_i = E_{q(\omega_i)}[\omega_i] = \frac{1}{2c_i}\tanh\left(\frac{c_i}{2}\right)``.
 
 We get the ELBO as
 ```math
