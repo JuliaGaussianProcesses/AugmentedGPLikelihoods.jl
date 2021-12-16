@@ -28,7 +28,7 @@ We can now augment the likelihood as:
 Like for the [Bernoulli Likelihood](@ref), we can use the Polya-Gamma augmentation, and use the fact that independent Polya-Gamma variables are additive, i.e. if ``\omega_1 \sim \operatorname{PG}(a, 0)`` and ``\omega_2 \sim \operatorname{PG}(b, 0)`` then ``\omega_1 + \omega_2 \sim \operatorname{PG}(a + b, 0)``
 This result in the final augmented likelihood
 ```math
-    p(y, n, \omega| f, \lambda) = \lambda^y\left(2^{y + n}y!\right)^{-1}\exp\left(\frac{(y-n)}{2}f + \frac{f^2}{2}\omega)\operatorname{PG}(\omega|y+n, 0)\operatorname{Po}(n|\lambda)
+    p(y, n, \omega| f, \lambda) = \lambda^y\left(2^{y + n}y!\right)^{-1}\exp\left(\frac{(y-n)}{2}f + \frac{f^2}{2}\omega\right)\operatorname{PG}(\omega|y+n, 0)\operatorname{Po}(n|\lambda)
 ```
 
 ## Conditional distributions (Sampling)
@@ -64,13 +64,16 @@ where ``\theta_i = E_{q(\omega_i,n_i)}[\omega_i] = \frac{y+\gamma_i}{2c_i}\tanh\
 
 We get the ELBO as
 ```math
-    \mathcal{L} = \sum_{i=1}^N -(y_i + \gamma_i) \log 2+ y_i \log \lambda + \frac{(y_i - \gamma_i) m_i}{2} + \frac{m_i^2 + S_{ii}}{2}\theta_i - KL(q(\omega,n)||p(\omega,n|y)) - KL(q(f)||p(f)),
+\begin{align*}
+    \mathcal{L} =& \sum_{i=1}^N -(y_i + \gamma_i) \log 2+ y_i \log \lambda + \frac{(y_i - \gamma_i) m_i}{2} + \frac{m_i^2 + S_{ii}}{2}\theta_i\\ 
+    &- KL(q(\omega,n)||p(\omega,n|y)) - KL(q(f)||p(f)),
+\end{align*}
 ```
 where
 ```math
 \begin{align*}
-    \operatorname{KL}(q(\omega_i|n_i)q(n_i)||p(\omega_i|n_i, y)p(n_i)) =& \operatorname{KL}(q(n_i)||p(n_i)) + E_{q(n_i)}\left[\operatorname{KL}(q(\omega_i|n_i)||p(\omega_i|n_i, y)\right]\\
-    \operatorname{KL}(q(n_i)||p(n_i)) =& \\
-    E_{q(n_i)}\left[\operatorname{KL}(q(\omega_i|n_i)||p(\omega_i|n_i, y) =& (y_i + \gamma_i)\log\cosh \left(\frac{c_i}{2}\right) - c_i^2 \frac{\theta_i}{2}\\
+    \operatorname{KL}(q(\omega_i|n_i)q(n_i)||p(\omega_i|n_i, y)p(n_i)) =& \operatorname{KL}(q(n_i)||p(n_i)) + E_{q(n_i)}\left[\operatorname{KL}(q(\omega_i|n_i)||p(\omega_i|n_i, y)\right],\\
+    \operatorname{KL}(q(n_i)||p(n_i)) =& \lambda - \gamma_i + \gamma_i \log \frac{\gamma_i}{\lambda},\\
+    E_{q(n_i)}\left[\operatorname{KL}(q(\omega_i|n_i)||p(\omega_i|n_i, y)\right] =& (y_i + \gamma_i)\log\cosh \left(\frac{c_i}{2}\right) - c_i^2 \frac{\theta_i}{2}.
 \end{align*}
 ```
