@@ -9,7 +9,7 @@ DocMeta.setdocmeta!(
 )
 
 # TODO use the general approach of ApproximateGPs.jl
-for example in ["bernoulli", "poisson"]
+for example in ["bernoulli", "poisson", "studentt"]
     folder = joinpath(pkgdir(AugmentedGPLikelihoods), "examples", example)
     Pkg.activate(folder)
     Pkg.instantiate()
@@ -39,9 +39,10 @@ makedocs(
         "Likelihoods" => [
             "Bernoulli" => "likelihoods/bernoulli.md",
             "Poisson" => "likelihoods/poisson.md",
+            "StudentT" => "likelihoods/studentt.md",
         ],
         "Examples" =>
-            ["Bernoulli" => "examples/bernoulli.md", "Poisson" => "examples/poisson.md"],
+            ["Bernoulli" => "examples/bernoulli.md", "Poisson" => "examples/poisson.md", "StudentT" => "examples/studentt.md"],
         "Additional Distributions" => "specialdistributions.md",
         "References" => "references.md",
     ],

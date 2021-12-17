@@ -54,9 +54,13 @@ where ``\theta_i = E_{q(\omega_i)}[\omega_i^{-1}] = \alpha_i / \beta_i``.
 
 We get the ELBO as
 ```math
-    \mathcal{L} = -\frac{N}{2}\log (2\pi) + \sum_{i=1}^N -\frac{1}{2} \frac{y_i m_i}{2} + \frac{m_i^2 + S_{ii}}{2}\theta_i - KL(q(\omega)||p(\omega)) - KL(q(f)||p(f)),
+    \mathcal{L} = -\frac{N}{2}\log (2\pi) + \sum_{i=1}^N \frac{1}{2}E_{q(\omega_i)}[-\log \omega_i] -\frac{1}{2} \left(-\frac{(y_i-m_i)^2 + S_{ii}}{2}\theta_i} - KL(q(\omega)||p(\omega)) - KL(q(f)||p(f)),
 ```
 where
 ```math
-    KL(q(\omega_i|1,c)||p(\omega_i|1,0)) = \log \cosh \left(\frac{c_i}{2}\right) - c_i^2\frac{\theta_i}{2}
+\begin{align*}
+    E_{q(\omega_i)}\left[-\log\omega_i\right] =& \alpha_i + \log (\beta_i(\Gamma(\alpha_i))) - (\alpha_i + 1)\psi(\alpha_i)\\
+    KL(q(\omega_i|\alpha_i,\beta_i)||p(\omega_i|\alpha,\beta)) =& (\alpha_i - \alpha)\psi(\alpha_i) - \log\Gamma(\alpha_i) + \log \Gamma(\alpha) + \alpha(\log \beta_i - \log \beta) + \alpha_i \frac{\beta - \beta_i}{\beta_i}
+\end{align*}
 ```
+where ``\psi(\alpha)`` is the [digamma function](https://en.wikipedia.org/wiki/Digamma_function).
