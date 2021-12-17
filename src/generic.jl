@@ -3,11 +3,7 @@ function aux_sample!(Ω, lik::AbstractLikelihood, y, f)
 end
 
 function aux_sample!(
-    rng::AbstractRNG,
-    Ω,
-    lik::AbstractLikelihood,
-    y::AbstractVector,
-    f::AbstractVector,
+    rng::AbstractRNG, Ω, lik::AbstractLikelihood, y::AbstractVector, f::AbstractVector
 )
     map!(Ω, y, f) do yᵢ, fᵢ
         ntrand(rng, aux_full_conditional(lik, yᵢ, fᵢ))

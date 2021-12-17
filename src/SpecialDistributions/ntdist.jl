@@ -22,32 +22,41 @@ abstract type AbstractNTDist end
 # We replace the `rand` approach by `ntrand`
 Base.rand(rng::AbstractRNG, ::Type{T}, π::AbstractNTDist) where {T} = ntrand(rng, π)
 Base.rand(rng::AbstractRNG, π::AbstractNTDist) = ntrand(rng, π)
-Base.rand(rng::AbstractRNG, π::AbstractNTDist, n::Int) = TupleVector([ntrand(rng, π) for i in 1:n])
+function Base.rand(rng::AbstractRNG, π::AbstractNTDist, n::Int)
+    return TupleVector([ntrand(rng, π) for i in 1:n])
+end
 
 # Simple wrapper around any measure or distribution object
-struct NTDist{Td} <: AbstractNTDist
+@doc raw"""
+    NTDist
+"""
+struct NTDist{Td,S} <: AbstractNTDist
     d::Td
 end
 
+NTDist(d) = NTDist{typeof(d),:ω}(d)
+NTDist{S}(d) where {S} = NTDist{typeof(d),S}(d)
+
 dist(π::NTDist) = π.d
 
-Statistics.mean(π::NTDist) = ntmean(dist(π))
+Statistics.mean(π::NTDist) = ntmean(π)
 Statistics.mean(Π::AbstractVector{<:NTDist}) = tvmean(Π)
 
 MeasureBase.logdensity(π::NTDist, x::NamedTuple) = logpdf(dist(π), only(x))
 
 ntrand(rng::AbstractRNG, d) = ntrand(rng, NTDist(d))
-function ntrand(rng::AbstractRNG, π::NTDist)
-    return (; ω=rand(rng, dist(π)))
+function ntrand(rng::AbstractRNG, π::NTDist{Td,S}) where {Td,S}
+    return NamedTuple{(S,)}((rand(rng, dist(π)),))
 end
 
-function tvrand(rng::AbstractRNG, Π::AbstractVector{<:NTDist})
-    return (;ω=rand.(rng, dist.(Π)))
+function tvrand(rng::AbstractRNG, Π::AbstractVector{<:T}) where {S,Td,T<:NTDist{Td,S}}
+    return TupleVector(NamedTuple{(S,)}((rand.(rng, dist.(Π)),)))
 end
 
-ntmean(π::NTDist) = (;ω=mean(dist(π)))
-function tvmean(Π::AbstractVector{<:NTDist})
-    return TupleVector(;ω=mean.(dist.(Π)))
+ntmean(d) = ntmean(NTDist(d))
+ntmean(π::NTDist{Td,S}) where {Td,S} = NamedTuple{(S,)}((mean(dist(π)),))
+function tvmean(Π::AbstractVector{<:T}) where {S,Td,T<:NTDist{Td,S}}
+    return TupleVector(NamedTuple{(S,)}((mean.(dist.(Π)),)))
 end
 
 Distributions.kldivergence(π₀::NTDist, π₁::NTDist) = kldivergence(dist(π₀), dist(π₁))

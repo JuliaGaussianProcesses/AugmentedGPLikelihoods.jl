@@ -41,8 +41,11 @@ makedocs(
             "Poisson" => "likelihoods/poisson.md",
             "StudentT" => "likelihoods/studentt.md",
         ],
-        "Examples" =>
-            ["Bernoulli" => "examples/bernoulli.md", "Poisson" => "examples/poisson.md", "StudentT" => "examples/studentt.md"],
+        "Examples" => [
+            "Bernoulli" => "examples/bernoulli.md",
+            "Poisson" => "examples/poisson.md",
+            "StudentT" => "examples/studentt.md",
+        ],
         "Additional Distributions" => "specialdistributions.md",
         "References" => "references.md",
     ],

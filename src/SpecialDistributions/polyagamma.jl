@@ -28,7 +28,6 @@ function Statistics.mean(d::PolyaGamma)
     end
 end
 
-
 Base.minimum(d::PolyaGamma) = zero(eltype(d))
 Base.maximum(::PolyaGamma) = Inf
 Distributions.insupport(::PolyaGamma, x::Real) = zero(x) <= x < Inf

@@ -18,5 +18,5 @@
     @test minimum(p1) === 0
     @test minimum(p2) === 0.0
     @test maximum(p1) == Inf
-    @test params(p1) == (1, 0)
+    @test Distributions.params(p1) == (1, 0)
 end

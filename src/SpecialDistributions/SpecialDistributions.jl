@@ -21,7 +21,6 @@ export tvrand, tvmean
 
 include("ntdist.jl")
 
-
 @doc raw"""
     ntrand([rng::AbstractRNG,] d) -> NamedTuple
 
