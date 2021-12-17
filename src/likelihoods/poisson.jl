@@ -57,9 +57,7 @@ end
 function logtilt(lik::AugPoisson, Ω, y, f)
     logλ = log(lik.invlink.λ)
     return mapreduce(+, y, f, Ω) do yᵢ, fᵢ, (ω, n)
-        return yᵢ * logλ -
-                (yᵢ + n) * logtwo -
-                logfactorial(yᵢ)
+        return yᵢ * logλ - (yᵢ + n) * logtwo - logfactorial(yᵢ) +
                ((yᵢ - n) * fᵢ - abs2(fᵢ) * ω) / 2
     end
 end
@@ -78,7 +76,6 @@ function expected_logtilt(lik::AugPoisson, qΩ, y, qf)
         m = mean(fᵢ)
         return -(yᵢ + θ.n) * logtwo +
                ((yᵢ - θ.n) * m - (abs2(m) + var(fᵢ)) * θ.ω) / 2 +
-               yᵢ * logλ -
-               logfactorial(yᵢ)
+               yᵢ * logλ - logfactorial(yᵢ)
     end
 end
