@@ -61,7 +61,6 @@ tvmean
 tvmean(qΩ::ProductMeasure) = tvmean(marginals(qΩ))
 tvmeaninv(qΩ::ProductMeasure) = tvmeaninv(marginals(qΩ))
 
-include("wrappers.jl")
 include("polyagamma.jl")
 include("polyagammapoisson.jl")
 end

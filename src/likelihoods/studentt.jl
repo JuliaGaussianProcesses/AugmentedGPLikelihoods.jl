@@ -11,10 +11,15 @@ Likelihood with a Student-T likelihood:
 - `ν::Real`, number of degrees of freedom, should be positive and larger than 0.5 to be able to compute moments
 - `σ::Real`, scaling of the inputs.
 """
-struct StudentTLikelihood{Tν<:Real,Tσ<:Real} <: AbstractLikelihood
+struct StudentTLikelihood{Tν<:Real,Tσ<:Real,Thalfν<:Real} <: AbstractLikelihood
     ν::Tν
     σ::Tσ
+    σ²::Tσ
+    halfν::Thalfν
 end
+
+StudentTLikelihood(ν::Real, σ::Real) = StudentTLikelihood(ν, σ, abs2(σ), ν / 2)
+
 
 (lik::StudentTLikelihood)(f::Real) = LocationScale(f, lik.σ, TDist(lik.ν))
 
@@ -24,29 +29,19 @@ function (lik::StudentTLikelihood)(f::AbstractVector{<:Real})
     return Product(lik.(f))
 end
 
-# Helper functions for returning the mean of X⁻¹
-function tvmeaninv(ds::AbstractVector{<:NTDist{<:InverseGamma}})
-    return TupleVector(ntmeaninv.(ds))
-end
-
-# return the mean of X⁻¹
-function ntmeaninv(d::NTDist{<:InverseGamma})
-    return (; ω=mean(dist(d).invd))
-end
-
 function init_aux_variables(rng::AbstractRNG, ::StudentTLikelihood, n::Int)
-    return TupleVector((; ω=rand(rng, InverseGamma(), n)))
+    return TupleVector((; ω=rand(rng, Gamma(), n)))
 end
 
 function init_aux_posterior(T::DataType, lik::StudentTLikelihood, n::Int)
     α = _α(lik)
     return For(TupleVector(; β=zeros(T, n))) do φ
-        NTDist(InverseGamma(α, φ.β))
+        NTDist(Gamma(α, inv(φ.β))) # Distributions uses a different parametrization
     end
 end
 
 function aux_full_conditional(lik::StudentTLikelihood, y::Real, f::Real)
-    return NTDist(InverseGamma(_α(lik), (abs2(lik.σ) * lik.ν + abs2(y - f)) / 2))
+    return NTDist(Gamma(_α(lik), inv(lik.ν / abs2(lik.σ) + abs2(y - f) / 2)))
 end
 
 function aux_posterior!(
@@ -54,45 +49,43 @@ function aux_posterior!(
 )
     φ = qΩ.pars
     map!(φ.β, y, qf) do yᵢ, fᵢ
-        (abs2(lik.σ) * lik.ν + second_moment(fᵢ, yᵢ)) / 2
+        (lik.ν / abs2(lik.σ) + second_moment(fᵢ, yᵢ)) / 2
     end
     return qΩ
 end
 
 # TODO use a different parametrization to avoid all these inverses
 function auglik_potential(::StudentTLikelihood, Ω, y::AbstractVector)
-    return (y ./ Ω.ω,)
+    return (y .* Ω.ω,)
 end
 
 function auglik_precision(::StudentTLikelihood, Ω, ::AbstractVector)
-    return (inv.(Ω.ω),)
+    return (Ω.ω,)
 end
 
 function expected_auglik_potential(::StudentTLikelihood, qΩ, y::AbstractVector)
-    return (tvmeaninv(qΩ).ω .* y,)
+    return (tvmean(qΩ).ω .* y,)
 end
 
 function expected_auglik_precision(::StudentTLikelihood, qΩ, ::AbstractVector)
-    return (tvmeaninv(qΩ).ω,)
+    return (tvmean(qΩ).ω,)
 end
 
 function logtilt(::StudentTLikelihood, Ω, y, f)
-    return mapreduce(+, y, f, Ω.ω) do yᵢ, fᵢ, ω
-        logpdf(Normal(fᵢ, ω), yᵢ)
-    end
-end
-
-function aux_prior(lik::StudentTLikelihood, y)
-    halfν = lik.ν / 2
-    σ² = abs2(lik.σ)
-    return For(length(y)) do _
-        NTDist(InverseGamma(halfν, halfν * σ²))
+    return mapreduce(+, y, f, Ω.ω) do yᵢ, fᵢ, ωᵢ
+        logpdf(Normal(fᵢ, sqrt(inv(ωᵢ))), yᵢ)
     end
 end
 
 function expected_logtilt(::StudentTLikelihood, qΩ, y, qf)
-    return mapreduce(+, y, qf, marginals(qΩ)) do yᵢ, fᵢ, qω
-        θ = ntmeaninv(qω) # E[ω⁻¹]
-        logpdf(Normal(yᵢ, θ.ω), mean(fᵢ)) - var(fᵢ) * θ.ω / 2
+    return mapreduce(+, y, qf, marginals(qΩ)) do yᵢ, fᵢ, qωᵢ
+        θ = ntmean(qωᵢ)
+        logpdf(Normal(yᵢ, sqrt(inv(θ.ω))), mean(fᵢ)) - var(fᵢ) * θ.ω / 2
+    end
+end
+
+function aux_prior(lik::StudentTLikelihood, y)
+    return For(length(y)) do _
+        NTDist(Gamma(lik.halfν, lik.σ² / lik.halfν))
     end
 end
