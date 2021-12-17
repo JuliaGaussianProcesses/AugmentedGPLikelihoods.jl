@@ -40,7 +40,7 @@ function init_aux_posterior(T::DataType, lik::StudentTLikelihood, n::Int)
 end
 
 function aux_full_conditional(lik::StudentTLikelihood, y::Real, f::Real)
-    return NTDist(Gamma(_α(lik), inv(lik.ν / abs2(lik.σ) + abs2(y - f) / 2)))
+    return NTDist(Gamma(_α(lik), 2 / (lik.ν / abs2(lik.σ) + abs2(y - f))))
 end
 
 function aux_posterior!(

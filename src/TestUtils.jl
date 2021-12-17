@@ -52,7 +52,7 @@ function test_auglik(
         # This should be the same no matter what Ω is
         logC₁ = logtilt(lik, Ω₁, y, f) + logdensity(pΩ, Ω₁) - logdensity(pcondΩ, Ω₁)
         logC₂ = logtilt(lik, Ω₂, y, f) + logdensity(pΩ, Ω₂) - logdensity(pcondΩ, Ω₂)
-        @test logC₁ ≈ logC₂ atol = Float64(n)
+        @test logC₁ ≈ logC₂ atol = 0.01 * n
     end
 
     #Testing variational inference

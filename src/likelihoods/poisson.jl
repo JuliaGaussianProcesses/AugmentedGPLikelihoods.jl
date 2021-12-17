@@ -19,7 +19,7 @@ function init_aux_posterior(T::DataType, ::AugPoisson, n::Int)
 end
 
 function aux_full_conditional(lik::AugPoisson, y::Int, f::Real)
-    return PolyaGammaPoisson(y, abs(f), lik.invlink(f))
+    return PolyaGammaPoisson(y, abs(f), lik.invlink(-f))
 end
 
 function aux_posterior!(
@@ -57,10 +57,10 @@ end
 function logtilt(lik::AugPoisson, Ω, y, f)
     logλ = log(lik.invlink.λ)
     return mapreduce(+, y, f, Ω) do yᵢ, fᵢ, (ω, n)
-        return -(yᵢ + n) * logtwo +
-               ((yᵢ - n) * fᵢ - abs2(fᵢ) * ω) / 2 +
-               yᵢ * logλ +
-               logfactorial(yᵢ)
+        return yᵢ * logλ -
+                (yᵢ + n) * logtwo -
+                logfactorial(yᵢ)
+               ((yᵢ - n) * fᵢ - abs2(fᵢ) * ω) / 2
     end
 end
 
@@ -78,7 +78,7 @@ function expected_logtilt(lik::AugPoisson, qΩ, y, qf)
         m = mean(fᵢ)
         return -(yᵢ + θ.n) * logtwo +
                ((yᵢ - θ.n) * m - (abs2(m) + var(fᵢ)) * θ.ω) / 2 +
-               yᵢ * logλ +
+               yᵢ * logλ -
                logfactorial(yᵢ)
     end
 end
