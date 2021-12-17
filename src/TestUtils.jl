@@ -48,11 +48,17 @@ function test_auglik(
         pcondΩ = aux_full_conditional(lik, y, f)
         Ω₁ = tvrand(rng, pcondΩ)
         Ω₂ = tvrand(rng, pcondΩ)
-        logC₁ = logdensity(pcondΩ, Ω₁) - logtilt(lik, Ω₁, y, f) - logdensity(pΩ, Ω₁)
-        logC₂ = logdensity(pcondΩ, Ω₂) - logtilt(lik, Ω₂, y, f) - logdensity(pΩ, Ω₂)
-        # if !(lik isa PoissonLikelihood) # This seems to be randomly broken for Poisson for some reason
-            @test logC₁ / n ≈ logC₂ / n atol = 1.0 
-        # end
+        # We compute p(f, y) by doing C = p(f,y) = p(y|Ω,f)p(Ω)/p(Ω|y,f)
+        # This should be the same no matter what Ω is
+        logC₁ = logtilt(lik, Ω₁, y, f) + logdensity(pΩ, Ω₁) - logdensity(pcondΩ, Ω₁)
+        logC₂ = logtilt(lik, Ω₂, y, f) + logdensity(pΩ, Ω₂) - logdensity(pcondΩ, Ω₂)
+        @test logC₁ ≈ logC₂ atol = 1.0
+        logC = log(mean([begin
+            x = tvrand(pcondΩ); 
+            exp(logdensity(pcondΩ, x) + logtilt(lik, x, y, f));
+        end
+        for _ in 1:10000]))
+        @show logC
     end
 
     #Testing variational inference

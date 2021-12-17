@@ -15,9 +15,9 @@ using IrrationalConstants: twoπ, halfπ, inv2π, fourinvπ
 export PolyaGamma
 export PolyaGammaPoisson
 
-export NTDist
-export ntrand, ntmean, ntmeaninv
-export tvrand, tvmean, tvmeaninv
+export NTDist, dist
+export ntrand, ntmean
+export tvrand, tvmean
 
 include("ntdist.jl")
 
@@ -29,7 +29,7 @@ Return a sample as a `NamedTuple`.
 """
 ntrand
 
-ntrand(d) = ntrand(GLOBAL_RNG, d)
+ntrand(d) = ntrand(Random.GLOBAL_RNG, d)
 
 @doc raw"""
     tvrand([rng::AbstractRNG,] d::ProductMeasure) -> TupleVector
@@ -39,7 +39,7 @@ Return a collection of samples as a TupleVector
 """
 tvrand
 
-tvrand(d) = tvrand(GLOBAL_RNG, d)
+tvrand(d) = tvrand(Random.GLOBAL_RNG, d)
 
 tvrand(rng::AbstractRNG, d::ProductMeasure) = TupleVector(rand(rng, d))
 

@@ -24,6 +24,16 @@ function (lik::StudentTLikelihood)(f::AbstractVector{<:Real})
     return Product(lik.(f))
 end
 
+# Helper functions for returning the mean of X⁻¹
+function tvmeaninv(ds::AbstractVector{<:NTDist{<:InverseGamma}})
+    return TupleVector(ntmeaninv.(ds))
+end
+
+# return the mean of X⁻¹
+function ntmeaninv(d::NTDist{<:InverseGamma})
+    return (; ω=mean(dist(d).invd))
+end
+
 function init_aux_variables(rng::AbstractRNG, ::StudentTLikelihood, n::Int)
     return TupleVector((; ω=rand(rng, InverseGamma(), n)))
 end
@@ -43,8 +53,8 @@ function aux_posterior!(
     qΩ, lik::StudentTLikelihood, y::AbstractVector, qf::AbstractVector{<:Normal}
 )
     φ = qΩ.pars
-    map!(φ.β, y, qf) do yᵢ, qfᵢ
-        (abs2(lik.σ) * lik.ν + second_moment(qfᵢ, yᵢ)) / 2
+    map!(φ.β, y, qf) do yᵢ, fᵢ
+        (abs2(lik.σ) * lik.ν + second_moment(fᵢ, yᵢ)) / 2
     end
     return qΩ
 end
@@ -68,20 +78,21 @@ end
 
 function logtilt(::StudentTLikelihood, Ω, y, f)
     return mapreduce(+, y, f, Ω.ω) do yᵢ, fᵢ, ω
-        logpdf(Normal(yᵢ, ω), fᵢ)
+        logpdf(Normal(fᵢ, ω), yᵢ)
     end
 end
 
 function aux_prior(lik::StudentTLikelihood, y)
     halfν = lik.ν / 2
+    σ² = abs2(lik.σ)
     return For(length(y)) do _
-        NTDist(InverseGamma(halfν, halfν * abs2(lik.σ)))
+        NTDist(InverseGamma(halfν, halfν * σ²))
     end
 end
 
 function expected_logtilt(::StudentTLikelihood, qΩ, y, qf)
     return mapreduce(+, y, qf, marginals(qΩ)) do yᵢ, fᵢ, qω
-        θ = ntmeaninv(qω)
+        θ = ntmeaninv(qω) # E[ω⁻¹]
         logpdf(Normal(yᵢ, θ.ω), mean(fᵢ)) - var(fᵢ) * θ.ω / 2
     end
 end

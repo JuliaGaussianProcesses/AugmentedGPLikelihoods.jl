@@ -10,7 +10,7 @@ Given `π::AbstractNTDist` and `Π::AbstractVector{<:AbstractNTDist}`
 
 ## Necessary
 - `ntrand(rng, π)` -> NamedTuple
-- `ntmean(π) -> NamedTuple
+- `ntmean(π)` -> NamedTuple
 - `MeasureBase.logdensity(π, x::NamedTuple)` -> Real
 - `Distributions.kldivergence(π₀, π₁)` -> Real
 ## Optional
@@ -33,7 +33,6 @@ dist(π::NTDist) = π.d
 
 Statistics.mean(π::NTDist) = ntmean(dist(π))
 Statistics.mean(Π::AbstractVector{<:NTDist}) = tvmean(Π)
-
 
 MeasureBase.logdensity(π::NTDist, x::NamedTuple) = logpdf(dist(π), only(x))
 
