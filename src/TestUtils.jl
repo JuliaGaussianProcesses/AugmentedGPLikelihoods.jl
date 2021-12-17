@@ -78,6 +78,24 @@ function test_auglik(
         @test all(x -> all(>=(0), x), γs) # Check that the variance is positive
 
         # TODO test that aux_posterior parameters return the minimizing
+        φ = TupleVectors.unwrap(aux_posterior(lik, y, qf).pars) # TupleVector
+        φ_opt = vcat(values(φ)...)
+        s = keys(φ)
+        n_var = length(s)
+        function loss(φ)
+            q = ProductMeasure(qΩ.f, TupleVector(NamedTuple{s}(collect(φ[((j - 1) * n_var + 1):(j*n_var)] for j in 1:n_var))))
+            return -expected_logtilt(lik, q, y, qf) + aux_kldivergence(lik, q, y)
+        end
+        ϵ = 1e-2
+        # Test that by perturbing the value in random directions, the loss does not decrease
+        for i in n_var * n
+            (lik isa PoissonLikelihood && i <= n) && continue # We do not want to vary y
+            Δ = zeros(n_var * n)
+            Δ[i] = ϵ # We try one element at a time
+            @test loss(φ_opt) <= loss(φ_opt + Δ)
+            @test loss(φ_opt) <= loss(φ_opt - Δ)
+        end
+        # Optim.optimize(loss, φ_opt)
         # values of the ELBO
         pΩ = aux_prior(lik, y)
         @test pΩ isa ProductMeasure
