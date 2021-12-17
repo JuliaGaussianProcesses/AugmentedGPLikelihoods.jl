@@ -8,10 +8,8 @@ DocMeta.setdocmeta!(
     AugmentedGPLikelihoods, :DocTestSetup, :(using AugmentedGPLikelihoods); recursive=true
 )
 
-bib = CitationBibliography(joinpath(@__DIR__, "references.bib"))
-
 # TODO use the general approach of ApproximateGPs.jl
-for example in ["bernoulli", "poisson"]
+for example in ["bernoulli", "poisson", "studentt"]
     folder = joinpath(pkgdir(AugmentedGPLikelihoods), "examples", example)
     Pkg.activate(folder)
     Pkg.instantiate()
@@ -24,6 +22,7 @@ for example in ["bernoulli", "poisson"]
 end
 Pkg.activate(@__DIR__)
 
+bib = CitationBibliography(joinpath(@__DIR__, "references.bib"))
 makedocs(
     bib;
     modules=[AugmentedGPLikelihoods],
@@ -40,9 +39,13 @@ makedocs(
         "Likelihoods" => [
             "Bernoulli" => "likelihoods/bernoulli.md",
             "Poisson" => "likelihoods/poisson.md",
+            "StudentT" => "likelihoods/studentt.md",
         ],
-        "Examples" =>
-            ["Bernoulli" => "examples/bernoulli.md", "Poisson" => "examples/poisson.md"],
+        "Examples" => [
+            "Bernoulli" => "examples/bernoulli.md",
+            "Poisson" => "examples/poisson.md",
+            "StudentT" => "examples/studentt.md",
+        ],
         "Additional Distributions" => "specialdistributions.md",
         "References" => "references.md",
     ],

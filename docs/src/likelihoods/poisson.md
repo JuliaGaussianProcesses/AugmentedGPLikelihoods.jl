@@ -28,7 +28,7 @@ We can now augment the likelihood as:
 Like for the [Bernoulli Likelihood](@ref), we can use the Polya-Gamma augmentation, and use the fact that independent Polya-Gamma variables are additive, i.e. if ``\omega_1 \sim \operatorname{PG}(a, 0)`` and ``\omega_2 \sim \operatorname{PG}(b, 0)`` then ``\omega_1 + \omega_2 \sim \operatorname{PG}(a + b, 0)``
 This result in the final augmented likelihood
 ```math
-    p(y, n, \omega| f, \lambda) = \lambda^y\left(2^{y + n}y!\right)^{-1}\exp\left(\frac{(y-n)}{2}f + \frac{f^2}{2}\omega\right)\operatorname{PG}(\omega|y+n, 0)\operatorname{Po}(n|\lambda)
+    p(y, n, \omega| f, \lambda) = \lambda^y\left(2^{y + n}y!\right)^{-1}\exp\left(\frac{(y-n)}{2}f - \frac{f^2}{2}\omega\right)\operatorname{PG}(\omega|y+n, 0)\operatorname{Po}(n|\lambda)
 ```
 
 ## Conditional distributions (Sampling)
@@ -39,7 +39,7 @@ We are interested in the full-conditionals ``p(f|y,\omega, n, \lambda)`` and ``p
     p(f|y,\omega, n, \lambda) =& \mathcal{N}(f|\mu,\Sigma)\\
     \Sigma =& \left(K^{-1} + \operatorname{Diagonal}(\omega)\right)^{-1}\\
     \mu =& \Sigma\left(\frac{y - n}{2} + K^{-1}\mu_0\right)\\
-    p(\omega, n|y,f,\lambda) =& \operatorname{PG}(\omega|y + n, |f|)\operatorname{Po}(n|\lambda\sigma(f))
+    p(\omega_i, n_i|y_i,f_i,\lambda) =& \operatorname{PG}(\omega_i|y_i + n_i, |f_i|)\operatorname{Po}(n_i|\lambda\sigma(f_i))
 \end{align*}
 ```
 

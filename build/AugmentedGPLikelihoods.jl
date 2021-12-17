@@ -28,8 +28,6 @@ export aug_loglik, aux_kldivergence
 
 export ScaledLogistic
 
-export StudentTLikelihood
-
 include("api.jl")
 include("generic.jl")
 include("SpecialDistributions/SpecialDistributions.jl")

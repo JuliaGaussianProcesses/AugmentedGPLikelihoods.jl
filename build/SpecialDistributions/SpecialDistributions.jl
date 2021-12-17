@@ -12,35 +12,18 @@ using Statistics
 using SpecialFunctions
 using IrrationalConstants: twoπ, halfπ, inv2π, fourinvπ
 
-export PolyaGamma
+export PolyaGamma, PolyaGammaMT
 export PolyaGammaPoisson
+export ntrand, ntmean, tvmean
 
-export NTDist, dist
-export ntrand, ntmean
-export tvrand, tvmean
-
-include("ntdist.jl")
+posℝ = @half Lebesgue(ℝ)
 
 @doc raw"""
-    ntrand([rng::AbstractRNG,] d) -> NamedTuple
+    ntrand(rng::AbstractRNG, d::Distribution) -> NamedTuple
 
 Return a sample as a `NamedTuple`.
 """
 ntrand
-
-ntrand(d) = ntrand(Random.GLOBAL_RNG, d)
-
-@doc raw"""
-    tvrand([rng::AbstractRNG,] d::ProductMeasure) -> TupleVector
-    tvrand([rng::AbstractRNG,] d::AbstractVector{<:AbstractNTDist}) -> TupleVector
-
-Return a collection of samples as a TupleVector
-"""
-tvrand
-
-tvrand(d) = tvrand(Random.GLOBAL_RNG, d)
-
-tvrand(rng::AbstractRNG, d::ProductMeasure) = TupleVector(rand(rng, d))
 
 @doc raw"""
     ntmean(d::Distribution) -> NamedTuple
@@ -50,7 +33,7 @@ Return the mean as a `NamedTuple`.
 ntmean
 
 @doc raw"""
-    tvmean(d::AbstractVector{<:AbstractNTDist}) -> TupleVector
+    tvmean(d::AbstractVector{<:Distribution}) -> TupleVector
     tvmean(d::ProductMeasure)
 
 Return a collection of mean as a `TupleVector`.
@@ -58,7 +41,6 @@ Return a collection of mean as a `TupleVector`.
 tvmean
 
 tvmean(qΩ::ProductMeasure) = tvmean(marginals(qΩ))
-tvmeaninv(qΩ::ProductMeasure) = tvmeaninv(marginals(qΩ))
 
 include("polyagamma.jl")
 include("polyagammapoisson.jl")

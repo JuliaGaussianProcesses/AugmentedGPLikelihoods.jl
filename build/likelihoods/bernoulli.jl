@@ -1,15 +1,28 @@
 function init_aux_variables(rng::AbstractRNG, ::BernoulliLikelihood{<:LogisticLink}, n::Int)
-    return TupleVector(; ω=rand(rng, PolyaGamma(1, 0.0), n))
+    return TupleVector((; ω=rand(rng, PolyaGamma(1, 0.0), n)))
 end
 
 function init_aux_posterior(T::DataType, ::BernoulliLikelihood{<:LogisticLink}, n::Int)
     return For(TupleVector(; c=zeros(T, n))) do φ
-        NTDist(PolyaGamma(1, φ.c))
+        PolyaGamma(1, φ.c)
     end
 end
 
+function aux_sample!(
+    rng::AbstractRNG,
+    Ω,
+    lik::BernoulliLikelihood{<:LogisticLink},
+    ::AbstractVector,
+    f::AbstractVector,
+)
+    map!(Ω.ω, f) do f
+        rand(rng, aux_full_conditional(lik, nothing, f))
+    end
+    return Ω
+end
+
 function aux_full_conditional(::BernoulliLikelihood{<:LogisticLink}, ::Any, f::Real)
-    return NTDist(PolyaGamma(1, abs(f)))
+    return PolyaGamma(1, abs(f))
 end
 
 function aux_posterior!(
@@ -50,14 +63,13 @@ end
 
 function aux_prior(::BernoulliLikelihood{<:LogisticLink}, y)
     return For(length(y)) do _
-        NTDist(PolyaGamma(1, 0.0))
+        PolyaGamma(1, 0.0)
     end
 end
 
 function expected_logtilt(::BernoulliLikelihood{<:LogisticLink}, qΩ, y, qf)
     return mapreduce(+, y, qf, marginals(qΩ)) do y, f, qω
         m = mean(f)
-        θ = ntmean(qω)
-        -log(2) + (sign(y - 0.5) * m - (abs2(m) + var(f)) * θ.ω) / 2
+        -log(2) + (sign(y - 0.5) * m - (abs2(m) + var(f)) * mean(qω)) / 2
     end
 end

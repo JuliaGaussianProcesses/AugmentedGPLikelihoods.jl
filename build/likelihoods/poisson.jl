@@ -18,8 +18,16 @@ function init_aux_posterior(T::DataType, ::AugPoisson, n::Int)
     end
 end
 
+function aux_sample!(
+    rng::AbstractRNG, Ω, lik::AugPoisson, y::AbstractVector{<:Int}, f::AbstractVector
+)
+    return map!(Ω, y, f) do y, f
+        ntrand(rng, aux_full_conditional(lik, y, f))
+    end
+end
+
 function aux_full_conditional(lik::AugPoisson, y::Int, f::Real)
-    return PolyaGammaPoisson(y, abs(f), lik.invlink(-f))
+    return PolyaGammaPoisson(y, abs(f), lik.invlink(f))
 end
 
 function aux_posterior!(
@@ -56,26 +64,29 @@ end
 
 function logtilt(lik::AugPoisson, Ω, y, f)
     logλ = log(lik.invlink.λ)
-    return mapreduce(+, y, f, Ω) do yᵢ, fᵢ, (ω, n)
-        return yᵢ * logλ - (yᵢ + n) * logtwo - logfactorial(yᵢ) +
-               ((yᵢ - n) * fᵢ - abs2(fᵢ) * ω) / 2
+    return mapreduce(+, y, f, Ω) do y, f, (ω, n)
+        return -(y + n) * logtwo +
+               ((y - n) * f - abs2(f) * ω) / 2 +
+               y * logλ +
+               logfactorial(y)
     end
 end
 
 function aux_prior(lik::AugPoisson, y::AbstractVector{<:Int})
     λ = lik.invlink.λ
-    return For(y) do yᵢ
-        PolyaGammaPoisson(yᵢ, 0, λ)
+    return For(y) do _y
+        PolyaGammaPoisson(_y, 0, λ)
     end
 end
 
 function expected_logtilt(lik::AugPoisson, qΩ, y, qf)
     logλ = log(lik.invlink.λ)
-    return mapreduce(+, y, qf, marginals(qΩ)) do yᵢ, fᵢ, qω
+    return mapreduce(+, y, qf, marginals(qΩ)) do y, f, qω
         θ = ntmean(qω)
-        m = mean(fᵢ)
-        return -(yᵢ + θ.n) * logtwo +
-               ((yᵢ - θ.n) * m - (abs2(m) + var(fᵢ)) * θ.ω) / 2 +
-               yᵢ * logλ - logfactorial(yᵢ)
+        m = mean(f)
+        return -(y + θ.n) * logtwo +
+               ((y - θ.n) * m - (abs2(m) + var(f)) * θ.ω) / 2 +
+               y * logλ +
+               logfactorial(y)
     end
 end

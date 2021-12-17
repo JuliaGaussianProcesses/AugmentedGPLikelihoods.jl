@@ -2,15 +2,6 @@ function aux_sample!(Ω, lik::AbstractLikelihood, y, f)
     return aux_sample!(GLOBAL_RNG, Ω, lik, y, f)
 end
 
-function aux_sample!(
-    rng::AbstractRNG, Ω, lik::AbstractLikelihood, y::AbstractVector, f::AbstractVector
-)
-    map!(Ω, y, f) do yᵢ, fᵢ
-        ntrand(rng, aux_full_conditional(lik, yᵢ, fᵢ))
-    end
-    return Ω
-end
-
 function aux_sample(lik::AbstractLikelihood, y, f)
     return aux_sample(GLOBAL_RNG, lik, y, f)
 end

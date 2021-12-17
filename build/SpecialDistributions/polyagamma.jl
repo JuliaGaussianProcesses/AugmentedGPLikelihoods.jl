@@ -28,6 +28,14 @@ function Statistics.mean(d::PolyaGamma)
     end
 end
 
+function ntmean(d::PolyaGamma)
+    return (; ω=mean(d))
+end
+
+function tvmean(d::AbstractVector{<:PolyaGamma})
+    return TupleVector((; ω=mean.(d)))
+end
+
 Base.minimum(d::PolyaGamma) = zero(eltype(d))
 Base.maximum(::PolyaGamma) = Inf
 Distributions.insupport(::PolyaGamma, x::Real) = zero(x) <= x < Inf
@@ -35,10 +43,9 @@ Distributions.insupport(::PolyaGamma, x::Real) = zero(x) <= x < Inf
 function Distributions.logpdf(d::PolyaGamma, x::Real)
     b, c = Distributions.params(d)
     if iszero(b)
-        return iszero(x) ? zero(x) : -Inf # if b is zero, then the distribution
-    # simplified as a delta dirac.
+        return iszero(x) ? Inf : -Inf
     else
-        iszero(x) && -Inf # The limit to p(x) for x-> 0 is 0.
+        iszero(x) && -Inf
         return logtilt(x, b, c) + (b - 1) * log(2) - loggamma(b) + log(
             sum(0:200) do n
                 ifelse(iseven(n), 1, -1) * exp(
@@ -49,6 +56,10 @@ function Distributions.logpdf(d::PolyaGamma, x::Real)
         )
     end
 end
+
+MeasureBase.logdensity(d::PolyaGamma, x) = logpdf(d, x)
+
+MeasureBase.basemeasure(::PolyaGamma) = Lebesgue(ℝ)
 
 Distributions.logpdf(d::PolyaGamma, x::NamedTuple{(:ω,),<:Tuple{<:Real}}) = logpdf(d, x.ω)
 

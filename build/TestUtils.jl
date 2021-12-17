@@ -1,6 +1,5 @@
 module TestUtils
 using AugmentedGPLikelihoods
-using AugmentedGPLikelihoods.SpecialDistributions
 using Distributions
 using GPLikelihoods: AbstractLikelihood
 using MeasureBase
@@ -45,14 +44,15 @@ function test_auglik(
         pΩ = aux_prior(lik, y)
         @test logdensity(pΩ, Ω) isa Real
 
-        pcondΩ = aux_full_conditional(lik, y, f)
-        Ω₁ = tvrand(rng, pcondΩ)
-        Ω₂ = tvrand(rng, pcondΩ)
-        # We compute p(f, y) by doing C = p(f,y) = p(y|Ω,f)p(Ω)/p(Ω|y,f)
-        # This should be the same no matter what Ω is
-        logC₁ = logtilt(lik, Ω₁, y, f) + logdensity(pΩ, Ω₁) - logdensity(pcondΩ, Ω₁)
-        logC₂ = logtilt(lik, Ω₂, y, f) + logdensity(pΩ, Ω₂) - logdensity(pcondΩ, Ω₂)
-        @test logC₁ ≈ logC₂ atol = 1e-5
+        Ω₁ = init_aux_variables(rng, lik, n)
+        Ω₂ = init_aux_variables(rng, lik, n)
+        logC₁ =
+            logdensity(aux_full_conditional(lik, y, f), Ω₁) - logtilt(lik, Ω₁, y, f) -
+            logdensity(pΩ, Ω₁)
+        logC₂ =
+            logdensity(aux_full_conditional(lik, y, f), Ω₂) - logtilt(lik, Ω₂, y, f) -
+            logdensity(pΩ, Ω₂)
+        @test logC₁ / n ≈ logC₂ / n atol = 1.0
     end
 
     #Testing variational inference
