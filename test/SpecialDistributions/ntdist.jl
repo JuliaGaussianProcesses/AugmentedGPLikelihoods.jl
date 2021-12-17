@@ -16,7 +16,13 @@
     x = ntrand(d)
     @test keys(x) == (:ω,)
     @test logdensity(d, x) isa Real
+
+    d2 = NTDist{:γ}(q)
+    x = ntrand(d2)
+    @test keys(x) == (:γ,)
+
     @test ntrand(q) isa NamedTuple
+    @test ntmean(q) isa NamedTuple
 
     @test tvrand(rng, ds) isa TupleVector
     @test tvmean(ds) isa TupleVector
