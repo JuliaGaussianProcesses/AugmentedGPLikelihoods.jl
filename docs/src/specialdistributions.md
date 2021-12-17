@@ -9,10 +9,13 @@ PolyaGamma
 PolyaGammaPoisson
 ```
 
-## Helper functions
+## `NamedTuple`/`TupleVector` distribution interface
 
 ```@docs
+AbstractNTDist
+NTDist
 ntrand
 ntmean
+tvrand
 tvmean
 ```

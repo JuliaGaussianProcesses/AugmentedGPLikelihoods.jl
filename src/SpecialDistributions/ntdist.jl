@@ -28,7 +28,11 @@ end
 
 # Simple wrapper around any measure or distribution object
 @doc raw"""
-    NTDist
+    NTDist(d) -> NTDist{typeof(d),:ω}
+    NTDist{S}(d) -> NTDist{typeof(d),S}
+
+Wrapper around a single distribution to be compatible with the [`ntrand`](@ref), [`ntmean`](@ref) interface.
+One can pass the wanted symbol via `S` while the default will be `:ω`.
 """
 struct NTDist{Td,S} <: AbstractNTDist
     d::Td
