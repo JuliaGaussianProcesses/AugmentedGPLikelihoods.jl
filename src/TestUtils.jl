@@ -50,7 +50,9 @@ function test_auglik(
         Ω₂ = tvrand(rng, pcondΩ)
         logC₁ = logdensity(pcondΩ, Ω₁) - logtilt(lik, Ω₁, y, f) - logdensity(pΩ, Ω₁)
         logC₂ = logdensity(pcondΩ, Ω₂) - logtilt(lik, Ω₂, y, f) - logdensity(pΩ, Ω₂)
-        @test logC₁ / n ≈ logC₂ / n atol = 1.0
+        # if !(lik isa PoissonLikelihood) # This seems to be randomly broken for Poisson for some reason
+            @test logC₁ / n ≈ logC₂ / n atol = 1.0 
+        # end
     end
 
     #Testing variational inference

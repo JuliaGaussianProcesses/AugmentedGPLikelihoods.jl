@@ -28,13 +28,6 @@ function Statistics.mean(d::PolyaGamma)
     end
 end
 
-function ntmean(d::PolyaGamma)
-    return (; ω=mean(d))
-end
-
-function tvmean(d::AbstractVector{<:PolyaGamma})
-    return TupleVector((; ω=mean.(d)))
-end
 
 Base.minimum(d::PolyaGamma) = zero(eltype(d))
 Base.maximum(::PolyaGamma) = Inf
@@ -57,10 +50,6 @@ function Distributions.logpdf(d::PolyaGamma, x::Real)
         )
     end
 end
-
-MeasureBase.logdensity(d::PolyaGamma, x) = logpdf(d, x)
-
-MeasureBase.basemeasure(::PolyaGamma) = Lebesgue(ℝ)
 
 Distributions.logpdf(d::PolyaGamma, x::NamedTuple{(:ω,),<:Tuple{<:Real}}) = logpdf(d, x.ω)
 

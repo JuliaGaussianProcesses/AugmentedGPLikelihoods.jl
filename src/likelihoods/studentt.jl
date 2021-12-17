@@ -21,7 +21,7 @@ end
 _α(lik::StudentTLikelihood) = (lik.ν + 1) / 2
 
 function (lik::StudentTLikelihood)(f::AbstractVector{<:Real})
-    return Produce(lik.(f))
+    return Product(lik.(f))
 end
 
 function init_aux_variables(rng::AbstractRNG, ::StudentTLikelihood, n::Int)
@@ -31,21 +31,12 @@ end
 function init_aux_posterior(T::DataType, lik::StudentTLikelihood, n::Int)
     α = _α(lik)
     return For(TupleVector(; β=zeros(T, n))) do φ
-        InverseGamma(α, φ.β)
+        NTDist(InverseGamma(α, φ.β))
     end
-end
-
-function aux_sample!(
-    rng::AbstractRNG, Ω, lik::StudentTLikelihood, y::AbstractVector, f::AbstractVector
-)
-    map!(Ω.ω, y, f) do yᵢ, fᵢ
-        rand(rng, aux_full_conditional(lik, yᵢ, fᵢ))
-    end
-    return Ω
 end
 
 function aux_full_conditional(lik::StudentTLikelihood, y::Real, f::Real)
-    return InverseGamma(_α(lik), (abs2(lik.σ) * lik.ν + abs2(y - f)) / 2)
+    return NTDist(InverseGamma(_α(lik), (abs2(lik.σ) * lik.ν + abs2(y - f)) / 2))
 end
 
 function aux_posterior!(
@@ -76,15 +67,15 @@ function expected_auglik_precision(::StudentTLikelihood, qΩ, ::AbstractVector)
 end
 
 function logtilt(::StudentTLikelihood, Ω, y, f)
-    return mapreduce(+, y, f, Ω.ω) do y, f, ω
-        logpdf(Normal(y, ω), f)
+    return mapreduce(+, y, f, Ω.ω) do yᵢ, fᵢ, ω
+        logpdf(Normal(yᵢ, ω), fᵢ)
     end
 end
 
 function aux_prior(lik::StudentTLikelihood, y)
     halfν = lik.ν / 2
     return For(length(y)) do _
-        InverseGamma(halfν, halfν * abs2(lik.σ))
+        NTDist(InverseGamma(halfν, halfν * abs2(lik.σ)))
     end
 end
 

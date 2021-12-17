@@ -10,7 +10,7 @@ Random samples as well as statistics from the distribution will returned as `Nam
 
 This structured distributions is needed for example for the [`PoissonLikelihood`](https://juliagaussianprocesses.github.io/GPLikelihoods.jl/dev/#GPLikelihoods.PoissonLikelihood).
 """
-struct PolyaGammaPoisson{Ty,Tc,Tλ}
+struct PolyaGammaPoisson{Ty,Tc,Tλ} <: AbstractNTDist
     y::Ty # Intermediate first parameter for PG(y + n, c)
     c::Tc # Second parameter for PG
     λ::Tλ # Poisson Parameter
@@ -20,21 +20,13 @@ Distributions.Poisson(d::PolyaGammaPoisson) = Poisson(d.λ)
 
 Distributions.length(::PolyaGammaPoisson) = 2
 
-function Base.rand(rng::AbstractRNG, ::Type{T}, d::PolyaGammaPoisson) where {T}
-    return ntrand(rng, d)
-end
-
 function ntrand(rng::AbstractRNG, d::PolyaGammaPoisson)
     n = rand(rng, Poisson(d))
     ω = rand(rng, PolyaGamma.(n + d.y, d.c))
     return (; ω, n)
 end
 
-# MeasureBase.basemeasure()
-
-MeasureBase.logdensity(d::PolyaGammaPoisson, x::NamedTuple) = logpdf(d, x)
-
-function Distributions.logpdf(d::PolyaGammaPoisson, x::NamedTuple)
+function MeasureBase.logdensity(d::PolyaGammaPoisson, x::NamedTuple)
     logpdf_n = logpdf(Poisson(d), x.n)
     logpdf_ω = logpdf(PolyaGamma(d.y + x.n, d.c), x.ω)
     return logpdf_ω + logpdf_n
