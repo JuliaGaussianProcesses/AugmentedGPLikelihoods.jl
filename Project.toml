@@ -1,7 +1,7 @@
 name = "AugmentedGPLikelihoods"
 uuid = "4689c64d-1a23-4d3c-ad26-1c612d54a282"
 authors = ["Théo Galy-Fajou <theo.galyfajou@gmail.com> and contributors"]
-version = "0.4.0"
+version = "0.4.1"
 
 [deps]
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
