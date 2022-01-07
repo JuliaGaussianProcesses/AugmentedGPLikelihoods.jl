@@ -2,7 +2,7 @@
 
 The [`BinomialLikelihood`](@ref) with a [logistic](https://en.wikipedia.org/wiki/Logistic_function) link ``\sigma`` is defined as
 ```math
-    p(y|f) = \operatorname{NB}(y|\sigma(f),r) = {y + r - 1 \chose y} (1 - \sigma(f))^r \sigma^y(f)
+    p(y|f) = \operatorname{NB}(y|\sigma(f),r) = {y + r - 1 \choose y} (1 - \sigma(f))^r \sigma^y(f)
 ```
 
 ## The augmentation
@@ -18,11 +18,11 @@ We are reusing the augmentation from the [`Bernoulli Likelihood (Logistic Link)`
     p(y|f,r) &= C(y,r)\int_0^\infty \frac{1}{2^r}\exp\left(-\frac{f}{2}r - \frac{f^2}{2}\omega\right)\operatorname{PG}(\omega|r, 0)d\omega\int_0^\infty\frac{1}{2^y}\exp\left(\frac{f}{2}y - \frac{f^2}{2}\omega\right)\operatorname{PG}(\omega|y,0)d\omega\\ 
     &= C(y,r)\int_0^\infty\frac{1}{2^{r+y}}\exp\left(\frac{f}{2}(y-r) -\frac{f^2}{2}\omega\right)\operatorname{PG}(\omega|r+y,0)d\omega,
 \end{align*}
-where ``C(y,r) = {y + r - 1 \chose y}``.
+```
+where ``C(y,r) = {y + r - 1 \choose y}``.
 We can now augment with the new variable ``\omega``:
 ```math
 p(y,\omega|f,r) = C(y, r) 2^{-(y+r)}\exp\left(\frac{f}{2}(y-r) -\frac{f^2}{2}\omega\right)\operatorname{PG}(\omega|r+y,0)
-```
 ```
 ## Conditional distributions (Sampling)
 

@@ -4,7 +4,7 @@
 
 Likelihood with a Negative Binomial distribution:
 ```math
-    p(y|f, r) = {y + r - 1 \chose y}(1-\sigma(f))^r \sigma^y(f).
+    p(y|f, r) = {y + r - 1 \choose y}(1-\sigma(f))^r \sigma^y(f).
 ```
 
 ## Arguments
