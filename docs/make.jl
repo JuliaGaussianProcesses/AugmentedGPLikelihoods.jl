@@ -48,7 +48,7 @@ makedocs(
             "Poisson" => "examples/poisson.md",
             "StudentT" => "examples/studentt.md",
         ],
-        "Additional Distributions" => "specialdistributions.md",
+        "Misc" => "misc.md",
         "References" => "references.md",
     ],
 )
