@@ -9,6 +9,13 @@ PolyaGamma
 PolyaGammaPoisson
 ```
 
+## Additional likelihoods
+
+```@docs
+StudentTLikelihood
+NegBinomialLikelihood
+```
+
 ## `NamedTuple`/`TupleVector` distribution interface
 
 ```@docs

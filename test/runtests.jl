@@ -4,6 +4,7 @@ using AugmentedGPLikelihoods.TestUtils: test_auglik
 const AGPL = AugmentedGPLikelihoods
 using Distributions
 using GPLikelihoods
+using GPLikelihoods.TestInterface: test_interface
 using Random
 using LogExpFunctions
 using MeasureBase
@@ -14,6 +15,7 @@ using TupleVectors
     @info "Testing likelihoods"
     @testset "Likelihoods" begin
         include("likelihoods/bernoulli.jl")
+        include("likelihoods/negativebinomial.jl")
         include("likelihoods/poisson.jl")
         include("likelihoods/studentt.jl")
     end

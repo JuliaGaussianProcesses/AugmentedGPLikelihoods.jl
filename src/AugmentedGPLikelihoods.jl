@@ -28,7 +28,7 @@ export aug_loglik, aux_kldivergence
 
 export ScaledLogistic
 
-export StudentTLikelihood
+export StudentTLikelihood, NegBinomialLikelihood
 
 include("api.jl")
 include("generic.jl")
@@ -36,6 +36,7 @@ include("SpecialDistributions/SpecialDistributions.jl")
 using .SpecialDistributions
 
 include("likelihoods/bernoulli.jl")
+include("likelihoods/negativebinomial.jl")
 include("likelihoods/poisson.jl")
 include("likelihoods/studentt.jl")
 

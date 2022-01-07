@@ -50,9 +50,9 @@ where ``\theta_i = E_{q(\omega_i)}[\omega_i] = \frac{1}{2c_i}\tanh\left(\frac{c_
 
 We get the ELBO as
 ```math
-    \mathcal{L} = -N\log(2) + \sum_{i=1}^N \frac{y_i m_i}{2} + \frac{m_i^2 + S_{ii}}{2}\theta_i - KL(q(\omega)||p(\omega)) - KL(q(f)||p(f)),
+    \mathcal{L} = -N\log(2) + \sum_{i=1}^N \frac{y_i m_i}{2} - \frac{m_i^2 + S_{ii}}{2}\theta_i - \operatorname{KL}(q(\omega)||p(\omega)) - \operatorname{KL}(q(f)||p(f)),
 ```
 where
 ```math
-    KL(q(\omega_i|1,c)||p(\omega_i|1,0)) = \log \cosh \left(\frac{c_i}{2}\right) - c_i^2\frac{\theta_i}{2}
+    \operatorname{KL}(q(\omega_i|1,c)||p(\omega_i|1,0)) = \log \cosh \left(\frac{c_i}{2}\right) - c_i^2\frac{\theta_i}{2}
 ```
