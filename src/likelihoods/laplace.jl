@@ -10,7 +10,7 @@ Likelihood with a [Laplace distribution](https://en.wikipedia.org/wiki/Laplace_d
 ## Arguments
 - `β::Real`, scale parameter
 """
-struct LaplaceLikelihood{Tβ::Real} <: AbstractLikelihood
+struct LaplaceLikelihood{Tβ<:Real} <: AbstractLikelihood
     β::Tβ
 end
 
