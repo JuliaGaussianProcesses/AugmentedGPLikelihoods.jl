@@ -17,6 +17,8 @@ end
 
 NegBinomialLikelihood(r::Real) = NegBinomialLikelihood(LogisticLink(), r)
 
+(lik::NegBinomialLikelihood)(f::Real) = NegativeBinomial(lik.r, lik.invlink(f))
+
 function (lik::NegBinomialLikelihood)(f::AbstractVector{<:Real})
     return Product(lik.(f))
 end
@@ -39,7 +41,7 @@ function aux_posterior!(
     qΩ, ::NegBinomialLikelihood, y::AbstractVector, qf::AbstractVector{<:Normal}
 )
     φ = qΩ.pars
-    φ.y = y
+    φ.y .= y
     map!(φ.c, qf) do fᵢ
         sqrt(second_moment(fᵢ))
     end
@@ -54,7 +56,7 @@ function auglik_precision(::NegBinomialLikelihood, Ω, ::AbstractVector)
     return (Ω.ω,)
 end
 
-function expected_auglik_potential(::NegBinomialLikelihood, qΩ, y::AbstractVector)
+function expected_auglik_potential(lik::NegBinomialLikelihood, qΩ, y::AbstractVector)
     return auglik_potential(lik, qΩ, y)
 end
 
@@ -62,16 +64,19 @@ function expected_auglik_precision(::NegBinomialLikelihood, qΩ, ::AbstractVecto
     return (tvmean(qΩ).ω,)
 end
 
+negbin_logconst(y, r::Real) = loggamma(y + r) - loggamma(y + 1) - loggamma(r)
+negbin_logconst(y, r::Int) = first(logabsbinomial(y + r - 1, y))
+
 function logtilt(lik::NegBinomialLikelihood, Ω, y, f)
     return mapreduce(+, y, f, Ω.ω) do yᵢ, fᵢ, ωᵢ
-        logfactorial(yᵢ + lik.r - 1, yᵢ) - (yᵢ + lik.r) * logtwo + (fᵢ * (yᵢ - lik.r) - abs2(fᵢ) * ωᵢ) / 2
+        negbin_logconst(yᵢ, lik.r) - (yᵢ + lik.r) * logtwo + (fᵢ * (yᵢ - lik.r) - abs2(fᵢ) * ωᵢ) / 2
     end
 end
 
-function expected_logtilt(::NegBinomialLikelihood, qΩ, y, qf)
+function expected_logtilt(lik::NegBinomialLikelihood, qΩ, y, qf)
     return mapreduce(+, y, qf, marginals(qΩ)) do yᵢ, qfᵢ, qωᵢ
         θ = ntmean(qωᵢ)
-        logfactorial(yᵢ + lik.r - 1, yᵢ) - (yᵢ + lik.r) * logtwo + (mean(qfᵢ) * (yᵢ - lik.r) - second_moment(qfᵢ) * θ.ωᵢ) / 2
+        negbin_logconst(yᵢ, lik.r) - (yᵢ + lik.r) * logtwo + (mean(qfᵢ) * (yᵢ - lik.r) - second_moment(qfᵢ) * θ.ω) / 2
     end
 end
 

@@ -1,10 +1,10 @@
 using AugmentedGPLikelihoods
 using AugmentedGPLikelihoods.SpecialDistributions
 using AugmentedGPLikelihoods.TestUtils: test_auglik
-using GPLikelihoods.TestInterface: test_interface
 const AGPL = AugmentedGPLikelihoods
 using Distributions
 using GPLikelihoods
+using GPLikelihoods.TestInterface: test_interface
 using Random
 using LogExpFunctions
 using MeasureBase

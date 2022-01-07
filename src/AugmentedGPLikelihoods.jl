@@ -28,7 +28,7 @@ export aug_loglik, aux_kldivergence
 
 export ScaledLogistic
 
-export StudentTLikelihood
+export StudentTLikelihood, NegBinomialLikelihood
 
 include("api.jl")
 include("generic.jl")
