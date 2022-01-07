@@ -55,7 +55,7 @@ where ``\theta_i = E_{q(\omega_i)}[\omega_i] = \frac{y_i + r}{2c_i}\tanh\left(\f
 
 We get the ELBO as
 ```math
-    \mathcal{L} = -N\log(2) + \sum_{i=1}^N \frac{y_i m_i}{2} + \frac{m_i^2 + S_{ii}}{2}\theta_i - KL(q(\omega)||p(\omega)) - KL(q(f)||p(f)),
+    \mathcal{L} = \sum_{i=1}^N -(y_i + r)\log 2 + \frac{(y_i - r) m_i}{2} + \frac{m_i^2 + S_{ii}}{2}\theta_i - KL(q(\omega)||p(\omega)) - KL(q(f)||p(f)),
 ```
 where
 ```math
