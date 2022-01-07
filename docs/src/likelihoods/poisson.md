@@ -65,8 +65,8 @@ where ``\theta_i = E_{q(\omega_i,n_i)}[\omega_i] = \frac{y+\gamma_i}{2c_i}\tanh\
 We get the ELBO as
 ```math
 \begin{align*}
-    \mathcal{L} =& \sum_{i=1}^N -(y_i + \gamma_i) \log 2+ y_i \log \lambda + \frac{(y_i - \gamma_i) m_i}{2} + \frac{m_i^2 + S_{ii}}{2}\theta_i\\ 
-    &- KL(q(\omega,n)||p(\omega,n|y)) - KL(q(f)||p(f)),
+    \mathcal{L} =& \sum_{i=1}^N -(y_i + \gamma_i) \log 2+ y_i \log \lambda + \frac{(y_i - \gamma_i) m_i}{2} - \frac{m_i^2 + S_{ii}}{2}\theta_i\\ 
+    &- \operatorname{KL}(q(\omega,n)||p(\omega,n|y)) - \operatorname{KL}(q(f)||p(f)),
 \end{align*}
 ```
 where

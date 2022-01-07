@@ -1,6 +1,6 @@
-# Bernoulli Likelihood (Logistic Link)
+# Negative Binomial Likelihood (Logistic Link)
 
-The [`BinomialLikelihood`](@ref) with a [logistic](https://en.wikipedia.org/wiki/Logistic_function) link ``\sigma`` is defined as
+The [`NegBinomialLikelihood`](@ref) with a [logistic](https://en.wikipedia.org/wiki/Logistic_function) link ``\sigma`` is defined as
 ```math
     p(y|f) = \operatorname{NB}(y|\sigma(f),r) = {y + r - 1 \choose y} (1 - \sigma(f))^r \sigma^y(f)
 ```
@@ -48,16 +48,16 @@ The optimal variational parameters are given by:
 \begin{align*}
     c_i =& \sqrt{\mu_i^2 + S_{ii}},\\
     S =& \left(K^{-1} + \operatorname{Diagonal}(\theta)\right)^{-1},\\
-    m =& \Sigma\left(\frac{y}{2} + K^{-1}\mu_0\right),
+    m =& \Sigma\left(\frac{y - r}{2} + K^{-1}\mu_0\right),
 \end{align*}
 ```
 where ``\theta_i = E_{q(\omega_i)}[\omega_i] = \frac{y_i + r}{2c_i}\tanh\left(\frac{c_i}{2}\right)``.
 
 We get the ELBO as
 ```math
-    \mathcal{L} = \sum_{i=1}^N -(y_i + r)\log 2 + \frac{(y_i - r) m_i}{2} + \frac{m_i^2 + S_{ii}}{2}\theta_i - KL(q(\omega)||p(\omega)) - KL(q(f)||p(f)),
+    \mathcal{L} = \sum_{i=1}^N -(y_i + r)\log 2 + \frac{(y_i - r) m_i}{2} - \frac{m_i^2 + S_{ii}}{2}\theta_i - \operatorname{KL}(q(\omega)||p(\omega)) - \operatorname{KL}(q(f)||p(f)),
 ```
 where
 ```math
-    KL(q(\omega_i|y_i+r,c)||p(\omega_i|y_i+r,0)) = (y_i + r) \log \cosh \left(\frac{c_i}{2}\right) - c_i^2\frac{\theta_i}{2}
+    \operatorname{KL}(q(\omega_i|y_i+r,c)||p(\omega_i|y_i+r,0)) = (y_i + r) \log \cosh \left(\frac{c_i}{2}\right) - c_i^2\frac{\theta_i}{2}
 ```
