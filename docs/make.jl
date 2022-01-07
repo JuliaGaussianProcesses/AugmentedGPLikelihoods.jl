@@ -38,6 +38,7 @@ makedocs(
         "Home" => "index.md",
         "Likelihoods" => [
             "Bernoulli" => "likelihoods/bernoulli.md",
+            "Negative Binomial" => "likelihoods/negativebinomial.md",
             "Poisson" => "likelihoods/poisson.md",
             "StudentT" => "likelihoods/studentt.md",
         ],
