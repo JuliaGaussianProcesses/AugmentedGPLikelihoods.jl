@@ -53,7 +53,6 @@ function aux_posterior!(
     return qΩ
 end
 
-# TODO use a different parametrization to avoid all these inverses
 function auglik_potential(::StudentTLikelihood, Ω, y::AbstractVector)
     return (y .* Ω.ω,)
 end

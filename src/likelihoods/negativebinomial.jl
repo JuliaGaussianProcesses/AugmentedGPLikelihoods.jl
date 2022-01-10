@@ -69,14 +69,16 @@ negbin_logconst(y, r::Int) = first(logabsbinomial(y + r - 1, y))
 
 function logtilt(lik::NegBinomialLikelihood, Ω, y, f)
     return mapreduce(+, y, f, Ω.ω) do yᵢ, fᵢ, ωᵢ
-        negbin_logconst(yᵢ, lik.r) - (yᵢ + lik.r) * logtwo + (fᵢ * (yᵢ - lik.r) - abs2(fᵢ) * ωᵢ) / 2
+        negbin_logconst(yᵢ, lik.r) - (yᵢ + lik.r) * logtwo +
+        (fᵢ * (yᵢ - lik.r) - abs2(fᵢ) * ωᵢ) / 2
     end
 end
 
 function expected_logtilt(lik::NegBinomialLikelihood, qΩ, y, qf)
     return mapreduce(+, y, qf, marginals(qΩ)) do yᵢ, qfᵢ, qωᵢ
         θ = ntmean(qωᵢ)
-        negbin_logconst(yᵢ, lik.r) - (yᵢ + lik.r) * logtwo + (mean(qfᵢ) * (yᵢ - lik.r) - second_moment(qfᵢ) * θ.ω) / 2
+        negbin_logconst(yᵢ, lik.r) - (yᵢ + lik.r) * logtwo +
+        (mean(qfᵢ) * (yᵢ - lik.r) - second_moment(qfᵢ) * θ.ω) / 2
     end
 end
 

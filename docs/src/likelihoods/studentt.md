@@ -47,7 +47,7 @@ The optimal variational parameters are given by:
 \begin{align*}
     \beta_i =& \frac{\nu}{2\sigma^2} + \frac{(y_i - \mu_i)^2 + S_{ii}}{2},\\
     m =& \Sigma\left(\theta y + K^{-1}\mu_0\right),\\
-    S =& \left(K^{-1} + \operatorname{Diagonal}(\theta)\right)^{-1},\\
+    S =& \left(K^{-1} + \operatorname{Diagonal}(\theta)\right)^{-1},
 \end{align*}
 ```
 where ``\theta_i = E_{q(\omega_i)}[\omega_i] = \alpha_i / \beta_i``.

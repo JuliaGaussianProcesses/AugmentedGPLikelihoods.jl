@@ -12,8 +12,9 @@ PolyaGammaPoisson
 ## Additional likelihoods
 
 ```@docs
-StudentTLikelihood
+LaplaceLikelihood
 NegBinomialLikelihood
+StudentTLikelihood
 ```
 
 ## `NamedTuple`/`TupleVector` distribution interface
