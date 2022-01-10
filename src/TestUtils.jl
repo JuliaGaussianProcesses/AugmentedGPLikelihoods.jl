@@ -45,14 +45,34 @@ function test_auglik(
         pΩ = aux_prior(lik, y)
         @test logdensity(pΩ, Ω) isa Real
 
-        pcondΩ = aux_full_conditional(lik, y, f) # Compute the full conditional
-        Ω₁ = tvrand(rng, pcondΩ) # Sample a set of aux. variables
-        Ω₂ = tvrand(rng, pcondΩ) # Sample another set of aux. variables
-        # We compute p(f, y) by doing C = p(f,y) = p(y|Ω,f)p(Ω)/p(Ω|y,f)
-        # This should be the same no matter what Ω is
-        logC₁ = logtilt(lik, Ω₁, y, f) + logdensity(pΩ, Ω₁) - logdensity(pcondΩ, Ω₁)
-        logC₂ = logtilt(lik, Ω₂, y, f) + logdensity(pΩ, Ω₂) - logdensity(pcondΩ, Ω₂)
-        @test logC₁ ≈ logC₂ atol = 1e-5
+        # Test that the full conditional is correct
+        @testset "Full conditional Ω" begin
+            pcondΩ = aux_full_conditional(lik, y, f) # Compute the full conditional of Ω
+            Ω₁ = tvrand(rng, pcondΩ) # Sample a set of aux. variables
+            Ω₂ = tvrand(rng, pcondΩ) # Sample another set of aux. variables
+            # We compute p(f, y) by doing C = p(f,y) = p(y|Ω,f)p(Ω)/p(Ω|y,f)
+            # This should be the same no matter what Ω is
+            logC₁ = logtilt(lik, Ω₁, y, f) + logdensity(pΩ, Ω₁) - logdensity(pcondΩ, Ω₁)
+            logC₂ = logtilt(lik, Ω₂, y, f) + logdensity(pΩ, Ω₂) - logdensity(pcondΩ, Ω₂)
+            @test logC₁ ≈ logC₂ atol = 1e-5
+        end
+
+        @testset "Full conditional f" begin
+            pcondΩ = aux_full_conditional(lik, y, f) # Compute the full conditional of Ω
+            Ω = tvrand(rng, pcondΩ) # Sample a set of aux. variables
+            gp = GP(SqExponentialKernel())
+            fx = gp(x, 1e-5)
+            x = range(-10, 10; length=n)
+            K = cov(fx)
+            S = inv(Symmetric(inv(K) + Diagonal(only(auglik_precision(lik, Ω, y)))))
+            m = S * (only(auglik_potential(lik, Ω, y)) - K \ mean(fx))
+            qf = MvNormal(m, S)
+            f₁ = rand(rng, qf)
+            f₂ = rand(rng, qf)
+            logC₁ = logtilt(lik, Ω, y, f₁) + logdensity(fx, f₁) - logdensity(qf, f₁)
+            logC₂ = logtilt(lik, Ω, y, f₂) + logdensity(fx, f₂) - logdensity(qf, f₂)
+            @test logC₁ ≈ logC₂ atol = 1e-5
+        end
     end
 
     #Testing variational inference
