@@ -49,7 +49,7 @@ function md_postprocess(content)
 end
 
 # Convert to markdown and notebook
-const SCRIPTJL = joinpath(EXAMPLEPATH, EXAMPLE)
+const SCRIPTJL = joinpath(EXAMPLEPATH, EXAMPLE * ".jl")
 Literate.markdown(
     SCRIPTJL,
     OUTDIR;
