@@ -1,12 +1,12 @@
 ```@meta
-CurrentModule = AugmentedGPLikelihoods.SpecialDistributions
+CurrentModule = AugmentedGPLikelihoods
 ```
 
 ## Additional distributions
 
 ```@docs
-PolyaGamma
-PolyaGammaPoisson
+SpecialDistributions.PolyaGamma
+SpecialDistributions.PolyaGammaPoisson
 ```
 
 ## Additional likelihoods
@@ -20,10 +20,10 @@ StudentTLikelihood
 ## `NamedTuple`/`TupleVector` distribution interface
 
 ```@docs
-AbstractNTDist
-NTDist
-ntrand
-ntmean
-tvrand
-tvmean
+SpecialDistributions.AbstractNTDist
+SpecialDistributions.NTDist
+SpecialDistributions.ntrand
+SpecialDistributions.ntmean
+SpecialDistributions.tvrand
+SpecialDistributions.tvmean
 ```

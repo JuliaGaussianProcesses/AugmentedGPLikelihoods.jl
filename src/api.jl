@@ -22,6 +22,13 @@ See also [`init_aux_variables`](@ref) for sampling.
 init_aux_posterior
 
 @doc raw"""
+    aux_full_conditional(lik::AbstractLikelihood, yᵢ, fᵢ) -> AbstractNTDist
+
+Return the full conditional distribution of `Ωᵢ`.
+"""
+aux_full_conditional
+
+@doc raw"""
     aux_sample!([rng::AbstractRNG], Ω, lik::Likelihood, y, f) -> TupleVector
 
 Sample the auxiliary variables `Ω` in-place based on the full-conditional [`aux_full_conditional`](@ref)

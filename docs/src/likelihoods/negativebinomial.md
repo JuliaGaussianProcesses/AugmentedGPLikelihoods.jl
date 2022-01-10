@@ -12,7 +12,7 @@ Reworking the sigmoids, we obtain the following likelihood:
 ```math
 p(y|f,r) = C(y,r) \sigma^r(-f)\sigma^y(f)
 ```
-We are reusing the augmentation from the [`Bernoulli Likelihood (Logistic Link)`](@ref) section and use the additivity properties of the Polya-Gamma variables:
+We are reusing the augmentation from the [Bernoulli Likelihood (Logistic Link)](@ref bernoulli_section) section and use the additivity properties of the Polya-Gamma variables:
 ```math
 \begin{align*}
     p(y|f,r) &= C(y,r)\int_0^\infty \frac{1}{2^r}\exp\left(-\frac{f}{2}r - \frac{f^2}{2}\omega\right)\operatorname{PG}(\omega|r, 0)d\omega\int_0^\infty\frac{1}{2^y}\exp\left(\frac{f}{2}y - \frac{f^2}{2}\omega\right)\operatorname{PG}(\omega|y,0)d\omega\\ 
