@@ -45,9 +45,9 @@ function test_auglik(
         pΩ = aux_prior(lik, y)
         @test logdensity(pΩ, Ω) isa Real
 
-        pcondΩ = aux_full_conditional(lik, y, f)
-        Ω₁ = tvrand(rng, pcondΩ)
-        Ω₂ = tvrand(rng, pcondΩ)
+        pcondΩ = aux_full_conditional(lik, y, f) # Compute the full conditional
+        Ω₁ = tvrand(rng, pcondΩ) # Sample a set of aux. variables
+        Ω₂ = tvrand(rng, pcondΩ) # Sample another set of aux. variables
         # We compute p(f, y) by doing C = p(f,y) = p(y|Ω,f)p(Ω)/p(Ω|y,f)
         # This should be the same no matter what Ω is
         logC₁ = logtilt(lik, Ω₁, y, f) + logdensity(pΩ, Ω₁) - logdensity(pcondΩ, Ω₁)

@@ -54,10 +54,10 @@ We get the ELBO as
 ```math
     \mathcal{L} = N\left(\log \Gamma(\frac{1}{2}) - \log (\pi) - \log(2\beta)\right) + \sum_{i=1}^N -\left((y_i-m_i)^2 + S_{ii}\right)\theta_i - \operatorname{KL}(q(\omega)||p(\omega)) - \operatorname{KL}(q(f)||p(f)),
 ```
-where ``\theta_i = E_{q(\omega_i)}\left[\omega_i\right] =& \mu_i``
+where ``\theta_i = E_{q(\omega_i)}\left[\omega_i\right] = \mu_i``
 ```math
 \begin{align*}
-    \operatorname{KL}(q(\omega_i|\alpha_i,\beta_i)||p(\omega_i|\alpha,\beta)) =& (\alpha_i - \alpha)\psi(\alpha_i) - \log\Gamma(\alpha_i) + \log \Gamma(\alpha) + \alpha(\log \beta_i - \log \beta) + \alpha_i \frac{\beta - \beta_i}{\beta_i}
+    \operatorname{KL}(q(\omega_i|\mu_i,2\lambda)||p(\omega_i|-\frac{1}{2},\lambda)) =& \operatorname{KL}(q(\omega))
 \end{align*}
 ```
 where ``\psi(\alpha)`` is the [digamma function](https://en.wikipedia.org/wiki/Digamma_function).

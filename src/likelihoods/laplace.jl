@@ -22,7 +22,7 @@ function (lik::LaplaceLikelihood)(f::AbstractVector{<:Real})
     return Product(lik.(f))
 end
 
-@inline laplace_λ(lik::LaplaceLikelihood) = inv(2 * abs2(lik.β))
+@inline laplace_λ(lik::LaplaceLikelihood) = inv(abs2(2 * lik.β))
 
 function init_aux_variables(rng::AbstractRNG, ::LaplaceLikelihood, n::Int)
     return TupleVector((; ω=rand(rng, InverseGamma(), n)))
@@ -66,20 +66,30 @@ function expected_auglik_precision(::LaplaceLikelihood, qΩ, ::AbstractVector)
 end
 
 function logtilt(lik::LaplaceLikelihood, Ω, y, f)
-    return length(y) * (loggamma(1//2) - log(sqrtπ) - log(2 * lik.β)) + mapreduce(+, y, f, Ω.ω) do yᵢ, fᵢ, ωᵢ
-        - abs2(yᵢ - fᵢ) * ωᵢ
+    return length(y) * (loggamma(1//2) - log(sqrtπ) - log(2 * lik.β)) +
+           mapreduce(+, y, f, Ω.ω) do yᵢ, fᵢ, ωᵢ
+        -abs2(yᵢ - fᵢ) * ωᵢ
     end
 end
 
 function expected_logtilt(lik::LaplaceLikelihood, qΩ, y, qf)
-    return mapreduce(+, y, qf, marginals(qΩ)) do yᵢ, qfᵢ, qωᵢ
-        θ = ntmean(qωᵢ)
-        -log(sqrtπ) + loggamma(1//2) - log(2 * lik.β) - second_moment(qfᵢ, yᵢ) * θ.ω
+    return length(y) * (loggamma(1//2) - log(sqrtπ) - log(2 * lik.β)) +
+           mapreduce(+, y, qf, marginals(qΩ)) do yᵢ, qfᵢ, qωᵢ
+        -second_moment(qfᵢ, yᵢ) * ntmean(qωᵢ).ω
     end
 end
 
 function aux_prior(lik::LaplaceLikelihood, y)
     return For(length(y)) do _
         NTDist(InverseGamma(1//2, laplace_λ(lik)))
+    end
+end
+
+function aux_kldivergence(::LaplaceLikelihood, qΩ::ProductMeasure, pΩ::ProductMeasure)
+    return mapreduce(+, marginals(qΩ), marginals(pΩ)) do qωᵢ, pωᵢ
+        μ = mean(dist(qωᵢ))
+        α = shape(dist(pωᵢ))
+        β = scale(dist(pωᵢ))
+        log(μ) - log(twoπ) / 2 - α * log(β) + loggamma(α) - abs2(μ) / 2 - β / μ - 2
     end
 end
