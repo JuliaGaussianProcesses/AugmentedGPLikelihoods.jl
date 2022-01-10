@@ -66,8 +66,8 @@ function expected_auglik_precision(::LaplaceLikelihood, qΩ, ::AbstractVector)
 end
 
 function logtilt(lik::LaplaceLikelihood, Ω, y, f)
-    return mapreduce(+, y, f, Ω.ω) do yᵢ, fᵢ, ωᵢ
-        -log(sqrtπ) + loggamma(1//2)  - abs2(yᵢ - fᵢ) * ωᵢ - log(2 * lik.β)
+    return length(y) * (loggamma(1//2) - log(sqrtπ) - log(2 * lik.β)) + mapreduce(+, y, f, Ω.ω) do yᵢ, fᵢ, ωᵢ
+        - abs2(yᵢ - fᵢ) * ωᵢ
     end
 end
 

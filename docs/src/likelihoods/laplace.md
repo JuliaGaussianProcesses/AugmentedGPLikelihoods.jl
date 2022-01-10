@@ -13,11 +13,11 @@ Running the inverse Laplace transform on the function ``\exp(-\frac{\sqrt{x}}{\b
 ```math
 \frac{e^{-\frac{1}{4\beta^2\omega}}}{2\beta\sqrt{\pi}}\omega^{-\frac{3}{2}},
 ```
-which corresponds to an [Inverse Gamma distribution](https://en.wikipedia.org/wiki/Inverse-gamma_distribution) with shape ``\alpha=\frac{1}{2}`` and scale ``\beta=(2\beta)^{-2}``.
+which corresponds to an [Inverse Gamma distribution](https://en.wikipedia.org/wiki/Inverse-gamma_distribution) with shape ``\alpha=\frac{1}{2}`` and scale ``\beta'=(2\beta)^{-2}``.
 
 Therefore, we can write the Laplace distribution as the following Gaussian scale-mixture:
 ```math
-\operatorname{Laplace}(y|f,\beta) = \frac{\Gamma(\frac{1}{2})}{\sqrt{\pi}}\int_0^\infty \exp\left(-(y-f)^2\omega\right)\mathcal{IG}(\omega|\frac{1}{2},(2\beta)^{-2})d\omega,
+\operatorname{Laplace}(y|f,\beta) = \frac{\Gamma(\frac{1}{2})}{2\beta\sqrt{\pi}}\int_0^\infty \exp\left(-(y-f)^2\omega\right)\mathcal{IG}(\omega|\frac{1}{2},(2\beta)^{-2})d\omega,
 ```
 where ``\mathcal{IG}`` is the inverse Gamma distribution.
 
@@ -29,7 +29,7 @@ We are interested in the full-conditionals ``p(f|y,\omega,\beta)`` and ``p(\omeg
     p(f|y,\omega,\sigma,\nu) =& \mathcal{N}(f|\mu,\Sigma)\\
     \Sigma =& \left(K^{-1} + \operatorname{Diagonal}(\omega^{-1})\right)^{-1}\\
     \mu =& \Sigma\left(2\omega^{-1} y + K^{-1}\mu_0\right)\\
-    p(\omega_i|y_i,f_i,\sigma,\nu) =& \mathcal{IN}\left(\omega_i|\frac{1}{|2\beta(y-f)|}, (2\beta)^{-2}}\right),
+    p(\omega_i|y_i,f_i,\sigma,\nu) =& \mathcal{IN}\left(\omega_i|\frac{1}{|2\beta(y-f)|}, 2(2\beta)^{-2}\right),
 \end{align*}
 ```
 where ``\mathcal{IN}`` is an [Inverse Gaussian distribution](https://en.wikipedia.org/wiki/Inverse_Gaussian_distribution).
