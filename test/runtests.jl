@@ -7,6 +7,7 @@ using GPLikelihoods
 using GPLikelihoods.TestInterface: test_interface
 using Random
 using LogExpFunctions
+using SpecialFunctions
 using MeasureBase
 using Test
 using TupleVectors
