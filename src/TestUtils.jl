@@ -3,6 +3,7 @@ using AugmentedGPLikelihoods
 using AugmentedGPLikelihoods.SpecialDistributions
 using Distributions
 using GPLikelihoods: AbstractLikelihood
+using LinearAlgebra
 using MeasureBase
 using Random
 using Test
@@ -45,14 +46,32 @@ function test_auglik(
         pΩ = aux_prior(lik, y)
         @test logdensity(pΩ, Ω) isa Real
 
-        pcondΩ = aux_full_conditional(lik, y, f) # Compute the full conditional
-        Ω₁ = tvrand(rng, pcondΩ) # Sample a set of aux. variables
-        Ω₂ = tvrand(rng, pcondΩ) # Sample another set of aux. variables
-        # We compute p(f, y) by doing C = p(f,y) = p(y|Ω,f)p(Ω)/p(Ω|y,f)
-        # This should be the same no matter what Ω is
-        logC₁ = logtilt(lik, Ω₁, y, f) + logdensity(pΩ, Ω₁) - logdensity(pcondΩ, Ω₁)
-        logC₂ = logtilt(lik, Ω₂, y, f) + logdensity(pΩ, Ω₂) - logdensity(pcondΩ, Ω₂)
-        @test logC₁ ≈ logC₂ atol = 1e-5
+        # Test that the full conditional is correct
+        @testset "Full conditional Ω" begin
+            pcondΩ = aux_full_conditional(lik, y, f) # Compute the full conditional of Ω
+            Ω₁ = tvrand(rng, pcondΩ) # Sample a set of aux. variables
+            Ω₂ = tvrand(rng, pcondΩ) # Sample another set of aux. variables
+            # We compute p(f, y) by doing C = p(f,y) = p(y|Ω,f)p(Ω)/p(Ω|y,f)
+            # This should be the same no matter what Ω is
+            logC₁ = logtilt(lik, Ω₁, y, f) + logdensity(pΩ, Ω₁) - logdensity(pcondΩ, Ω₁)
+            logC₂ = logtilt(lik, Ω₂, y, f) + logdensity(pΩ, Ω₂) - logdensity(pcondΩ, Ω₂)
+            @test logC₁ ≈ logC₂ atol = 1e-5
+        end
+
+        @testset "Full conditional f" begin
+            pcondΩ = aux_full_conditional(lik, y, f) # Compute the full conditional of Ω
+            Ω = tvrand(rng, pcondΩ) # Sample a set of aux. variables
+            K = rand(n, n) |> x-> x*x' # Prior Covariance matrix
+            S = inv(Symmetric(inv(K) + Diagonal(only(auglik_precision(lik, Ω, y)))))
+            m = S * (only(auglik_potential(lik, Ω, y)))
+            qF = MvNormal(m, S)
+            pF = MvNormal(K)
+            f₁ = rand(rng, qF)
+            f₂ = rand(rng, qF)
+            logC₁ = logtilt(lik, Ω, y, f₁) + logpdf(pF, f₁) - logpdf(qF, f₁)
+            logC₂ = logtilt(lik, Ω, y, f₂) + logpdf(pF, f₂) - logpdf(qF, f₂)
+            @test logC₁ ≈ logC₂ atol = 1e-5
+        end
     end
 
     #Testing variational inference
