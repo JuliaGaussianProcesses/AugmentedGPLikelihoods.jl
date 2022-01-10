@@ -36,7 +36,7 @@ function init_aux_posterior(T::DataType, lik::LaplaceLikelihood, n::Int)
 end
 
 function aux_full_conditional(lik::LaplaceLikelihood, y::Real, f::Real)
-    return NTDist(InverseGaussian(inv(2 * lik.β * abs(y - f)), laplace_λ(lik)))
+    return NTDist(InverseGaussian(inv(2 * lik.β * abs(y - f)), 2 * laplace_λ(lik)))
 end
 
 function aux_posterior!(
