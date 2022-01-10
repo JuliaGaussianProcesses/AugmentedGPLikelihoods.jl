@@ -54,7 +54,7 @@ function auglik_potential(::LaplaceLikelihood, Ω, y::AbstractVector)
 end
 
 function auglik_precision(::LaplaceLikelihood, Ω, ::AbstractVector)
-    return (Ω.ω,)
+    return (2 * Ω.ω,)
 end
 
 function expected_auglik_potential(::LaplaceLikelihood, qΩ, y::AbstractVector)
@@ -62,7 +62,7 @@ function expected_auglik_potential(::LaplaceLikelihood, qΩ, y::AbstractVector)
 end
 
 function expected_auglik_precision(::LaplaceLikelihood, qΩ, ::AbstractVector)
-    return (tvmean(qΩ).ω,)
+    return (2 * tvmean(qΩ).ω,)
 end
 
 function logtilt(lik::LaplaceLikelihood, Ω, y, f)

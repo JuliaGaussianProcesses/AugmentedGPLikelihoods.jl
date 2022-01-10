@@ -3,6 +3,7 @@ using AugmentedGPLikelihoods
 using AugmentedGPLikelihoods.SpecialDistributions
 using Distributions
 using GPLikelihoods: AbstractLikelihood
+using LinearAlgebra
 using MeasureBase
 using Random
 using Test
@@ -60,17 +61,15 @@ function test_auglik(
         @testset "Full conditional f" begin
             pcondΩ = aux_full_conditional(lik, y, f) # Compute the full conditional of Ω
             Ω = tvrand(rng, pcondΩ) # Sample a set of aux. variables
-            gp = GP(SqExponentialKernel())
-            fx = gp(x, 1e-5)
-            x = range(-10, 10; length=n)
-            K = cov(fx)
+            K = rand(n, n) |> x-> x*x' # Prior Covariance matrix
             S = inv(Symmetric(inv(K) + Diagonal(only(auglik_precision(lik, Ω, y)))))
-            m = S * (only(auglik_potential(lik, Ω, y)) - K \ mean(fx))
-            qf = MvNormal(m, S)
-            f₁ = rand(rng, qf)
-            f₂ = rand(rng, qf)
-            logC₁ = logtilt(lik, Ω, y, f₁) + logdensity(fx, f₁) - logdensity(qf, f₁)
-            logC₂ = logtilt(lik, Ω, y, f₂) + logdensity(fx, f₂) - logdensity(qf, f₂)
+            m = S * (only(auglik_potential(lik, Ω, y)))
+            qF = MvNormal(m, S)
+            pF = MvNormal(K)
+            f₁ = rand(rng, qF)
+            f₂ = rand(rng, qF)
+            logC₁ = logtilt(lik, Ω, y, f₁) + logpdf(pF, f₁) - logpdf(qF, f₁)
+            logC₂ = logtilt(lik, Ω, y, f₂) + logpdf(pF, f₂) - logpdf(qF, f₂)
             @test logC₁ ≈ logC₂ atol = 1e-5
         end
     end

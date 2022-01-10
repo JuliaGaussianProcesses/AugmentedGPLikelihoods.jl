@@ -5,10 +5,10 @@ const AGPL = AugmentedGPLikelihoods
 using Distributions
 using GPLikelihoods
 using GPLikelihoods.TestInterface: test_interface
-using Random
-using LogExpFunctions
-using SpecialFunctions
 using MeasureBase
+using LogExpFunctions
+using Random
+using SpecialFunctions
 using Test
 using TupleVectors
 
