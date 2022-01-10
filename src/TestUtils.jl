@@ -83,7 +83,14 @@ function test_auglik(
         s = keys(φ)
         n_var = length(s)
         function loss(φ)
-            q = ProductMeasure(qΩ.f, TupleVector(NamedTuple{s}(collect(φ[((j - 1) * n_var + 1):(j*n_var)] for j in 1:n_var))))
+            q = ProductMeasure(
+                qΩ.f,
+                TupleVector(
+                    NamedTuple{s}(
+                        collect(φ[((j - 1) * n_var + 1):(j * n_var)] for j in 1:n_var)
+                    ),
+                ),
+            )
             return -expected_logtilt(lik, q, y, qf) + aux_kldivergence(lik, q, y)
         end
         ϵ = 1e-2

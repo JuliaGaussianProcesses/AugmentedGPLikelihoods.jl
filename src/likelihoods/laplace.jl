@@ -14,8 +14,6 @@ struct LaplaceLikelihood{Tβ<:Real} <: AbstractLikelihood
     β::Tβ
 end
 
-@inline laplace_λ(lik::LaplaceLikelihood) = inv(2 * abs2(lik.β))
-
 LaplaceLikelihood() = LaplaceLikelihood(1.0)
 
 (lik::LaplaceLikelihood)(f::Real) = Laplace(f, lik.β)
@@ -24,8 +22,10 @@ function (lik::LaplaceLikelihood)(f::AbstractVector{<:Real})
     return Product(lik.(f))
 end
 
+@inline laplace_λ(lik::LaplaceLikelihood) = inv(2 * abs2(lik.β))
+
 function init_aux_variables(rng::AbstractRNG, ::LaplaceLikelihood, n::Int)
-    return TupleVector((; ω=rand(rng, Exponential(), n)))
+    return TupleVector((; ω=rand(rng, InverseGamma(), n)))
 end
 
 function init_aux_posterior(T::DataType, lik::LaplaceLikelihood, n::Int)
@@ -67,19 +67,19 @@ end
 
 function logtilt(lik::LaplaceLikelihood, Ω, y, f)
     return mapreduce(+, y, f, Ω.ω) do yᵢ, fᵢ, ωᵢ
-        -log(sqrtπ) + loggamma(1 // 2) - log(2 * lik.β) - abs2(yᵢ - fᵢ) * ωᵢ
+        -log(sqrtπ) + loggamma(1//2)  - abs2(yᵢ - fᵢ) * ωᵢ - log(2 * lik.β)
     end
 end
 
-function expected_logtilt(::LaplaceLikelihood, qΩ, y, qf)
-    return mapreduce(+, y, qf, marginals(qΩ)) do yᵢ, fᵢ, qωᵢ
+function expected_logtilt(lik::LaplaceLikelihood, qΩ, y, qf)
+    return mapreduce(+, y, qf, marginals(qΩ)) do yᵢ, qfᵢ, qωᵢ
         θ = ntmean(qωᵢ)
-        -log(sqrtπ) + loggamma(1 // 2) - log(2 * lik.β) - second_moment(qfᵢ, yᵢ) * θ.ω
+        -log(sqrtπ) + loggamma(1//2) - log(2 * lik.β) - second_moment(qfᵢ, yᵢ) * θ.ω
     end
 end
 
 function aux_prior(lik::LaplaceLikelihood, y)
     return For(length(y)) do _
-        NTDist(InverseGamma(-1 // 2, _lap_lik_b(lik)))
+        NTDist(InverseGamma(1//2, laplace_λ(lik)))
     end
 end

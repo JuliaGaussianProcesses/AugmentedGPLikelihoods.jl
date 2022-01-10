@@ -15,6 +15,7 @@ using TupleVectors
     @info "Testing likelihoods"
     @testset "Likelihoods" begin
         include("likelihoods/bernoulli.jl")
+        include("likelihoods/laplace.jl")
         include("likelihoods/negativebinomial.jl")
         include("likelihoods/poisson.jl")
         include("likelihoods/studentt.jl")
