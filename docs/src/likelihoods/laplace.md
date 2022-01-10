@@ -57,7 +57,7 @@ We get the ELBO as
 where ``\theta_i = E_{q(\omega_i)}\left[\omega_i\right] = \mu_i``
 ```math
 \begin{align*}
-    \operatorname{KL}(q(\omega_i|\mu_i,2\lambda)||p(\omega_i|-\frac{1}{2},\lambda)) =& \operatorname{KL}(q(\omega))
+    \operatorname{KL}(q(\omega_i|\mu_i,2\lambda)||p(\omega_i|\frac{1}{2},\lambda)) =& \frac{1}{2}\log 2\lambda - \frac{1}{2}\log 2\pi - \frac{1}{2}\log \lambda  + \log \Gamma(\frac{1}{2}) + \frac{\lambda}{\mu}
 \end{align*}
 ```
 where ``\psi(\alpha)`` is the [digamma function](https://en.wikipedia.org/wiki/Digamma_function).

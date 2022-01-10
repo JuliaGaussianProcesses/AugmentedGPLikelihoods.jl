@@ -88,8 +88,7 @@ end
 function aux_kldivergence(::LaplaceLikelihood, qΩ::ProductMeasure, pΩ::ProductMeasure)
     return mapreduce(+, marginals(qΩ), marginals(pΩ)) do qωᵢ, pωᵢ
         μ = mean(dist(qωᵢ))
-        α = shape(dist(pωᵢ))
-        β = scale(dist(pωᵢ))
-        log(μ) - log(twoπ) / 2 - α * log(β) + loggamma(α) - abs2(μ) / 2 - β / μ - 2
+        λ = scale(dist(pωᵢ))
+        log(2λ) / 2 - log(2π) / 2 - log(λ) / 2 + loggamma(1//2) + λ / μ
     end
 end
