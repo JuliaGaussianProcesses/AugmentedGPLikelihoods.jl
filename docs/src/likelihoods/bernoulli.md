@@ -1,4 +1,4 @@
-# Bernoulli Likelihood (Logistic Link)
+# [Bernoulli Likelihood (Logistic Link)](@id bernoulli_section)
 
 The [`BernoulliLikelihood`](https://juliagaussianprocesses.github.io/GPLikelihoods.jl/dev/#GPLikelihoods.BernoulliLikelihood) with a [logistic](https://en.wikipedia.org/wiki/Logistic_function) link ``\sigma`` is defined as
 ```math

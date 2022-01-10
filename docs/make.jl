@@ -63,8 +63,8 @@ makedocs(
     ),
     pages=[
         "Home" => "index.md",
-        "Likelihoods" => joinpath.("likelihoods", Ref(likelihoods)),
-        "Examples" => joinpath.("exampless", Ref(likelihoods)),
+        "Likelihoods" => joinpath.(Ref("likelihoods"), likelihoods),
+        "Examples" => joinpath.(Ref("examples"), likelihoods),
         "Misc" => "misc.md",
         "References" => "references.md",
     ],

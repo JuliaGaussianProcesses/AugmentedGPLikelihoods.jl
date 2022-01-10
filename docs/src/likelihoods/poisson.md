@@ -25,7 +25,7 @@ We can now augment the likelihood as:
 ```math
     p(y, n|f, \lambda) = \frac{\left(\lambda \sigma(f)\right)^y}{y!}\sigma^n(-f)\operatorname{Po}(n|\lambda)
 ```
-Like for the [Bernoulli Likelihood](@ref), we can use the Polya-Gamma augmentation, and use the fact that independent Polya-Gamma variables are additive, i.e. if ``\omega_1 \sim \operatorname{PG}(a, 0)`` and ``\omega_2 \sim \operatorname{PG}(b, 0)`` then ``\omega_1 + \omega_2 \sim \operatorname{PG}(a + b, 0)``
+Like for the [Bernoulli Likelihood](@ref bernoulli_section) work, we can use the Polya-Gamma augmentation, and use the fact that independent Polya-Gamma variables are additive, i.e. if ``\omega_1 \sim \operatorname{PG}(a, 0)`` and ``\omega_2 \sim \operatorname{PG}(b, 0)`` then ``\omega_1 + \omega_2 \sim \operatorname{PG}(a + b, 0)``
 This result in the final augmented likelihood
 ```math
     p(y, n, \omega| f, \lambda) = \lambda^y\left(2^{y + n}y!\right)^{-1}\exp\left(\frac{(y-n)}{2}f - \frac{f^2}{2}\omega\right)\operatorname{PG}(\omega|y+n, 0)\operatorname{Po}(n|\lambda)
