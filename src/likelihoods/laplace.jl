@@ -50,7 +50,7 @@ function aux_posterior!(
 end
 
 function auglik_potential(::LaplaceLikelihood, Ω, y::AbstractVector)
-    return (y .* Ω.ω,)
+    return (2 * Ω.ω .* y,)
 end
 
 function auglik_precision(::LaplaceLikelihood, Ω, ::AbstractVector)
@@ -58,7 +58,7 @@ function auglik_precision(::LaplaceLikelihood, Ω, ::AbstractVector)
 end
 
 function expected_auglik_potential(::LaplaceLikelihood, qΩ, y::AbstractVector)
-    return (tvmean(qΩ).ω .* y,)
+    return (2 * tvmean(qΩ).ω .* y,)
 end
 
 function expected_auglik_precision(::LaplaceLikelihood, qΩ, ::AbstractVector)
