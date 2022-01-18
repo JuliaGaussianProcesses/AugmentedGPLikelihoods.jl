@@ -19,11 +19,11 @@ function test_auglik(
     y = rand.(rng, lik.(f))
     nf = nlatent(lik)
     @testset "Augmentation test" begin
-        S = 100_000
+        S = 1_000_000
         orig_lik = lik(f)
         orig_logpdf = logpdf(orig_lik, y)
         aux_dist = aux_prior(lik, y)
-        aug_logpdf = log(mapreduce(+, [tvrand(rng, aux_dist) for _ in 1:S]) do Ω
+        aug_logpdf = log(mapreduce(+, (tvrand(rng, aux_dist) for _ in 1:S)) do Ω
             exp(logtilt(lik, Ω, y, f))
         end / S)
         @test orig_logpdf ≈ aug_logpdf
