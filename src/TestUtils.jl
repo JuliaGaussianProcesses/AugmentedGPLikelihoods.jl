@@ -23,7 +23,7 @@ function test_auglik(
         orig_lik = lik(f)
         orig_logpdf = logpdf(orig_lik, y)
         aux_dist = aux_prior(lik, y)
-        aug_logpdf = log(mapreduce(+, [tvrand(aux_dist) for _ in 1:S]) do Ω
+        aug_logpdf = log(mapreduce(+, [tvrand(rng, aux_dist) for _ in 1:S]) do Ω
             exp(logtilt(lik, Ω, y, f))
         end / S)
         @test orig_logpdf ≈ aug_logpdf
@@ -110,8 +110,8 @@ function test_auglik(
             @test expected_logtilt(lik, qΩ, y, qf) isa Real
             S = 1000
             val = expected_logtilt(lik, qΩ, y, qf)
-            fs = [rand(qf) for _ in 1:S]
-            Ωs = [tvrand(qΩ) for _ in 1:S]
+            fs = [rand.(rng, qf) for _ in 1:S]
+            Ωs = [tvrand(rng, qΩ) for _ in 1:S]
             samp_val = mapreduce(+, Ωs, fs) do Ω, f
                 logtilt(lik, Ω, y, f)
             end / S
