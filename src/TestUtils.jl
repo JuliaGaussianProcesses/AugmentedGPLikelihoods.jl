@@ -19,7 +19,7 @@ function test_auglik(
     y = rand.(rng, lik.(f))
     nf = nlatent(lik)
     @testset "Augmentation test" begin
-        S = 10_000_000
+        S = 1_000_000
         orig_lik = lik(f)
         orig_logpdf = logpdf(orig_lik, y)
         aux_dist = aux_prior(lik, y)
@@ -108,7 +108,7 @@ function test_auglik(
 
         @testset "expected_logtilt" begin
             @test expected_logtilt(lik, qΩ, y, qf) isa Real
-            S = 10_000_000
+            S = 1_000_000
             val = expected_logtilt(lik, qΩ, y, qf)
             samp_val = mapreduce(+, (tvrand(rng, qΩ) for _ in 1:S), (rand.(rng, qf) for _ in 1:S)) do Ω, f
                 logtilt(lik, Ω, y, f)
