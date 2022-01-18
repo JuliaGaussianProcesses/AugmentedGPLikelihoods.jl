@@ -26,7 +26,8 @@ function test_auglik(
         aug_logpdf = log(mapreduce(+, (tvrand(rng, aux_dist) for _ in 1:S)) do Ω
             exp(logtilt(lik, Ω, y, f))
         end / S)
-        @test orig_logpdf ≈ aug_logpdf
+        @test orig_logpdf ≈ aug_logpdf atol=1e-1 # This is high cause we estimate the thing 
+        # not in log-space
     end
     # Testing sampling
     @testset "Sampling" begin
@@ -113,7 +114,7 @@ function test_auglik(
             samp_val = mapreduce(+, (tvrand(rng, qΩ) for _ in 1:S), (rand.(rng, qf) for _ in 1:S)) do Ω, f
                 logtilt(lik, Ω, y, f)
             end / S
-            @test val ≈ samp_val
+            @test val ≈ samp_val atol=1e-2 # This is still pretty high
         end
 
         @testset "aux_posterior" begin
