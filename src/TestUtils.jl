@@ -18,6 +18,16 @@ function test_auglik(
 )
     y = rand.(rng, lik.(f))
     nf = nlatent(lik)
+    @testset "Augmentation test" begin
+        S = 100_000
+        orig_lik = lik(f)
+        orig_pdf = pdf(orig_lik, y)
+        aux_dist = aux_prior(lik, y)
+        aug_pdf = mapreduce(+, [tvrand(aux_dist) for _ in 1:S]) do Ω
+            exp(logtilt(lik, Ω, y, f))
+        end / S
+        @test orig_pdf ≈ aug_pdf
+    end
     # Testing sampling
     @testset "Sampling" begin
         Ω = init_aux_variables(lik, n)
