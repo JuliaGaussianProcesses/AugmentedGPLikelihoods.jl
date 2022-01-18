@@ -21,12 +21,12 @@ function test_auglik(
     @testset "Augmentation test" begin
         S = 100_000
         orig_lik = lik(f)
-        orig_pdf = pdf(orig_lik, y)
+        orig_logpdf = logpdf(orig_lik, y)
         aux_dist = aux_prior(lik, y)
-        aug_pdf = mapreduce(+, [tvrand(aux_dist) for _ in 1:S]) do Ω
+        aug_logpdf = log(mapreduce(+, [tvrand(aux_dist) for _ in 1:S]) do Ω
             exp(logtilt(lik, Ω, y, f))
-        end / S
-        @test orig_pdf ≈ aug_pdf
+        end / S)
+        @test orig_logpdf ≈ aug_logpdf
     end
     # Testing sampling
     @testset "Sampling" begin
@@ -111,7 +111,7 @@ function test_auglik(
             S = 1000
             val = expected_logtilt(lik, qΩ, y, qf)
             fs = [rand(qf) for _ in 1:S]
-            Ωs = [tvrand(qΩ, S) for _ in 1:S]
+            Ωs = [tvrand(qΩ) for _ in 1:S]
             samp_val = mapreduce(+, Ωs, fs) do Ω, f
                 logtilt(lik, Ω, y, f)
             end / S
