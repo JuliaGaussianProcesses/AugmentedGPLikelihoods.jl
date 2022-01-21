@@ -71,7 +71,7 @@ end
 
 function expected_logtilt(lik::AugPoisson, qΩ, y, qf)
     logλ = log(lik.invlink.λ)
-    return mapreduce(+, y, qf, marginals(qΩ)) do yᵢ, fᵢ, qω
+    return mapreduce(+, y, qf, @ignore_derivatives marginals(qΩ)) do yᵢ, fᵢ, qω
         θ = ntmean(qω)
         m = mean(fᵢ)
         return -(yᵢ + θ.n) * logtwo +

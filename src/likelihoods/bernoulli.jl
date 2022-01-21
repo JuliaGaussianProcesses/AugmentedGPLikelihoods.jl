@@ -54,10 +54,8 @@ function aux_prior(::BernoulliLikelihood{<:LogisticLink}, y)
     end
 end
 
-function expected_logtilt(::BernoulliLikelihood{<:LogisticLink}, qΩ, y, qf)
-    return mapreduce(+, y, qf, marginals(qΩ)) do y, f, qω
-        m = mean(f)
-        θ = ntmean(qω)
-        -log(2) + (sign(y - 0.5) * m - (abs2(m) + var(f)) * θ.ω) / 2
-    end
+function expected_logtilt(::BernoulliLikelihood{<:LogisticLink}, qωᵢ::NTDist{<:PolyaGamma}, yᵢ::Real, qfᵢ::Normal)
+    m = mean(qfᵢ)
+    θ = ntmean(qωᵢ)
+    return -log(2) + (sign(yᵢ - 0.5) * m - (abs2(m) + var(qfᵢ)) * θ.ω) / 2
 end
