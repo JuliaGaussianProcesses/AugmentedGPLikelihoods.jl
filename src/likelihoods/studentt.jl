@@ -75,11 +75,9 @@ function logtilt(::StudentTLikelihood, Ω, y, f)
     end
 end
 
-function expected_logtilt(::StudentTLikelihood, qΩ, y, qf)
-    return mapreduce(+, y, qf, marginals(qΩ)) do yᵢ, fᵢ, qωᵢ
-        θ = ntmean(qωᵢ)
-        logpdf(Normal(yᵢ, sqrt(inv(θ.ω))), mean(fᵢ)) - var(fᵢ) * θ.ω / 2
-    end
+function expected_logtilt(::StudentTLikelihood, qωᵢ::NTDist{<:Gamma}, yᵢ::Real, qfᵢ::Normal)
+    θ = ntmean(qωᵢ)
+    logpdf(Normal(yᵢ, sqrt(inv(θ.ω))), mean(qfᵢ)) - var(qfᵢ) * θ.ω / 2
 end
 
 function aux_prior(lik::StudentTLikelihood, y)

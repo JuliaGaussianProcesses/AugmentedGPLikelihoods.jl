@@ -74,12 +74,10 @@ function logtilt(lik::NegBinomialLikelihood, Ω, y, f)
     end
 end
 
-function expected_logtilt(lik::NegBinomialLikelihood, qΩ, y, qf)
-    return mapreduce(+, y, qf, marginals(qΩ)) do yᵢ, qfᵢ, qωᵢ
-        θ = ntmean(qωᵢ)
-        negbin_logconst(yᵢ, lik.r) - (yᵢ + lik.r) * logtwo +
-        (mean(qfᵢ) * (yᵢ - lik.r) - second_moment(qfᵢ) * θ.ω) / 2
-    end
+function expected_logtilt(lik::NegBinomialLikelihood, qωᵢ::NTDist{<:PolyaGamma}, yᵢ, qfᵢ::Normal)
+    θ = ntmean(qωᵢ)
+    return negbin_logconst(yᵢ, lik.r) - (yᵢ + lik.r) * logtwo +
+    (mean(qfᵢ) * (yᵢ - lik.r) - second_moment(qfᵢ) * θ.ω) / 2
 end
 
 function aux_prior(lik::NegBinomialLikelihood, y)

@@ -1,9 +1,10 @@
 name = "AugmentedGPLikelihoods"
 uuid = "4689c64d-1a23-4d3c-ad26-1c612d54a282"
 authors = ["Théo Galy-Fajou <theo.galyfajou@gmail.com> and contributors"]
-version = "0.4.4"
+version = "0.4.5"
 
 [deps]
+ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 GPLikelihoods = "6031954c-0455-49d7-b3b9-3e1c99afaf40"
 IrrationalConstants = "92d709cd-6900-40b7-9082-c6be49f344b6"
@@ -18,6 +19,7 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 TupleVectors = "615932cf-77b6-4358-adcd-5b7eba981d7e"
 
 [compat]
+ChainRulesCore = "1"
 Distributions = "0.25"
 GPLikelihoods = "0.2"
 IrrationalConstants = "0.1"

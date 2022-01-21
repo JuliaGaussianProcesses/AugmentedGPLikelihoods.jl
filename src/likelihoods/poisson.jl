@@ -69,13 +69,13 @@ function aux_prior(lik::AugPoisson, y::AbstractVector{<:Int})
     end
 end
 
-function expected_logtilt(lik::AugPoisson, qΩ, y, qf)
+function expected_logtilt(lik::AugPoisson, qΩ, y, qf::AbstractVector{<:Normal})
     logλ = log(lik.invlink.λ)
-    return mapreduce(+, y, qf, marginals(qΩ)) do yᵢ, fᵢ, qω
+    return mapreduce(+, y, qf, @ignore_derivatives marginals(qΩ)) do yᵢ, qfᵢ, qω
         θ = ntmean(qω)
-        m = mean(fᵢ)
+        m = mean(qfᵢ)
         return -(yᵢ + θ.n) * logtwo +
-               ((yᵢ - θ.n) * m - (abs2(m) + var(fᵢ)) * θ.ω) / 2 +
+               ((yᵢ - θ.n) * m - (abs2(m) + var(qfᵢ)) * θ.ω) / 2 +
                yᵢ * logλ - logfactorial(yᵢ)
     end
 end

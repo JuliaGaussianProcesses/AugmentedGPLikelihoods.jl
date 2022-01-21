@@ -72,9 +72,9 @@ function logtilt(lik::LaplaceLikelihood, Ω, y, f)
     end
 end
 
-function expected_logtilt(lik::LaplaceLikelihood, qΩ, y, qf)
+function expected_logtilt(lik::LaplaceLikelihood, qΩ, y, qf::AbstractVector{<:Normal})
     return length(y) * (loggamma(1//2) - log(sqrtπ) - log(2 * lik.β)) +
-           mapreduce(+, y, qf, marginals(qΩ)) do yᵢ, qfᵢ, qωᵢ
+           mapreduce(+, y, qf, @ignore_derivatives marginals(qΩ)) do yᵢ, qfᵢ, qωᵢ
         -second_moment(qfᵢ, yᵢ) * ntmean(qωᵢ).ω
     end
 end
