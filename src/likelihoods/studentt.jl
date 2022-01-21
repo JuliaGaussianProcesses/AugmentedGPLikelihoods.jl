@@ -77,7 +77,7 @@ end
 
 function expected_logtilt(::StudentTLikelihood, qωᵢ::NTDist{<:Gamma}, yᵢ::Real, qfᵢ::Normal)
     θ = ntmean(qωᵢ)
-    logpdf(Normal(yᵢ, sqrt(inv(θ.ω))), mean(fᵢ)) - var(fᵢ) * θ.ω / 2
+    logpdf(Normal(yᵢ, sqrt(inv(θ.ω))), mean(qfᵢ)) - var(qfᵢ) * θ.ω / 2
 end
 
 function aux_prior(lik::StudentTLikelihood, y)
