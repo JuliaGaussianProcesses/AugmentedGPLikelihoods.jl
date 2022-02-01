@@ -5,4 +5,6 @@ DocumenterCitations = "daee34ce-89f3-4625-b898-19384cb65244"
 Literate = "98b081ad-f1c9-55d3-8b20-4c87d4299306"
 
 [compat]
+Documenter = "0.27"
 DocumenterCitations = "0.2"
+Literate = "2"
