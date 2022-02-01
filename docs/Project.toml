@@ -3,3 +3,6 @@ AugmentedGPLikelihoods = "4689c64d-1a23-4d3c-ad26-1c612d54a282"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 DocumenterCitations = "daee34ce-89f3-4625-b898-19384cb65244"
 Literate = "98b081ad-f1c9-55d3-8b20-4c87d4299306"
+
+[compat]
+Literate = "2"
