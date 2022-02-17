@@ -11,11 +11,11 @@ function plot_hist_and_pdf(pgs)
         ω = rand(pg, 10000)
         plt = Plots.histogram(ω; normalize=:pdf, title=to_name(pg))
         Plots.plot!(plt, LinRange(0, maximum(ω), 1000), x->pdf(pg, x); lw=2.0)
+        vline!(plt, [mean(pg)]; lw=2.0)
         plt
     end
     Plots.plot(plts...; layout=length(pgs), link=:y)
 end
-
 ```
 
 ## Additional distributions

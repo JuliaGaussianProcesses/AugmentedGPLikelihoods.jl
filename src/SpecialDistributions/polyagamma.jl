@@ -39,16 +39,13 @@ function Distributions.logpdf(d::PolyaGamma, x::Real)
     # is the delta dirac at 0.
     else
         iszero(x) && -Inf # The limit to p(x) for x-> 0 is 0.
-        Γb = loggamma(b)
-        valₘₐₓ = Γb - b^2 / (8x)
-        ext = logtilt(x, b, c) + (b - 1) * logtwo - loggamma(b) - (log2π + 3 * log(x)) / 2
-        val1 = logsumexp(map(0:2:200) do n
-            _pdf_val_log_series(n, b, x)
-        end)
-        val2 = logsumexp(map(1:2:200) do n
-            _pdf_val_log_series(n, b, x)
-        end)
-        return ext + val1 - val2
+        # valₘₐₓ = Γb - b^2 / (8x)
+        ext = logtilt(x, b, c) + (b - 1) * logtwo - loggamma(b) - (log2π + 3 * log(x)   ) / 2
+        xmax = loggamma(b) - abs2(b) / (8x) 
+        sumval = sum(1:201) do n
+            (iseven(n) ? 1 : -1) * exp(_pdf_val_log_series(n, b, x) - xmax) * (2n + b) / b
+        end
+        return ext + xmax + log(b) + log(1 + sumval)
         # series = sum(1:200) do n
         #     v = 2 * n + b
         #     val = loggamma(n + b) - loggamma(n + 1) - abs2(v) / (8x)
@@ -59,8 +56,8 @@ function Distributions.logpdf(d::PolyaGamma, x::Real)
     end
 end
 
-function _pdf_val_log_series(n, b, x)
-    loggamma(n + b) - loggamma(n + 1) + log(2n + b)- abs2(2n + b) / (8x)
+function _pdf_val_log_series(n::Integer, b::Real, x)
+    return loggamma(n + b) - loggamma(n + 1) - abs2(2n + b) / (8x)
 end
 
 Distributions.logpdf(d::PolyaGamma, x::NamedTuple{(:ω,),<:Tuple{<:Real}}) = logpdf(d, x.ω)
@@ -97,23 +94,28 @@ end
 
 ## Sampling when `b` is an integer
 function draw_sum(rng::AbstractRNG, d::PolyaGamma{<:Integer})
-    return sum(Base.Fix1(sample_pg1, rng), Fill(d.c, d.b))
+    b, c = Distributions.params(d)
+    return sum(1:b) do _
+        sample_pg1(rng, c) 
+    end
 end
 
 ## Sampling when `b` is a Real (and might need to be truncated)
 function draw_sum(rng::AbstractRNG, d::PolyaGamma{<:Real})
-    if d.b < 1
-        return rand_gamma_sum(rng, d, d.b)
+    b, c = Distributions.params(d)
+    if b < 1
+        return rand_gamma_sum(rng, d, b)
     end
-    trunc_b = floor(Int, d.b)
-    trunc_term = sum(Base.Fix1(sample_pg1, rng), Fill(d.c, trunc_b))
+    trunc_b = floor(Int, b)
+    trunc_term = sum(1:trunc_b) do _
+        sample_pg1(rng, c)
+    end
 
-    res_b = d.b - trunc_b
+    res_b = b - trunc_b
     if iszero(res_b)
         return trunc_term
     else
         res_term = rand_gamma_sum(rng, d, res_b)
-        # @show trunc_term, res_term
         return trunc_term + res_term
     end
 end
@@ -130,21 +132,20 @@ end
 
 ## Utility functions
 function a(n::Int, x::Real)
-    k = (n + 0.5) * π
+    k = (n + 1 // 2) * π
     if x > pg_t
         return k * exp(-k^2 * x / 2)
     elseif x > 0
-        expnt = -3 / 2 * (log(halfπ) + log(x)) + log(k) - 2 * (n + 1//2)^2 / x
-        return exp(expnt)
+        expnt = -3 / 2 * (log(halfπ) + log(x)) - 2 * (n + 1//2)^2 / x
+        return k * exp(expnt)
     else
         error("x should be a positive real")
     end
 end
 
-function mass_texpon(z::Real)
+function mass_texpon(z::Real, K)
     t = pg_t
 
-    K = π^2 / 8 + z^2 / 2
     b = sqrt(inv(t)) * (t * z - 1)
     a = -sqrt(inv(t)) * (t * z + 1)
 
@@ -195,14 +196,13 @@ function sample_pg1(rng::AbstractRNG, z::Real)
     z = abs(z) / 2
 
     # Now sample 0.25 * J^*(1, Z := Z/2).
-    K = π^2 / 8 + z^2 / 2
-    t = pg_t
+    K = π^2 / 8 + z^2 * 2
 
-    r = mass_texpon(z)
+    r = mass_texpon(z, K)
 
     while true
         if r > rand(rng) # sample from truncated exponential
-            x = t + rand(rng, Exponential()) / K
+            x = pg_t + rand(rng, Exponential()) / K
         else # sample from truncated inverse Gaussian
             x = rand_truncated_inverse_gaussian(rng, z)
         end
