@@ -2,9 +2,12 @@ using AugmentedGPLikelihoods
 using AugmentedGPLikelihoods.SpecialDistributions
 using AugmentedGPLikelihoods.TestUtils: test_auglik
 const AGPL = AugmentedGPLikelihoods
+
+using Aqua
 using Distributions
 using GPLikelihoods
 using GPLikelihoods.TestInterface: test_interface
+using JET
 using MeasureBase
 using LogExpFunctions
 using Random
@@ -13,6 +16,10 @@ using Test
 using TupleVectors
 
 @testset "AugmentedGPLikelihoods.jl" begin
+    @info "Running Aqua tests"
+    @testset "Aqua" begin
+        Aqua.test_all(AugmentedGPLikelihoods)
+    end
     @info "Testing likelihoods"
     @testset "Likelihoods" begin
         include("likelihoods/bernoulli.jl")
