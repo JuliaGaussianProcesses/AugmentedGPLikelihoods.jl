@@ -5,6 +5,7 @@
 
 module SpecialDistributions
 using Distributions
+using FillArrays
 using MeasureBase
 using Random
 using TupleVectors

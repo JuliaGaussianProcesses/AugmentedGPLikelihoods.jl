@@ -84,7 +84,7 @@ end
 
 ## Sampling when `b` is an integer
 function draw_sum(rng::AbstractRNG, d::PolyaGamma{<:Int})
-    return sum(Base.Fix1(sample_pg1, rng), d.c * ones(d.b))
+    return sum(Base.Fix1(sample_pg1, rng), Fill(d.c, d.b))
 end
 
 function draw_sum(rng::AbstractRNG, d::PolyaGamma{<:Real})
@@ -93,7 +93,7 @@ function draw_sum(rng::AbstractRNG, d::PolyaGamma{<:Real})
     end
     trunc_b = floor(Int, d.b)
     res_b = d.b - trunc_b
-    trunc_term = sum(Base.Fix1(sample_pg1, rng), d.c * ones(trunc_b))
+    trunc_term = sum(Base.Fix1(sample_pg1, rng), Fill(d.c, trunc_b))
     res_term = rand_gamma_sum(rng, d, res_b)
     return trunc_term + res_term
 end
