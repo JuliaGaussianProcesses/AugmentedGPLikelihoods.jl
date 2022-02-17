@@ -6,12 +6,13 @@
 module SpecialDistributions
 using Distributions
 using FillArrays
+using LogExpFunctions
 using MeasureBase
 using Random
 using TupleVectors
 using Statistics
 using SpecialFunctions
-using IrrationalConstants: twoπ, halfπ, inv2π, fourinvπ
+using IrrationalConstants: logtwo, twoπ, halfπ, inv2π, fourinvπ, invπ, log2π
 
 export PolyaGamma
 export PolyaGammaPoisson

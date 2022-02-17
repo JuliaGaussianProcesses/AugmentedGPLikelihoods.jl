@@ -35,19 +35,32 @@ Distributions.insupport(::PolyaGamma, x::Real) = zero(x) <= x < Inf
 function Distributions.logpdf(d::PolyaGamma, x::Real)
     b, c = Distributions.params(d)
     if iszero(b)
-        return iszero(x) ? zero(x) : -Inf # if b is zero, then the distribution
-    # simplified as a delta dirac.
+        return iszero(x) ? zero(x) : -Inf # The limit of PG when b->0  
+    # is the delta dirac at 0.
     else
         iszero(x) && -Inf # The limit to p(x) for x-> 0 is 0.
-        return logtilt(x, b, c) + (b - 1) * log(2) - loggamma(b) + log(
-            sum(0:200) do n
-                ifelse(iseven(n), 1, -1) * exp(
-                    loggamma(n + b) - loggamma(n + 1) + log(2n + b) - log(twoπ * x^3) / 2 -
-                    abs2(2n + b) / (8x),
-                )
-            end,
-        )
+        Γb = loggamma(b)
+        valₘₐₓ = Γb - b^2 / (8x)
+        ext = logtilt(x, b, c) + (b - 1) * logtwo - loggamma(b) - (log2π + 3 * log(x)) / 2
+        val1 = logsumexp(map(0:2:200) do n
+            _pdf_val_log_series(n, b, x)
+        end)
+        val2 = logsumexp(map(1:2:200) do n
+            _pdf_val_log_series(n, b, x)
+        end)
+        return ext + val1 - val2
+        # series = sum(1:200) do n
+        #     v = 2 * n + b
+        #     val = loggamma(n + b) - loggamma(n + 1) - abs2(v) / (8x)
+        #     return (iseven(n) ? 1 : -1) *
+        #     exp(val - valₘₐₓ)
+        # end
+        # return ext + log(b) + valₘₐₓ + log(series)
     end
+end
+
+function _pdf_val_log_series(n, b, x)
+    loggamma(n + b) - loggamma(n + 1) + log(2n + b)- abs2(2n + b) / (8x)
 end
 
 Distributions.logpdf(d::PolyaGamma, x::NamedTuple{(:ω,),<:Tuple{<:Real}}) = logpdf(d, x.ω)
@@ -63,7 +76,7 @@ function Distributions.kldivergence(q::PolyaGamma, p::PolyaGamma)
 end
 
 function logtilt(ω, b, c)
-    return b * log(cosh(c / 2)) - abs2(c) * ω / 2
+    return b * logcosh(c / 2) - abs2(c) * ω / 2
 end
 
 function ntrand(rng::AbstractRNG, d::PolyaGamma)
@@ -83,19 +96,36 @@ function Distributions.rand(rng::AbstractRNG, d::PolyaGamma)
 end
 
 ## Sampling when `b` is an integer
-function draw_sum(rng::AbstractRNG, d::PolyaGamma{<:Int})
+function draw_sum(rng::AbstractRNG, d::PolyaGamma{<:Integer})
     return sum(Base.Fix1(sample_pg1, rng), Fill(d.c, d.b))
 end
 
+## Sampling when `b` is a Real (and might need to be truncated)
 function draw_sum(rng::AbstractRNG, d::PolyaGamma{<:Real})
     if d.b < 1
         return rand_gamma_sum(rng, d, d.b)
     end
     trunc_b = floor(Int, d.b)
-    res_b = d.b - trunc_b
     trunc_term = sum(Base.Fix1(sample_pg1, rng), Fill(d.c, trunc_b))
-    res_term = rand_gamma_sum(rng, d, res_b)
-    return trunc_term + res_term
+
+    res_b = d.b - trunc_b
+    if iszero(res_b)
+        return trunc_term
+    else
+        res_term = rand_gamma_sum(rng, d, res_b)
+        # @show trunc_term, res_term
+        return trunc_term + res_term
+    end
+end
+
+# Sample ω as the series of Gamma variables (truncated at 200)
+function rand_gamma_sum(rng::AbstractRNG, d::PolyaGamma, e::Real)
+    inv2π² = inv2π * invπ
+    w = (d.c * inv2π)^2
+    ga = Gamma(e, 1)
+    return inv2π² * sum(1:200) do k
+        rand(rng, ga) / ((k - 0.5)^2 + w)
+    end
 end
 
 ## Utility functions
@@ -191,14 +221,3 @@ function sample_pg1(rng::AbstractRNG, z::Real)
         end
     end
 end # Sample PG(1, c)
-
-# Sample ω as the series of Gamma variables (truncated at 200)
-function rand_gamma_sum(rng::AbstractRNG, d::PolyaGamma, e::Real)
-    C = inv2π / π
-    c = d.c
-    w = (c * inv2π)^2
-    d = Gamma(e, 1)
-    return C * sum(1:200) do k
-        rand(rng, d) / ((k - 0.5)^2 + w)
-    end
-end

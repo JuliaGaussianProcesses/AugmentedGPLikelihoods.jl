@@ -2,12 +2,48 @@
 CurrentModule = AugmentedGPLikelihoods
 ```
 
+```@setup
+using Plots
+default(;lw=0.0, legend=false)
+to_name(d::PolyaGamma) = "PG($(d.b),$(d.c))"
+function plot_hist_and_pdf(pgs)
+    plts = map(pgs) do pg
+        ω = rand(pg, 10000)
+        plt = Plots.histogram(ω; normalize=:pdf, title=to_name(pg))
+        Plots.plot!(plt, LinRange(0, maximum(ω), 1000), x->pdf(pg, x); lw=2.0)
+        plt
+    end
+    Plots.plot(plts...; layout=length(pgs), link=:y)
+end
+
+```
+
 ## Additional distributions
 
+
+### Polya-Gamma
 ```@docs
 SpecialDistributions.PolyaGamma
+```
+
+```@example
+pgs = [PolyaGamma(1, 0), PolyaGamma(2, 0), PolyaGamma(1, 2.5), PolyaGamma(3.5, 4.3)]
+plot_hist_and_pdf(pgs)
+ωs = rand.(pgs, 10000)
+Plots.histogram(ωs; normalize=:pdf, layout=4)
+plot!(0:0.01:5, [x->pdf(pg, x) for pg in pgs], layout=4, lw=2.0)
+```
+
+
+
+
+### Polya-Gamma Poisson
+
+```@docs
 SpecialDistributions.PolyaGammaPoisson
 ```
+
+
 
 ## Additional likelihoods
 

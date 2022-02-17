@@ -54,7 +54,9 @@ function aux_prior(::BernoulliLikelihood{<:LogisticLink}, y)
     end
 end
 
-function expected_logtilt(::BernoulliLikelihood{<:LogisticLink}, qωᵢ::NTDist{<:PolyaGamma}, yᵢ::Real, qfᵢ::Normal)
+function expected_logtilt(
+    ::BernoulliLikelihood{<:LogisticLink}, qωᵢ::NTDist{<:PolyaGamma}, yᵢ::Real, qfᵢ::Normal
+)
     m = mean(qfᵢ)
     θ = ntmean(qωᵢ)
     return -log(2) + (sign(yᵢ - 0.5) * m - (abs2(m) + var(qfᵢ)) * θ.ω) / 2
