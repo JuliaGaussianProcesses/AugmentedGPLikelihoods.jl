@@ -66,7 +66,7 @@ function expected_auglik_potential_and_precision(lik::AbstractLikelihood, qΩ, y
 end
 
 # Generic wrapper for prior not taking any argument
-aux_prior(lik::AbstractLikelihood, ::Any) = aux_prior(lik)
+aux_prior(lik::AbstractLikelihood, ::Real) = aux_prior(lik)
 
 nlatent(::AbstractLikelihood) = 1 # Default number of latent for each likelihood
 # This should potentially move to GPLikelihoods.jl

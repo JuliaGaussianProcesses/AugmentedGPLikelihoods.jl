@@ -71,7 +71,7 @@ function aux_prior(lik::AugPoisson, y::AbstractVector{<:Integer})
     end
 end
 
-aux_prior(lik::AugPoisson, y) = PolyaGammaPoisson(y, 0, lik.invlink.λ)
+aux_prior(lik::AugPoisson, y::Integer) = PolyaGammaPoisson(y, 0, lik.invlink.λ)
 
 function expected_logtilt(lik::AugPoisson, qΩ, y, qf::AbstractVector{<:Normal})
     logλ = log(lik.invlink.λ)

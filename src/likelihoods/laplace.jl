@@ -71,7 +71,7 @@ function logtilt(
     lik::LaplaceLikelihood, Ω::TupleVector, y::AbstractVector, f::AbstractVector{<:Real}
 )
     return length(y) * (loggamma(1//2) - log(sqrtπ) - log(2 * lik.β)) +
-           mapreduce(+, aux_field(Ω), y, f) do ωᵢ, yᵢ, fᵢ
+           mapreduce(+, aux_field(lik, Ω), y, f) do ωᵢ, yᵢ, fᵢ
         -abs2(yᵢ - fᵢ) * ωᵢ
     end
 end
