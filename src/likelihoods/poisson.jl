@@ -6,6 +6,11 @@ end
 
 const AugPoisson = PoissonLikelihood{<:ScaledLogistic}
 
+logλ(l::AugPoisson) = log(l.invlink.λ)
+
+aux_field(::AugPoisson, Ω::NamedTuple) = values(Ω)
+aux_field(::AugPoisson, Ω::TupleVector) = zip(Ω.ω, Ω.n)
+
 function init_aux_variables(rng::AbstractRNG, ::AugPoisson, ndata::Int)
     return TupleVector((;
         ω=rand(rng, PolyaGamma(1, 0), ndata), n=rand(rng, Poisson(), ndata)
@@ -54,20 +59,19 @@ function expected_auglik_potential_and_precision(::AugPoisson, qΩ, y::AbstractV
     return ((y .- θ.n) / 2,), (θ.ω,)
 end
 
-function logtilt(lik::AugPoisson, Ω, y, f)
-    logλ = log(lik.invlink.λ)
-    return mapreduce(+, y, f, Ω) do yᵢ, fᵢ, (ω, n)
-        return yᵢ * logλ - (yᵢ + n) * logtwo - logfactorial(yᵢ) +
-               ((yᵢ - n) * fᵢ - abs2(fᵢ) * ω) / 2
-    end
+function logtilt(lik::AugPoisson, (ω, n)::Tuple{<:Real,<:Integer}, y::Integer, f::Real)
+    return y * logλ(lik) - (y + n) * logtwo - logfactorial(y) +
+           ((y - n) * f - abs2(f) * ω) / 2
 end
 
-function aux_prior(lik::AugPoisson, y::AbstractVector{<:Int})
+function aux_prior(lik::AugPoisson, y::AbstractVector{<:Integer})
     λ = lik.invlink.λ
     return For(y) do yᵢ
         PolyaGammaPoisson(yᵢ, 0, λ)
     end
 end
+
+aux_prior(lik::AugPoisson, y::Integer) = PolyaGammaPoisson(y, 0, lik.invlink.λ)
 
 function expected_logtilt(lik::AugPoisson, qΩ, y, qf::AbstractVector{<:Normal})
     logλ = log(lik.invlink.λ)

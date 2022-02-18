@@ -1,5 +1,6 @@
 module TestUtils
 using AugmentedGPLikelihoods
+const AGPL = AugmentedGPLikelihoods
 using AugmentedGPLikelihoods.SpecialDistributions
 using Distributions
 using GPLikelihoods: AbstractLikelihood
@@ -9,6 +10,9 @@ using Random
 using Test
 using TupleVectors
 # Test API for augmented likelihood
+remove_ntdist_wrapper(d::NTDist) = d.d
+remove_ntdist_wrapper(d) = d
+
 function test_auglik(
     lik::AbstractLikelihood;
     n=10,
@@ -40,11 +44,20 @@ function test_auglik(
         @test all(map(≈, γs, γ2))
         @test all(x -> all(>=(0), x), γs) # Check that the variance is positive
 
-        @test logtilt(lik, Ω, y, f) isa Real
+        sumlogtilt = logtilt(lik, Ω, y, f)
+        @test sumlogtilt isa Real
+        @test logtilt(lik, AGPL.aux_field(lik, first(Ω)), first(y), first(f)) isa Real
+        sumlogtilt_alt = mapreduce(+, AGPL.aux_field(lik, Ω), y, f) do ωᵢ, yᵢ, fᵢ
+            logtilt(lik, ωᵢ, yᵢ, fᵢ)
+        end
+        @test sumlogtilt ≈ sumlogtilt_alt
+
         @test aug_loglik(lik, Ω, y, f) isa Real
 
         pΩ = aux_prior(lik, y)
         @test logdensity(pΩ, Ω) isa Real
+        pω = aux_prior(lik, first(y)) # Scalar version
+        @test pω == remove_ntdist_wrapper(first(marginals(pΩ)))
 
         # Test that the full conditional is correct
         @testset "Full conditional Ω" begin
@@ -61,7 +74,7 @@ function test_auglik(
         @testset "Full conditional f" begin
             pcondΩ = aux_full_conditional(lik, y, f) # Compute the full conditional of Ω
             Ω = tvrand(rng, pcondΩ) # Sample a set of aux. variables
-            K = rand(n, n) |> x-> x*x' # Prior Covariance matrix
+            K = (x -> x * x')(rand(n, n)) # Prior Covariance matrix
             S = inv(Symmetric(inv(K) + Diagonal(only(auglik_precision(lik, Ω, y)))))
             m = S * (only(auglik_potential(lik, Ω, y)))
             qF = MvNormal(m, S)

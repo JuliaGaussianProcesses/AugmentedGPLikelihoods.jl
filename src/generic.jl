@@ -37,6 +37,14 @@ function init_aux_posterior(lik::AbstractLikelihood, n::Int)
     return init_aux_posterior(Float64, lik, n)
 end
 
+function logtilt(
+    lik::AbstractLikelihood, Ω::TupleVector, y::AbstractVector, f::AbstractVector
+)
+    return mapreduce(+, aux_field(lik, Ω), y, f) do Ωᵢ, yᵢ, fᵢ
+        logtilt(lik, Ωᵢ, yᵢ, fᵢ)
+    end
+end
+
 function aug_loglik(lik::AbstractLikelihood, Ω, y, f)
     return logtilt(lik, Ω, y, f) + logdensity(aux_prior(lik, y), Ω)
 end
@@ -56,6 +64,9 @@ end
 function expected_auglik_potential_and_precision(lik::AbstractLikelihood, qΩ, y)
     return (expected_auglik_potential(lik, qΩ, y), expected_auglik_precision(lik, qΩ, y))
 end
+
+# Generic wrapper for prior not taking any argument
+aux_prior(lik::AbstractLikelihood, ::Real) = aux_prior(lik)
 
 nlatent(::AbstractLikelihood) = 1 # Default number of latent for each likelihood
 # This should potentially move to GPLikelihoods.jl
