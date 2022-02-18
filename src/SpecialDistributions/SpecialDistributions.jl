@@ -5,7 +5,6 @@
 
 module SpecialDistributions
 using Distributions
-using FillArrays
 using LogExpFunctions
 using MeasureBase
 using Random
