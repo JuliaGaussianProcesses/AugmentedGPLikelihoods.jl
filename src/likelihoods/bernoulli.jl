@@ -48,7 +48,7 @@ function logtilt(::BernoulliLikelihood{<:LogisticLink}, ω::Real, y::Real, f::Re
     return -log(2) + (sign(y - 0.5) * f - abs2(f) * ω) / 2
 end
 
-function aux_prior(::BernoulliLikelihood{<:LogisticLink}, y::AbstractVector)
+function aux_prior(lik::BernoulliLikelihood{<:LogisticLink}, y::AbstractVector)
     return For(length(y)) do _
         NTDist(aux_prior(lik))
     end

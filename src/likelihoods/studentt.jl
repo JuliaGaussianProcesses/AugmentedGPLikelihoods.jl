@@ -28,7 +28,7 @@ function (lik::StudentTLikelihood)(f::AbstractVector{<:Real})
     return Product(lik.(f))
 end
 
-aux_field(::StudentTLikelihood, Ω) = getproperty(Ω, :ω) 
+aux_field(::StudentTLikelihood, Ω) = getproperty(Ω, :ω)
 
 function init_aux_variables(rng::AbstractRNG, ::StudentTLikelihood, n::Int)
     return TupleVector((; ω=rand(rng, Gamma(), n)))

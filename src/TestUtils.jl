@@ -61,7 +61,7 @@ function test_auglik(
         @testset "Full conditional f" begin
             pcondΩ = aux_full_conditional(lik, y, f) # Compute the full conditional of Ω
             Ω = tvrand(rng, pcondΩ) # Sample a set of aux. variables
-            K = x -> x * x'(rand(n, n)) # Prior Covariance matrix
+            K = (x -> x * x')(rand(n, n)) # Prior Covariance matrix
             S = inv(Symmetric(inv(K) + Diagonal(only(auglik_precision(lik, Ω, y)))))
             m = S * (only(auglik_potential(lik, Ω, y)))
             qF = MvNormal(m, S)
