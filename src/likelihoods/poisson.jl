@@ -60,7 +60,7 @@ function expected_auglik_potential_and_precision(::AugPoisson, qΩ, y::AbstractV
 end
 
 function logtilt(lik::AugPoisson, (ω, n)::Tuple{<:Real,<:Integer}, y::Integer, f::Real)
-    return yᵢ * logλ(lik) - (y + n) * logtwo - logfactorial(y) +
+    return y * logλ(lik) - (y + n) * logtwo - logfactorial(y) +
            ((y - n) * f - abs2(f) * ω) / 2
 end
 

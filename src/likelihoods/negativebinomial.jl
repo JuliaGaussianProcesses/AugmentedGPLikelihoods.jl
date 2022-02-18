@@ -67,7 +67,12 @@ end
 negbin_logconst(y, r::Real) = loggamma(y + r) - loggamma(y + 1) - loggamma(r)
 negbin_logconst(y, r::Int) = first(logabsbinomial(y + r - 1, y))
 
-function logtilt(lik::NegBinomialLikelihood, Ω, y, f)
+function logtilt(
+    lik::NegBinomialLikelihood,
+    Ω::TupleVector,
+    y::AbstractVector{<:Integer},
+    f::AbstractVector{<:Real},
+)
     return mapreduce(+, y, f, Ω.ω) do yᵢ, fᵢ, ωᵢ
         negbin_logconst(yᵢ, lik.r) - (yᵢ + lik.r) * logtwo +
         (fᵢ * (yᵢ - lik.r) - abs2(fᵢ) * ωᵢ) / 2
