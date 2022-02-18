@@ -64,14 +64,14 @@ function logtilt(lik::AugPoisson, (ω, n)::Tuple{<:Real,<:Integer}, y::Integer, 
            ((y - n) * f - abs2(f) * ω) / 2
 end
 
-function aux_prior(lik::AugPoisson, y::AbstractVector{<:Int})
+function aux_prior(lik::AugPoisson, y::AbstractVector{<:Integer})
     λ = lik.invlink.λ
     return For(y) do yᵢ
         PolyaGammaPoisson(yᵢ, 0, λ)
     end
 end
 
-aux_prior(lik, y) = PolyaGammaPoisson(y, 0, lik.invlink.λ)
+aux_prior(lik::AugPoisson, y) = PolyaGammaPoisson(y, 0, lik.invlink.λ)
 
 function expected_logtilt(lik::AugPoisson, qΩ, y, qf::AbstractVector{<:Normal})
     logλ = log(lik.invlink.λ)

@@ -1,5 +1,6 @@
 module TestUtils
 using AugmentedGPLikelihoods
+const AGPL = AugmentedGPLikelihoods
 using AugmentedGPLikelihoods.SpecialDistributions
 using Distributions
 using GPLikelihoods: AbstractLikelihood
