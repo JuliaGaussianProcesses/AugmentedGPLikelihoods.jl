@@ -12,9 +12,10 @@ function plot_hist_and_pdf(pgs)
         plt = Plots.histogram(ω; normalize=:pdf, title=to_name(pg))
         Plots.plot!(plt, LinRange(0, maximum(ω), 1000), x->pdf(pg, x); lw=2.0)
         vline!(plt, [mean(pg)]; lw=2.0)
+        vline!(plt, [mean(ω)]; lw=2.0)
         plt
     end
-    Plots.plot(plts...; layout=length(pgs), link=:y)
+    Plots.plot(plts...; layout=length(pgs))
 end
 ```
 

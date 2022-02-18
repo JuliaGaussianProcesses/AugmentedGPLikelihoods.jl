@@ -1,5 +1,5 @@
-const pg_t = 0.64
-const pg_inv_t = inv(pg_t)
+const PG_T = 0.64
+const π²_8 = π^2 / 8
 
 @doc raw"""
     PolyaGamma(b::Real, c::Real) <: ContinuousUnivariateDistribution
@@ -133,18 +133,18 @@ end
 ## Utility functions
 function a(n::Int, x::Real)
     k = (n + 1 // 2) * π
-    if x > pg_t
+    if x > PG_T
         return k * exp(-k^2 * x / 2)
     elseif x > 0
         expnt = -3 / 2 * (log(halfπ) + log(x)) - 2 * (n + 1//2)^2 / x
         return k * exp(expnt)
     else
-        error("x should be a positive real")
+        throw(DomainError(x, "x should be a positive real"))
     end
 end
 
-function mass_texpon(z::Real, K)
-    t = pg_t
+function mass_texpon(z::Real, K::Real)
+    t = PG_T
 
     b = sqrt(inv(t)) * (t * z - 1)
     a = -sqrt(inv(t)) * (t * z + 1)
@@ -161,29 +161,33 @@ end
 # Sample from a truncated inverse gaussian
 function rand_truncated_inverse_gaussian(rng::AbstractRNG, z::Real)
     μ = inv(z)
-    x = one(z) + pg_t
-    if μ > pg_t
-        d_exp = Exponential()
+    x = one(z) + PG_T
+    if μ > PG_T
         while true
-            E = rand(rng, d_exp)
-            E′ = rand(rng, d_exp)
-            while E^2 > 2E′ / pg_t
-                E = rand(rng, d_exp)
-                E′ = rand(rng, d_exp)
+            E = randexp(rng)
+            E′ = randexp(rng)
+            while E^2 > (2E′ / pg_t)
+                E = randexp(rng)
+                E′ = randexp(rng)
             end
-            x = pg_t / (1 + E * pg_t)^2
+            x = PG_T / abs2(1 + E * PG_T)
             α = exp(-z^2 * x / 2)
             α >= rand(rng) && break
         end
     else
-        while (x > pg_t)
-            Y = randn(rng)^2
-            μY = μ * Y
-            x = μ + μ * μY / 2 - μ / 2 * sqrt(4 * μY + μY^2)
-            if rand(rng) > μ / (μ + x)
+        while (x >= PG_T)
+            y = randn(rng)^2
+            μy = μ * y
+            x = μ + μ * μy /2 - μ * sqrt(4 * μy + abs2(μy)) / 2
+            if μ / (μ + x) < rand(rng) 
                 x = μ^2 / x
             end
-            x > pg_t && break
+            # w = (z + y^2 / 2) * μ^2
+            # x = w - sqrt(abs(w^2 - μ^2))
+            # if (rand(rng) * (1 + x * z)) > 1 
+                # x = μ^2 / x
+            # end
+            # x <= PG_T && break
         end
     end
     return x
@@ -191,6 +195,46 @@ end
 
 # Sample from PG(1, z)
 # Algorithm 1 from "Bayesian Inference for logistic models..." p. 26
+function sample_pg1(rng::AbstractRNG, c::Real)
+    # Change the parameter.
+    z = abs(c) / 2
+
+    # Now sample 0.25 * J^*(1, Z := Z/2).
+    if iszero(z) # We specialize on c = 0
+        r = 0.4223027567786595
+        K = π²_8
+    else
+        K = π²_8 + z^2 / 2
+        p = π / (2K) * exp(-K * PG_T)
+        q = 2 * exp(-z) * cdf(InverseGaussian(1/z, 1), PG_T)
+        r = (p + q) / p
+    end
+    while true
+        if r < rand(rng) # sample from truncated exponential
+            x = PG_T + rand(rng, Exponential()) / K
+        else # sample from truncated inverse Gaussian
+            x = rand_truncated_inverse_gaussian(rng, z)
+            # x = iszero(z) ? 1.0 : rand(rng, truncated(InverseGaussian(1/z, 1), 0, PG_T))
+        
+        end
+        s = a(0, x)
+        y = rand(rng) * s
+        n = 0
+        while true
+            n += 1
+            if isodd(n)
+                s -= a(n, x)
+                y <= s && return x / 4
+            else
+                s += a(n, x)
+                y > s && break
+            end
+        end
+    end
+end # Sample PG(1, c)
+
+
+
 function sample_pg1(rng::AbstractRNG, z::Real)
     # Change the parameter.
     z = abs(z) / 2
@@ -202,7 +246,7 @@ function sample_pg1(rng::AbstractRNG, z::Real)
 
     while true
         if r > rand(rng) # sample from truncated exponential
-            x = pg_t + rand(rng, Exponential()) / K
+            x = PG_T + rand(rng, Exponential()) / K
         else # sample from truncated inverse Gaussian
             x = rand_truncated_inverse_gaussian(rng, z)
         end
