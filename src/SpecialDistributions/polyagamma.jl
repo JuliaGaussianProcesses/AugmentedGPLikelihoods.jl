@@ -187,7 +187,7 @@ function rand_truncated_inverse_gaussian(rng::AbstractRNG, z::Real)
             # if (rand(rng) * (1 + x * z)) > 1 
                 # x = μ^2 / x
             # end
-            # x <= PG_T && break
+            # x >= PG_T && break
         end
     end
     return x
@@ -207,11 +207,14 @@ function sample_pg1(rng::AbstractRNG, c::Real)
         K = π²_8 + z^2 / 2
         p = π / (2K) * exp(-K * PG_T)
         q = 2 * exp(-z) * cdf(InverseGaussian(1/z, 1), PG_T)
+        # r = 1 / mass_texpon(z, K)
+
         r = (p + q) / p
+        # @show 1 / r
     end
     while true
         if r < rand(rng) # sample from truncated exponential
-            x = PG_T + rand(rng, Exponential()) / K
+            x = PG_T + randexp(rng) / K
         else # sample from truncated inverse Gaussian
             x = rand_truncated_inverse_gaussian(rng, z)
             # x = iszero(z) ? 1.0 : rand(rng, truncated(InverseGaussian(1/z, 1), 0, PG_T))
@@ -235,33 +238,33 @@ end # Sample PG(1, c)
 
 
 
-function sample_pg1(rng::AbstractRNG, z::Real)
-    # Change the parameter.
-    z = abs(z) / 2
+# function sample_pg1(rng::AbstractRNG, z::Real)
+#     # Change the parameter.
+#     z = abs(z) / 2
 
-    # Now sample 0.25 * J^*(1, Z := Z/2).
-    K = π^2 / 8 + z^2 * 2
+#     # Now sample 0.25 * J^*(1, Z := Z/2).
+#     K = π^2 / 8 + z^2 / 2
 
-    r = mass_texpon(z, K)
+#     r = mass_texpon(z, K)
 
-    while true
-        if r > rand(rng) # sample from truncated exponential
-            x = PG_T + rand(rng, Exponential()) / K
-        else # sample from truncated inverse Gaussian
-            x = rand_truncated_inverse_gaussian(rng, z)
-        end
-        s = a(0, x)
-        y = rand(rng) * s
-        n = 0
-        while true
-            n = n + 1
-            if isodd(n)
-                s = s - a(n, x)
-                y <= s && return x / 4
-            else
-                s = s + a(n, x)
-                y > s && break
-            end
-        end
-    end
-end # Sample PG(1, c)
+#     while true
+#         if r > rand(rng) # sample from truncated exponential
+#             x = PG_T + rand(rng, Exponential()) / K
+#         else # sample from truncated inverse Gaussian
+#             x = rand_truncated_inverse_gaussian(rng, z)
+#         end
+#         s = a(0, x)
+#         y = rand(rng) * s
+#         n = 0
+#         while true
+#             n = n + 1
+#             if isodd(n)
+#                 s = s - a(n, x)
+#                 y <= s && return x / 4
+#             else
+#                 s = s + a(n, x)
+#                 y > s && break
+#             end
+#         end
+#     end
+# end # Sample PG(1, c)
