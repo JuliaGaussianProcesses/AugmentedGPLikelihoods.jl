@@ -41,10 +41,12 @@ function test_auglik(
         @test all(x -> all(>=(0), x), γs) # Check that the variance is positive
 
         @test logtilt(lik, Ω, y, f) isa Real
+        @test logtilt(lik, AGPL.aux_field(first(Ω)), first(y), first(f)) isa Real
         @test aug_loglik(lik, Ω, y, f) isa Real
 
         pΩ = aux_prior(lik, y)
         @test logdensity(pΩ, Ω) isa Real
+        @test_nowarn pω = aux_prior(lik, first(y)) # Scalar version
 
         # Test that the full conditional is correct
         @testset "Full conditional Ω" begin
