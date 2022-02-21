@@ -4,7 +4,7 @@ CurrentModule = AugmentedGPLikelihoods
 
 ```@setup
 using Plots
-using AugmentedGPLikelihoods
+using AugmentedGPLikelihoods.SpecialDistributions
 default(;lw=0.0, legend=false)
 to_name(d::PolyaGamma) = "PG($(d.b),$(d.c))"
 function plot_hist_and_pdf(pgs)
