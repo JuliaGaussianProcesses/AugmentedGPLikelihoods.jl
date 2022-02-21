@@ -1,22 +1,17 @@
 @testset "polyagamma" begin
-    p1 = PolyaGamma(1, 0)
-    @test mean(p1) == 1 / 4
-    s = rand(p1, 10000)
-    @test mean(s) ≈ mean(p1) atol = 1e-2
+    @test mean(PolyaGamma(1, 0)) == 1 / 4
+    @test mean(PolyaGamma(1, 2.0)) == tanh(1.0) / 4
 
-    p2 = PolyaGamma(1, 2.0)
-    @test mean(p2) == tanh(1.0) / 4
-    s = rand(p2, 10000)
-    @test mean(s) ≈ mean(p2) atol = 1e-2
+    for (b, c) in ((1, 0), (1, 2.0), (3, 0), (3, 2.5), (3, 3.2), (1.2, 3.2))
+        p = PolyaGamma(b, c)
+        @test logpdf(p, rand(p)) isa Real
+        @test mean(rand(p, 10000)) ≈ mean(p) atol = 1e-2
+    end
 
-    p3 = PolyaGamma(1.2, 3.2)
-    s = rand(p3, 10000)
-    @test_broken mean(s) ≈ mean(p3) atol = 1e-2
-
-    @test insupport(p1, 0)
-    @test !insupport(p1, -1)
-    @test minimum(p1) === 0
-    @test minimum(p2) === 0.0
-    @test maximum(p1) == Inf
-    @test Distributions.params(p1) == (1, 0)
+    p = PolyaGamma(1, 0)
+    @test insupport(p, 0)
+    @test !insupport(p, -1)
+    @test minimum(p) === 0
+    @test maximum(p) == Inf
+    @test Distributions.params(p) == (1, 0)
 end

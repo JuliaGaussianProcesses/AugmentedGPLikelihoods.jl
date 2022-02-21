@@ -1,5 +1,5 @@
-const pg_t = 0.64
-const pg_inv_t = inv(pg_t)
+const PG_T = 0.64
+const π²_8 = π^2 / 8
 
 @doc raw"""
     PolyaGamma(b::Real, c::Real) <: ContinuousUnivariateDistribution
@@ -35,19 +35,29 @@ Distributions.insupport(::PolyaGamma, x::Real) = zero(x) <= x < Inf
 function Distributions.logpdf(d::PolyaGamma, x::Real)
     b, c = Distributions.params(d)
     if iszero(b)
-        return iszero(x) ? zero(x) : -Inf # if b is zero, then the distribution
-    # simplified as a delta dirac.
+        return iszero(x) ? zero(x) : -Inf # The limit of PG when b->0  
+    # is the delta dirac at 0.
     else
         iszero(x) && -Inf # The limit to p(x) for x-> 0 is 0.
-        return logtilt(x, b, c) + (b - 1) * log(2) - loggamma(b) + log(
-            sum(0:200) do n
-                ifelse(iseven(n), 1, -1) * exp(
-                    loggamma(n + b) - loggamma(n + 1) + log(2n + b) - log(twoπ * x^3) / 2 -
-                    abs2(2n + b) / (8x),
-                )
-            end,
-        )
+        # valₘₐₓ = Γb - b^2 / (8x)
+        ext = logtilt(x, b, c) + (b - 1) * logtwo - loggamma(b) - (log2π + 3 * log(x)) / 2
+        xmax = loggamma(b) - abs2(b) / (8x)
+        sumval = sum(1:201) do n
+            (iseven(n) ? 1 : -1) * exp(_pdf_val_log_series(n, b, x) - xmax) * (2n + b) / b
+        end
+        return ext + xmax + log(b) + log(1 + sumval)
+        # series = sum(1:200) do n
+        #     v = 2 * n + b
+        #     val = loggamma(n + b) - loggamma(n + 1) - abs2(v) / (8x)
+        #     return (iseven(n) ? 1 : -1) *
+        #     exp(val - valₘₐₓ)
+        # end
+        # return ext + log(b) + valₘₐₓ + log(series)
     end
+end
+
+function _pdf_val_log_series(n::Integer, b::Real, x)
+    return loggamma(n + b) - loggamma(n + 1) - abs2(2n + b) / (8x)
 end
 
 Distributions.logpdf(d::PolyaGamma, x::NamedTuple{(:ω,),<:Tuple{<:Real}}) = logpdf(d, x.ω)
@@ -63,7 +73,7 @@ function Distributions.kldivergence(q::PolyaGamma, p::PolyaGamma)
 end
 
 function logtilt(ω, b, c)
-    return b * log(cosh(c / 2)) - abs2(c) * ω / 2
+    return b * logcosh(c / 2) - abs2(c) * ω / 2
 end
 
 function ntrand(rng::AbstractRNG, d::PolyaGamma)
@@ -83,38 +93,59 @@ function Distributions.rand(rng::AbstractRNG, d::PolyaGamma)
 end
 
 ## Sampling when `b` is an integer
-function draw_sum(rng::AbstractRNG, d::PolyaGamma{<:Int})
-    return sum(Base.Fix1(sample_pg1, rng), d.c * ones(d.b))
+function draw_sum(rng::AbstractRNG, d::PolyaGamma{<:Integer})
+    b, c = Distributions.params(d)
+    return sum(1:b) do _
+        sample_pg1(rng, c)
+    end
 end
 
+## Sampling when `b` is a Real (and might need to be truncated)
 function draw_sum(rng::AbstractRNG, d::PolyaGamma{<:Real})
-    if d.b < 1
-        return rand_gamma_sum(rng, d, d.b)
+    b, c = Distributions.params(d)
+    if b < 1
+        return rand_gamma_sum(rng, d, b)
     end
-    trunc_b = floor(Int, d.b)
-    res_b = d.b - trunc_b
-    trunc_term = sum(Base.Fix1(sample_pg1, rng), d.c * ones(trunc_b))
-    res_term = rand_gamma_sum(rng, d, res_b)
-    return trunc_term + res_term
+    trunc_b = floor(Int, b)
+    trunc_term = sum(1:trunc_b) do _
+        sample_pg1(rng, c)
+    end
+
+    res_b = b - trunc_b
+    if iszero(res_b)
+        return trunc_term
+    else
+        res_term = rand_gamma_sum(rng, d, res_b)
+        return trunc_term + res_term
+    end
+end
+
+# Sample ω as the series of Gamma variables (truncated at 200)
+function rand_gamma_sum(rng::AbstractRNG, d::PolyaGamma, e::Real)
+    inv2π² = inv2π * invπ
+    w = (d.c * inv2π)^2
+    ga = Gamma(e, 1)
+    return inv2π² * sum(1:200) do k
+        rand(rng, ga) / ((k - 0.5)^2 + w)
+    end
 end
 
 ## Utility functions
 function a(n::Int, x::Real)
-    k = (n + 0.5) * π
-    if x > pg_t
+    k = (n + 1//2) * π
+    if x > PG_T
         return k * exp(-k^2 * x / 2)
     elseif x > 0
-        expnt = -3 / 2 * (log(halfπ) + log(x)) + log(k) - 2 * (n + 1//2)^2 / x
-        return exp(expnt)
+        expnt = -3 / 2 * (log(halfπ) + log(x)) - 2 * (n + 1//2)^2 / x
+        return k * exp(expnt)
     else
-        error("x should be a positive real")
+        throw(DomainError(x, "x should be a positive real"))
     end
 end
 
-function mass_texpon(z::Real)
-    t = pg_t
+function mass_texpon(z::Real, K::Real)
+    t = PG_T
 
-    K = π^2 / 8 + z^2 / 2
     b = sqrt(inv(t)) * (t * z - 1)
     a = -sqrt(inv(t)) * (t * z + 1)
 
@@ -130,29 +161,27 @@ end
 # Sample from a truncated inverse gaussian
 function rand_truncated_inverse_gaussian(rng::AbstractRNG, z::Real)
     μ = inv(z)
-    x = one(z) + pg_t
-    if μ > pg_t
-        d_exp = Exponential()
-        while true
-            E = rand(rng, d_exp)
-            E′ = rand(rng, d_exp)
-            while E^2 > 2E′ / pg_t
-                E = rand(rng, d_exp)
-                E′ = rand(rng, d_exp)
+    x = one(z) + PG_T
+    if μ > PG_T
+        α = zero(μ)
+        while α < rand(rng)
+            E = randexp(rng)
+            E′ = randexp(rng)
+            while E^2 > (2E′ / PG_T)
+                E = randexp(rng)
+                E′ = randexp(rng)
             end
-            x = pg_t / (1 + E * pg_t)^2
+            x = PG_T / abs2(1 + E * PG_T)
             α = exp(-z^2 * x / 2)
-            α >= rand(rng) && break
         end
     else
-        while (x > pg_t)
-            Y = randn(rng)^2
-            μY = μ * Y
-            x = μ + μ * μY / 2 - μ / 2 * sqrt(4 * μY + μY^2)
-            if rand(rng) > μ / (μ + x)
+        while (x > PG_T)
+            y = randn(rng)^2
+            μy = μ * y
+            x = μ + μ * μy / 2 - μ * sqrt(4 * μy + abs2(μy)) / 2
+            if μ / (μ + x) < rand(rng)
                 x = μ^2 / x
             end
-            x > pg_t && break
         end
     end
     return x
@@ -160,19 +189,21 @@ end
 
 # Sample from PG(1, z)
 # Algorithm 1 from "Bayesian Inference for logistic models..." p. 26
-function sample_pg1(rng::AbstractRNG, z::Real)
+function sample_pg1(rng::AbstractRNG, c::Real)
     # Change the parameter.
-    z = abs(z) / 2
+    z = abs(c) / 2
 
     # Now sample 0.25 * J^*(1, Z := Z/2).
-    K = π^2 / 8 + z^2 / 2
-    t = pg_t
-
-    r = mass_texpon(z)
-
+    if iszero(z) # We specialize on c = 0
+        r = 0.5776972428360435
+        K = π²_8
+    else
+        K = π²_8 + z^2 / 2
+        r = mass_texpon(z, K)
+    end
     while true
         if r > rand(rng) # sample from truncated exponential
-            x = t + rand(rng, Exponential()) / K
+            x = PG_T + randexp(rng) / K
         else # sample from truncated inverse Gaussian
             x = rand_truncated_inverse_gaussian(rng, z)
         end
@@ -180,25 +211,14 @@ function sample_pg1(rng::AbstractRNG, z::Real)
         y = rand(rng) * s
         n = 0
         while true
-            n = n + 1
+            n += 1
             if isodd(n)
-                s = s - a(n, x)
+                s -= a(n, x)
                 y <= s && return x / 4
             else
-                s = s + a(n, x)
+                s += a(n, x)
                 y > s && break
             end
         end
     end
 end # Sample PG(1, c)
-
-# Sample ω as the series of Gamma variables (truncated at 200)
-function rand_gamma_sum(rng::AbstractRNG, d::PolyaGamma, e::Real)
-    C = inv2π / π
-    c = d.c
-    w = (c * inv2π)^2
-    d = Gamma(e, 1)
-    return C * sum(1:200) do k
-        rand(rng, d) / ((k - 0.5)^2 + w)
-    end
-end
