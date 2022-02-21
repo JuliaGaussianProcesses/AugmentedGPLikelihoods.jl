@@ -40,8 +40,8 @@ function Distributions.logpdf(d::PolyaGamma, x::Real)
     else
         iszero(x) && -Inf # The limit to p(x) for x-> 0 is 0.
         # valₘₐₓ = Γb - b^2 / (8x)
-        ext = logtilt(x, b, c) + (b - 1) * logtwo - loggamma(b) - (log2π + 3 * log(x)   ) / 2
-        xmax = loggamma(b) - abs2(b) / (8x) 
+        ext = logtilt(x, b, c) + (b - 1) * logtwo - loggamma(b) - (log2π + 3 * log(x)) / 2
+        xmax = loggamma(b) - abs2(b) / (8x)
         sumval = sum(1:201) do n
             (iseven(n) ? 1 : -1) * exp(_pdf_val_log_series(n, b, x) - xmax) * (2n + b) / b
         end
@@ -96,7 +96,7 @@ end
 function draw_sum(rng::AbstractRNG, d::PolyaGamma{<:Integer})
     b, c = Distributions.params(d)
     return sum(1:b) do _
-        sample_pg1(rng, c) 
+        sample_pg1(rng, c)
     end
 end
 
@@ -132,7 +132,7 @@ end
 
 ## Utility functions
 function a(n::Int, x::Real)
-    k = (n + 1 // 2) * π
+    k = (n + 1//2) * π
     if x > PG_T
         return k * exp(-k^2 * x / 2)
     elseif x > 0
@@ -163,31 +163,25 @@ function rand_truncated_inverse_gaussian(rng::AbstractRNG, z::Real)
     μ = inv(z)
     x = one(z) + PG_T
     if μ > PG_T
-        while true
+        α = zero(μ)
+        while α < rand(rng)
             E = randexp(rng)
             E′ = randexp(rng)
-            while E^2 > (2E′ / pg_t)
+            while E^2 > (2E′ / PG_T)
                 E = randexp(rng)
                 E′ = randexp(rng)
             end
             x = PG_T / abs2(1 + E * PG_T)
             α = exp(-z^2 * x / 2)
-            α >= rand(rng) && break
         end
     else
-        while (x >= PG_T)
+        while (x > PG_T)
             y = randn(rng)^2
             μy = μ * y
-            x = μ + μ * μy /2 - μ * sqrt(4 * μy + abs2(μy)) / 2
-            if μ / (μ + x) < rand(rng) 
+            x = μ + μ * μy / 2 - μ * sqrt(4 * μy + abs2(μy)) / 2
+            if μ / (μ + x) < rand(rng)
                 x = μ^2 / x
             end
-            # w = (z + y^2 / 2) * μ^2
-            # x = w - sqrt(abs(w^2 - μ^2))
-            # if (rand(rng) * (1 + x * z)) > 1 
-                # x = μ^2 / x
-            # end
-            # x >= PG_T && break
         end
     end
     return x
@@ -201,24 +195,17 @@ function sample_pg1(rng::AbstractRNG, c::Real)
 
     # Now sample 0.25 * J^*(1, Z := Z/2).
     if iszero(z) # We specialize on c = 0
-        r = 0.4223027567786595
+        r = 0.5776972428360435
         K = π²_8
     else
         K = π²_8 + z^2 / 2
-        p = π / (2K) * exp(-K * PG_T)
-        q = 2 * exp(-z) * cdf(InverseGaussian(1/z, 1), PG_T)
-        # r = 1 / mass_texpon(z, K)
-
-        r = (p + q) / p
-        # @show 1 / r
+        r = mass_texpon(z, K)
     end
     while true
-        if r < rand(rng) # sample from truncated exponential
+        if r > rand(rng) # sample from truncated exponential
             x = PG_T + randexp(rng) / K
         else # sample from truncated inverse Gaussian
             x = rand_truncated_inverse_gaussian(rng, z)
-            # x = iszero(z) ? 1.0 : rand(rng, truncated(InverseGaussian(1/z, 1), 0, PG_T))
-        
         end
         s = a(0, x)
         y = rand(rng) * s
@@ -235,36 +222,3 @@ function sample_pg1(rng::AbstractRNG, c::Real)
         end
     end
 end # Sample PG(1, c)
-
-
-
-# function sample_pg1(rng::AbstractRNG, z::Real)
-#     # Change the parameter.
-#     z = abs(z) / 2
-
-#     # Now sample 0.25 * J^*(1, Z := Z/2).
-#     K = π^2 / 8 + z^2 / 2
-
-#     r = mass_texpon(z, K)
-
-#     while true
-#         if r > rand(rng) # sample from truncated exponential
-#             x = PG_T + rand(rng, Exponential()) / K
-#         else # sample from truncated inverse Gaussian
-#             x = rand_truncated_inverse_gaussian(rng, z)
-#         end
-#         s = a(0, x)
-#         y = rand(rng) * s
-#         n = 0
-#         while true
-#             n = n + 1
-#             if isodd(n)
-#                 s = s - a(n, x)
-#                 y <= s && return x / 4
-#             else
-#                 s = s + a(n, x)
-#                 y > s && break
-#             end
-#         end
-#     end
-# end # Sample PG(1, c)
