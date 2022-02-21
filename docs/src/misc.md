@@ -2,7 +2,7 @@
 CurrentModule = AugmentedGPLikelihoods
 ```
 
-```@setup
+```@setup dist_plots
 using Plots
 using AugmentedGPLikelihoods.SpecialDistributions
 default(;lw=0.0, legend=false)
@@ -16,7 +16,7 @@ function plot_hist_and_pdf(pgs)
         vline!(plt, [mean(ω)]; lw=2.0)
         plt
     end
-    Plots.plot(plts...; layout=length(pgs))
+    return Plots.plot(plts...; layout=length(pgs))
 end
 ```
 
@@ -28,14 +28,12 @@ end
 SpecialDistributions.PolyaGamma
 ```
 
-```@example
+```@example dist_plots
 pgs = [PolyaGamma(1, 0), PolyaGamma(2, 0), PolyaGamma(1, 2.5), PolyaGamma(3.5, 4.3)]
 plot_hist_and_pdf(pgs)
-ωs = rand.(pgs, 10000)
-Plots.histogram(ωs; normalize=:pdf, layout=4)
-plot!(0:0.01:5, [x->pdf(pg, x) for pg in pgs], layout=4, lw=2.0)
+savefig("pg-plots.svg"); nothing # hide
 ```
-
+![](pg-plots.svg)
 
 
 
