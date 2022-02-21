@@ -1,14 +1,14 @@
 @testset "polyagamma" begin
-    @test mean(A.PolyaGamma(1, 0)) == 1 / 4
-    @test mean(A.PolyaGamma(1, 2.0)) == tanh(1.0) / 4
+    @test mean(PolyaGamma(1, 0)) == 1 / 4
+    @test mean(PolyaGamma(1, 2.0)) == tanh(1.0) / 4
 
     for (b, c) in ((1, 0), (1, 2.0), (3, 0), (3, 2.5), (3, 3.2), (1.2, 3.2))
-        p = A.PolyaGamma(b, c)
+        p = PolyaGamma(b, c)
         @test logpdf(p, rand(p)) isa Real
         @test mean(rand(p, 10000)) ≈ mean(p) atol = 1e-2
     end
 
-    p = A.PolyaGamma(1, 0)
+    p = PolyaGamma(1, 0)
     @test insupport(p, 0)
     @test !insupport(p, -1)
     @test minimum(p) === 0
