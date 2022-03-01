@@ -41,11 +41,11 @@ function Distributions.logpdf(d::PolyaGamma, x::Real)
         iszero(x) && -Inf # The limit to p(x) for x-> 0 is 0.
         # valₘₐₓ = Γb - b^2 / (8x)
         ext = logtilt(x, b, c) + (b - 1) * logtwo - loggamma(b) - (log2π + 3 * log(x)) / 2
-        xmax = loggamma(b) - abs2(b) / (8x)
+        xmax = loggamma(b) - abs2(b) / (8x) + log(b)
         sumval = sum(1:201) do n
-            (iseven(n) ? 1 : -1) * exp(_pdf_val_log_series(n, b, x) - xmax) * (2n + b) / b
+            (iseven(n) ? 1 : -1) * exp(_pdf_val_log_series(n, b, x) - xmax)
         end
-        return ext + xmax + log(b) + log(1 + sumval)
+        return ext + xmax + log(1 + sumval)
         # series = sum(1:200) do n
         #     v = 2 * n + b
         #     val = loggamma(n + b) - loggamma(n + 1) - abs2(v) / (8x)
@@ -57,7 +57,7 @@ function Distributions.logpdf(d::PolyaGamma, x::Real)
 end
 
 function _pdf_val_log_series(n::Integer, b::Real, x)
-    return loggamma(n + b) - loggamma(n + 1) - abs2(2n + b) / (8x)
+    return loggamma(n + b) - loggamma(n + 1) - abs2(2n + b) / (8x) + log(2n + b)
 end
 
 Distributions.logpdf(d::PolyaGamma, x::NamedTuple{(:ω,),<:Tuple{<:Real}}) = logpdf(d, x.ω)
