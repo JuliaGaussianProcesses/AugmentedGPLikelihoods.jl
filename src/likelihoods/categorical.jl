@@ -20,12 +20,12 @@ aux_field(::LogisticSoftMaxLikelihoods, Ω::TupleVector) = zip(Ω.ω, Ω.n)
 function init_aux_variables(rng::AbstractRNG, l::LogisticSoftMaxLikelihoods, ndata::Int)
     return TupleVector(;
         ω=[rand(rng, PolyaGamma(1, 0), nlatent(l)) for _ in 1:ndata],
-        n=[rand(rng, Negative(), nlatent(l)) for _ in 1:ndata],
+        n=[rand(rng, Poisson(), nlatent(l)) for _ in 1:ndata],
     )
 end
 
 function init_aux_posterior(T::DataType, l::LogisticSoftMaxLikelihoods, n::Int)
-    nl = l.nclasses
+    nclasses = l.nclasses
     return For(
         TupleVector(;
             y=[falses(nclasses) for _ in 1:n],
@@ -46,44 +46,48 @@ end
 function aux_full_conditional(
     lik::LogisticSoftMaxLikelihood, y::AbstractVector, f::AbstractVector{<:Real}
 )
-    return PolyaGammaNegativeMultinomial(y, abs(f), lik.invlink(-f))
+    return PolyaGammaNegativeMultinomial(y, abs(f)) # TODO
 end
 
 function aux_posterior!(
     qΩ,
-    lik::BijectiveLogisticSoftMaxLikelihood,
+    ::BijectiveLogisticSoftMaxLikelihood,
     y::AbstractVector{<:AbstractVector},
     qf::AbstractVector{<:AbstractVector{<:Normal}},
 )
-    λ = lik.invlink.λ
     φ = qΩ.pars
-    @. φ.c = sqrt(second_moment(qf))
-    @. φ.y = y
-    @. φ.λ = λ * approx_expected_logistic(-mean(qf), φ.c)
+    for (i, φᵢ) in enumerate(φ)
+        @. φᵢ.c = sqrt(second_moment(qf[i]))
+        @. φᵢ.y = y[i]
+        @. φᵢ.p = approx_expected_logisticsoftmax(-mean.(qf[i]), φᵢ.c)
+    end
     return qΩ
 end
 
-function aux_posterior!(
-    qΩ,
-    lik::LogisticSoftMaxLikelihood,
-    y::AbstractVector{<:AbstractVector},
-    qf::AbstractVector{<:AbstractVector{<:Normal}},
+# function aux_posterior!(
+#     qΩ,
+#     lik::LogisticSoftMaxLikelihood,
+#     y::AbstractVector{<:AbstractVector},
+#     qf::AbstractVector{<:AbstractVector{<:Normal}},
+# )
+#     λ = lik.invlink.λ
+#     φ = qΩ.pars
+#     @. φ.c = sqrt(second_moment(qf))
+#     @. φ.y = y
+#     @. φ.λ = λ * approx_expected_logistic(-mean(qf), φ.c)
+#     return qΩ
+# end
+
+function auglik_potential(
+    ::BijectiveLogisticSoftMaxLikelihood, Ω, y::AbstractVector{<:AbstractVector}
 )
-    λ = lik.invlink.λ
-    φ = qΩ.pars
-    @. φ.c = sqrt(second_moment(qf))
-    @. φ.y = y
-    @. φ.λ = λ * approx_expected_logistic(-mean(qf), φ.c)
-    return qΩ
+    return ((y .- Ω.n) / 2,) # TODO make sure that this is the right dimensionality
+    # We want to have a Tuple of vector of the same size as the number of classes
 end
 
-# function auglik_potential(::AugPoisson, Ω, y::AbstractVector)
-#     return ((y .- Ω.n) / 2,)
-# end
-
-# function auglik_precision(::AugPoisson, Ω, ::AbstractVector)
-#     return (Ω.ω,)
-# end
+function auglik_precision(::BijectiveLogisticSoftMaxLikelihood, Ω, ::AbstractVector)
+    return (Ω.ω,)
+end
 
 # function expected_auglik_potential(::AugPoisson, qΩ, y::AbstractVector)
 #     return ((y .- tvmean(qΩ).n) / 2,) # Short cut to get the mean n
@@ -103,11 +107,13 @@ end
 #            ((y - n) * f - abs2(f) * ω) / 2
 # end
 
-function aux_prior(::BijectiveLogisticSoftMaxLikelihood, y::AbstractVector)
-    return PolyaGammaNegativeMultinomial(y, 0, 1)
+function aux_prior(lik::BijectiveLogisticSoftMaxLikelihood, y::AbstractVector)
+    return PolyaGammaNegativeMultinomial(
+        y, zeros(Int, length(y)), repeat(logistic(0) + nlatent(lik), nlatent(lik))
+    )
 end
-function aux_prior(::LogisticSoftMaxLikelihood, y::AbstractVector)
-    return PolyaGammaNegativeMultinomial(y, 0, 1)
+function aux_prior(lik::LogisticSoftMaxLikelihood, y::AbstractVector)
+    return PolyaGammaNegativeMultinomial(y, 0) # TODO
 end
 
 # function expected_logtilt(lik::AugPoisson, qΩ, y, qf::AbstractVector{<:Normal})

@@ -1,13 +1,15 @@
 @doc raw"""
-    NegativeMultinomial(x₀, p::AbstractVector)
+    NegativeMultinomial(x₀::Real, p::AbstractVector)
 
 Negative Multinomial distribution defined as
 ```math
     p(\boldsymbol{x}|x_0, \boldsymbol{p}) = \Gamma\left(\sum_{i=0}^M x_i \right)\frac{p_0^{x_0}}{\Gamma(x_0)}\prod_{i=1}^M \frac{p_i^{x_i}}{x_i!}
 ```
 where $p_0= 1-\sum_{i=1}^M p_i$.
+
+For a detailed understanding of this distribution, see "Negative multinomial distribution" - Sibuya et al. - 1964
 """
-struct NegativeMultinomial{Tx₀,Tp} <: Distributions.DiscreteMultivariateDistribution
+struct NegativeMultinomial{Tx₀::Real,Tp::AbstractVector} <: Distributions.DiscreteMultivariateDistribution
     x₀::Tx₀
     p::Tp
 end
@@ -24,9 +26,8 @@ function Distributions._rand!(
     rng::AbstractRNG, d::NegativeMultinomial, x::AbstractVector{<:Real}
 )
     p₀ = _p₀(d)
-    θ = inv(p₀) - 1
-    λ = rand(rng, Gamma(d.x₀, θ))
-    λ = d.p * λ / (1 - p₀) # convert parameters to the scaled Poisson ones
+    θ = rand(rng, Gamma(d.x₀, inv(p₀) - 1))
+    λ = d.p * θ / (1 - p₀) # convert parameters to the scaled Poisson ones
     for i in eachindex(x)
         x[i] = rand(rng, Poisson(λ[i]))
     end
