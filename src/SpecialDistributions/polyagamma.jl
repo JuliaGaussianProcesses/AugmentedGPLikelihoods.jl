@@ -39,25 +39,18 @@ function Distributions.logpdf(d::PolyaGamma, x::Real)
     # is the delta dirac at 0.
     else
         iszero(x) && -Inf # The limit to p(x) for x-> 0 is 0.
-        # valₘₐₓ = Γb - b^2 / (8x)
         ext = logtilt(x, b, c) + (b - 1) * logtwo - loggamma(b) - (log2π + 3 * log(x)) / 2
-        xmax = loggamma(b) - abs2(b) / (8x) + log(b)
+        xmax = loggamma(b) - abs2(b) / (8x) + log(b) # We use the logexpsum trick
         sumval = sum(1:201) do n
             (iseven(n) ? 1 : -1) * exp(_pdf_val_log_series(n, b, x) - xmax)
         end
         return ext + xmax + log(1 + sumval)
-        # series = sum(1:200) do n
-        #     v = 2 * n + b
-        #     val = loggamma(n + b) - loggamma(n + 1) - abs2(v) / (8x)
-        #     return (iseven(n) ? 1 : -1) *
-        #     exp(val - valₘₐₓ)
-        # end
-        # return ext + log(b) + valₘₐₓ + log(series)
     end
 end
 
+
 function _pdf_val_log_series(n::Integer, b::Real, x)
-    return loggamma(n + b) - loggamma(n + 1) - abs2(2n + b) / (8x) + log(2n + b)
+    return loggamma(n + b) - loggamma(n + 1) - abs2(2n + b) / (8x) + log(2n + b) # all terms where n is present
 end
 
 Distributions.logpdf(d::PolyaGamma, x::NamedTuple{(:ω,),<:Tuple{<:Real}}) = logpdf(d, x.ω)
