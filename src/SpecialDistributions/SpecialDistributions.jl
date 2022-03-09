@@ -14,7 +14,9 @@ using SpecialFunctions
 using IrrationalConstants: logtwo, twoπ, halfπ, inv2π, fourinvπ, invπ, log2π
 
 export PolyaGamma
+export NegativeMultinomial
 export PolyaGammaPoisson
+export PolyaGammaNegativeMultinomial
 
 export NTDist, dist
 export ntrand, ntmean
@@ -61,6 +63,8 @@ tvmean
 tvmean(qΩ::ProductMeasure) = tvmean(marginals(qΩ))
 tvmeaninv(qΩ::ProductMeasure) = tvmeaninv(marginals(qΩ))
 
+include("negativemultinomial.jl")
 include("polyagamma.jl")
+include("polyagammanegativemultinomial.jl")
 include("polyagammapoisson.jl")
 end

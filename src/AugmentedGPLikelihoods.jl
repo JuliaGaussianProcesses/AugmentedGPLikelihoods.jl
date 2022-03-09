@@ -39,6 +39,7 @@ using .SpecialDistributions
 include("likelihoods/bernoulli.jl")
 include("likelihoods/laplace.jl")
 include("likelihoods/negativebinomial.jl")
+include("likelihoods/categorical.jl")
 include("likelihoods/poisson.jl")
 include("likelihoods/studentt.jl")
 

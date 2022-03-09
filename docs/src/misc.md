@@ -37,6 +37,11 @@ savefig("pg-plots.svg"); nothing # hide
 ![](pg-plots.svg)
 
 
+### Negative Multinomial
+
+```@docs
+SpecialDistributions.NegativeMultinomial
+```
 
 ### Polya-Gamma Poisson
 

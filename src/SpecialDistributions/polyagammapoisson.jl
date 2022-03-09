@@ -37,7 +37,7 @@ function tvmean(ds::AbstractVector{<:PolyaGammaPoisson})
     ω = map(ds, n) do d, n
         mean(PolyaGamma(d.y + n, d.c))
     end
-    return TupleVector((; ω, n))
+    return TupleVector(; ω, n)
 end
 
 function ntmean(d::PolyaGammaPoisson)
