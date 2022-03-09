@@ -6,35 +6,54 @@ end
 const LogisticSoftMaxLink = Link{typeof(logisticsoftmax)}
 
 # Augmentations are possible for both options
-const BijectiveLogisticSoftMaxLikelihood = CategoricalLikelihood{BijectiveSimplexLink{LogisticSoftMaxLink}}
+const BijectiveLogisticSoftMaxLikelihood = CategoricalLikelihood{
+    BijectiveSimplexLink{LogisticSoftMaxLink}
+}
 const LogisticSoftMaxLikelihood = CategoricalLikelihood{LogisticSoftMaxLink}
-const LogisticSoftMaxLikelihoods = Union{BijectiveLogisticSoftMaxLikelihood,LogisticSoftMaxLikelihood}
+const LogisticSoftMaxLikelihoods = Union{
+    BijectiveLogisticSoftMaxLikelihood,LogisticSoftMaxLikelihood
+}
 
 aux_field(::LogisticSoftMaxLikelihoods, Ω::NamedTuple) = values(Ω)
 aux_field(::LogisticSoftMaxLikelihoods, Ω::TupleVector) = zip(Ω.ω, Ω.n)
 
 function init_aux_variables(rng::AbstractRNG, l::LogisticSoftMaxLikelihoods, ndata::Int)
-    return TupleVector(;ω=[rand(rng, PolyaGamma(1, 0), nlatent(l)) for _ in 1:ndata], n=[rand(rng, Negative(), nlatent(l)) for _ in 1:ndata])
+    return TupleVector(;
+        ω=[rand(rng, PolyaGamma(1, 0), nlatent(l)) for _ in 1:ndata],
+        n=[rand(rng, Negative(), nlatent(l)) for _ in 1:ndata],
+    )
 end
 
 function init_aux_posterior(T::DataType, l::LogisticSoftMaxLikelihoods, n::Int)
     nl = l.nclasses
-    return For(TupleVector(; y=[falses(nclasses) for _ in 1:n], c=[zeros(T, nclasses) for _ in 1:n], p=[zeros(T, nclasses) for _ in 1:n])) do q
+    return For(
+        TupleVector(;
+            y=[falses(nclasses) for _ in 1:n],
+            c=[zeros(T, nclasses) for _ in 1:n],
+            p=[zeros(T, nclasses) for _ in 1:n],
+        ),
+    ) do q
         PolyaGammaNegativeMultinomial(q.y, q.c, q.p)
     end
 end
 
-function aux_full_conditional(lik::BijectiveLogisticSoftMaxLikelihood, y::AbstractVector, f::AbstractVector{<:Real})
+function aux_full_conditional(
+    lik::BijectiveLogisticSoftMaxLikelihood, y::AbstractVector, f::AbstractVector{<:Real}
+)
     return PolyaGammaNegativeMultinomial(y, abs(f), lik.invlink(-f))
 end
 
-
-function aux_full_conditional(lik::LogisticSoftMaxLikelihood, y::AbstractVector, f::AbstractVector{<:Real})
+function aux_full_conditional(
+    lik::LogisticSoftMaxLikelihood, y::AbstractVector, f::AbstractVector{<:Real}
+)
     return PolyaGammaNegativeMultinomial(y, abs(f), lik.invlink(-f))
 end
 
 function aux_posterior!(
-    qΩ, lik::BijectiveLogisticSoftMaxLikelihood, y::AbstractVector{<:AbstractVector}, qf::AbstractVector{<:AbstractVector{<:Normal}}
+    qΩ,
+    lik::BijectiveLogisticSoftMaxLikelihood,
+    y::AbstractVector{<:AbstractVector},
+    qf::AbstractVector{<:AbstractVector{<:Normal}},
 )
     λ = lik.invlink.λ
     φ = qΩ.pars
@@ -45,7 +64,10 @@ function aux_posterior!(
 end
 
 function aux_posterior!(
-    qΩ, lik::LogisticSoftMaxLikelihood, y::AbstractVector{<:AbstractVector}, qf::AbstractVector{<:AbstractVector{<:Normal}}
+    qΩ,
+    lik::LogisticSoftMaxLikelihood,
+    y::AbstractVector{<:AbstractVector},
+    qf::AbstractVector{<:AbstractVector{<:Normal}},
 )
     λ = lik.invlink.λ
     φ = qΩ.pars
@@ -81,8 +103,12 @@ end
 #            ((y - n) * f - abs2(f) * ω) / 2
 # end
 
-aux_prior(::BijectiveLogisticSoftMaxLikelihood, y::AbstractVector) = PolyaGammaNegativeMultinomial(y, 0, 1)
-aux_prior(::LogisticSoftMaxLikelihood, y::AbstractVector) = PolyaGammaNegativeMultinomial(y, 0, 1)
+function aux_prior(::BijectiveLogisticSoftMaxLikelihood, y::AbstractVector)
+    return PolyaGammaNegativeMultinomial(y, 0, 1)
+end
+function aux_prior(::LogisticSoftMaxLikelihood, y::AbstractVector)
+    return PolyaGammaNegativeMultinomial(y, 0, 1)
+end
 
 # function expected_logtilt(lik::AugPoisson, qΩ, y, qf::AbstractVector{<:Normal})
 #     logλ = log(lik.invlink.λ)

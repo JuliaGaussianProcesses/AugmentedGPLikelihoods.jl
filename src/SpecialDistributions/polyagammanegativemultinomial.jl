@@ -47,9 +47,12 @@ function ntmean(d::PolyaGammaPoisson)
     return (; ω=mean.(PolyaGamma.(d.y + n, d.c)), n)
 end
 
-function Distributions.kldivergence(q::PolyaGammaNegativeMultinomial, p::PolyaGammaNegativeMultinomial)
+function Distributions.kldivergence(
+    q::PolyaGammaNegativeMultinomial, p::PolyaGammaNegativeMultinomial
+)
     # TODO: Optimize this
-    (all(==(0), p.c) && all(p.y .== q.y)) || error("No solution for this prior. qΩ = $q, pΩ = $p")
+    (all(==(0), p.c) && all(p.y .== q.y)) ||
+        error("No solution for this prior. qΩ = $q, pΩ = $p")
     return sum(kldivergence.(PolyaGamma.(q.y + q.λ, q.c), PolyaGamma.(q.y + q.λ, 0))) +
            kldivergence(NegativeMultinomial(q), NegativeMultinomial(p))
 end

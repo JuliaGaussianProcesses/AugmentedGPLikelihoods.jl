@@ -20,11 +20,13 @@ Base.eltype(::NegativeMultinomial) = Int
 
 Base.length(d::NegativeMultinomial) = length(d.p)
 
-function Distributions._rand!(rng::AbstractRNG, d::NegativeMultinomial, x::AbstractVector{<:Real})
+function Distributions._rand!(
+    rng::AbstractRNG, d::NegativeMultinomial, x::AbstractVector{<:Real}
+)
     p₀ = _p₀(d)
     θ = inv(p₀) - 1
     λ = rand(rng, Gamma(d.x₀, θ))
-    λ = d.p  * λ / (1 - p₀) # convert parameters to the scaled Poisson ones
+    λ = d.p * λ / (1 - p₀) # convert parameters to the scaled Poisson ones
     for i in eachindex(x)
         x[i] = rand(rng, Poisson(λ[i]))
     end
@@ -32,7 +34,8 @@ function Distributions._rand!(rng::AbstractRNG, d::NegativeMultinomial, x::Abstr
 end
 
 function Distributions._logpdf(d::NegativeMultinomial, x::AbstractVector)
-    return loggamma(sum(x)) + d.x₀ * log(_p₀(d)) - loggamma(x₀) + sum((pᵢ, xᵢ) -> xᵢ * log(pᵢ) - logfactorial(xᵢ), zip(p, x))
+    return loggamma(sum(x)) + d.x₀ * log(_p₀(d)) - loggamma(x₀) +
+           sum((pᵢ, xᵢ) -> xᵢ * log(pᵢ) - logfactorial(xᵢ), zip(p, x))
 end
 
 Distributions.mean(d::NegativeMultinomial) = d.x₀ / _p₀(d) * d.p
@@ -56,7 +59,8 @@ end
 function Distributions.kldivergence(p::NegativeMultinomial, q::NegativeMultinomial)
     p₀ = _p₀(p)
     x₀ = p.x₀
-    x₀ * log(p₀) - q.x₀ * log(_p₀(q)) + x₀ / p₀ * sum(1:length(p)) do i
+    return x₀ * log(p₀) - q.x₀ * log(_p₀(q)) +
+           x₀ / p₀ * sum(1:length(p)) do i
         p.p[i] * (log(p.p[i]) - log(q.p[i]))
     end
 end
