@@ -9,9 +9,14 @@ where $p_0= 1-\sum_{i=1}^M p_i$.
 
 For a detailed understanding of this distribution, see "Negative multinomial distribution" - Sibuya et al. - 1964
 """
-struct NegativeMultinomial{Tx₀::Real,Tp::AbstractVector} <: Distributions.DiscreteMultivariateDistribution
+struct NegativeMultinomial{Tx₀<:Real,Tp<:AbstractVector} <: Distributions.DiscreteMultivariateDistribution
     x₀::Tx₀
     p::Tp
+    function NegativeMultinomial(x₀::Real, p::AbstractVector)
+        x₀ > 0 || throw(ArgumentError("x₀ has to be positive"))
+        (all(>=(0), p) && sum(p) < 1) || throw(ArgumentError("All p should be positive and their sum should be strictly smaller than 1"))
+        return new(x₀, p)
+    end
 end
 
 _p₀(d::NegativeMultinomial) = 1 - sum(d.p)
