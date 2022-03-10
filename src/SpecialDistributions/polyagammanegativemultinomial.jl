@@ -42,7 +42,7 @@ function tvmean(ds::AbstractVector{<:PolyaGammaNegativeMultinomial})
     return TupleVector(; ω, n)
 end
 
-function ntmean(d::PolyaGammaPoisson)
+function ntmean(d::PolyaGammaNegativeMultinomial)
     n = mean(NegativeMultinomial(d))
     return (; ω=mean.(PolyaGamma.(d.y + n, d.c)), n)
 end

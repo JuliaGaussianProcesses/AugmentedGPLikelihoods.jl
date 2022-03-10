@@ -7,9 +7,9 @@ const LogisticSoftMaxLink = Link{typeof(logisticsoftmax)}
 
 # Augmentations are possible for both options
 const BijectiveLogisticSoftMaxLikelihood = CategoricalLikelihood{
-    BijectiveSimplexLink{LogisticSoftMaxLink}
+    <:BijectiveSimplexLink{<:Union{LogisticSoftMaxLink,typeof(logisticsoftmax)}}
 }
-const LogisticSoftMaxLikelihood = CategoricalLikelihood{LogisticSoftMaxLink}
+const LogisticSoftMaxLikelihood = CategoricalLikelihood{<:Union{LogisticSoftMaxLink,typeof(logisticsoftmax)}}
 const LogisticSoftMaxLikelihoods = Union{
     BijectiveLogisticSoftMaxLikelihood,LogisticSoftMaxLikelihood
 }
@@ -81,12 +81,12 @@ end
 function auglik_potential(
     ::BijectiveLogisticSoftMaxLikelihood, Ω, y::AbstractVector{<:AbstractVector}
 )
-    return ((y .- Ω.n) / 2,) # TODO make sure that this is the right dimensionality
+    return (y .- Ω.n) ./ 2 # TODO make sure that this is the right dimensionality
     # We want to have a Tuple of vector of the same size as the number of classes
 end
 
 function auglik_precision(::BijectiveLogisticSoftMaxLikelihood, Ω, ::AbstractVector)
-    return (Ω.ω,)
+    return Ω.ω
 end
 
 # function expected_auglik_potential(::AugPoisson, qΩ, y::AbstractVector)

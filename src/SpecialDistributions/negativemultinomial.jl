@@ -15,7 +15,7 @@ struct NegativeMultinomial{Tx₀<:Real,Tp<:AbstractVector} <: Distributions.Disc
     function NegativeMultinomial(x₀::Real, p::AbstractVector)
         x₀ > 0 || throw(ArgumentError("x₀ has to be positive"))
         (all(>=(0), p) && sum(p) < 1) || throw(ArgumentError("All p should be positive and their sum should be strictly smaller than 1"))
-        return new(x₀, p)
+        return new{typeof(x₀),typeof(p)}(x₀, p)
     end
 end
 
