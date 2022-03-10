@@ -58,7 +58,7 @@ function aux_posterior!(
     φ = qΩ.pars
     for (i, φᵢ) in enumerate(φ)
         @. φᵢ.c = sqrt(second_moment(qf[i]))
-        @. φᵢ.y = y[i]
+        φᵢ.y .= y[i]
         φᵢ.p .= approx_expected_logisticsoftmax(-mean.(qf[i]), φᵢ.c)
     end
     return qΩ

@@ -49,17 +49,12 @@ function cavi!(fz::AbstractGPs.FiniteGP, x, y, ms, Ss, qΩ; niter=10)
     return ms, Ss
 end
 # Now we just initialize the variational parameters
-ms = [zeros(N) for _ in 1:nlatent(lik)]
+ms = nestedview(zeros(N, nlatent(lik)))
 Ss = [Matrix{Float64}(I(N)) for _ in 1:nlatent(lik)]
+u_posterior.([fz], ms, Ss)
 qΩ = init_aux_posterior(lik, N)
 fz = gp(x, 1e-8);
-# And visualize the current posterior
 x_te = -10:0.01:10
-for i in 1:nlatent(lik)
-    plot!(
-        plt, x_te, u_posterior(fz, ms[i], Ss[i]); color=i, alpha=0.3, label=""
-    )
-end  
 # We run CAVI for 3-4 iterations
 cavi!(fz, x, Y, ms, Ss, qΩ; niter=20);
 # And visualize the obtained variational posterior
