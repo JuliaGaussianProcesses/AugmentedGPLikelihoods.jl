@@ -2,6 +2,7 @@ module AugmentedGPLikelihoods
 
 using Reexport
 
+using ArraysOfArrays
 using ChainRulesCore: @ignore_derivatives
 using Distributions
 @reexport using GPLikelihoods

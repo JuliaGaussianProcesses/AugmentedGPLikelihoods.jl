@@ -4,6 +4,7 @@
 =#
 
 module SpecialDistributions
+using ArraysOfArrays
 using Distributions
 using LogExpFunctions
 using MeasureBase

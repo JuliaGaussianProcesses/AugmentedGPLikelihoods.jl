@@ -1,4 +1,4 @@
-# # Regression with Student-t noise with augmented variables
+# # Regression with Student-t noise
 
 # We load all the necessary packages
 using AbstractGPs

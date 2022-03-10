@@ -1,4 +1,4 @@
-# # Classification with augmented variables
+# # Binary Classification
 
 # We load all the necessary packages
 using AbstractGPs

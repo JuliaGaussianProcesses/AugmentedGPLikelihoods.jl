@@ -18,3 +18,5 @@ function approx_expected_logisticsoftmax(μ::AbstractVector, c::AbstractVector)
     σs = approx_expected_logistic.(μ, c)
     return σs / (logistic(0) + sum(σs))
 end
+
+transpose_nested(x::ArrayOfSimilarArrays) = nestedview(flatview(x)')

@@ -1,4 +1,4 @@
-# # Poisson regression with augmented variables
+# # Poisson regression
 
 # We load all the necessary packages
 using AbstractGPs

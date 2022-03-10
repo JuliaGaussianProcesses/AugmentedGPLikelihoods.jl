@@ -35,10 +35,10 @@ function MeasureBase.logdensity(d::PolyaGammaNegativeMultinomial, x::NamedTuple)
 end
 
 function tvmean(ds::AbstractVector{<:PolyaGammaNegativeMultinomial})
-    n = mean.(ds)
-    ω = map(ds, n) do d, n
+    n = nestedview(mapreduce(d->mean(NegativeMultinomial(d)), hcat, ds))
+    ω = nestedview(mapreduce(hcat, ds, n) do d, n
         mean.(PolyaGamma.(d.y + n, d.c))
-    end
+    end)
     return TupleVector(; ω, n)
 end
 

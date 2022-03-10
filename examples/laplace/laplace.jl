@@ -1,4 +1,4 @@
-# # Regression with Laplace noise with augmented variables
+# # Regression with Laplace noise
 
 # We load all the necessary packages
 using AbstractGPs
