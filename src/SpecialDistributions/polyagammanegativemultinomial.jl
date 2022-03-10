@@ -22,7 +22,7 @@ Distributions.length(::PolyaGammaNegativeMultinomial) = 2 * length(d.p)
 
 function ntrand(rng::AbstractRNG, d::PolyaGammaNegativeMultinomial)
     n = rand(rng, NegativeMultinomial(d))
-    ω = rand(rng, PolyaGamma.(n + d.y, d.c))
+    ω = rand.(rng, PolyaGamma.(n + d.y, d.c))
     return (; ω, n)
 end
 

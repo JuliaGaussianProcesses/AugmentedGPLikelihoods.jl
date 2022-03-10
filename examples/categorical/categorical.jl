@@ -17,7 +17,7 @@ Nclass = 4
 x = range(-10, 10; length=N)
 lik = CategoricalLikelihood(BijectiveSimplexLink(logisticsoftmax))
 AugmentedGPLikelihoods.nlatent(::CategoricalLikelihood) = Nclass - 1
-invert(x::ArrayOfSimilarArrays) = nestedview(flatview(x)')
+SplitApplyCombine.invert(x::ArrayOfSimilarArrays) = nestedview(flatview(x)')
 X = MOInput(x, nlatent(lik))
 kernel = with_lengthscale(SqExponentialKernel(), 2.0)
 gp = GP(kernel)
@@ -40,7 +40,7 @@ end
 function cavi!(fz::AbstractGPs.FiniteGP, x, y, ms, Ss, qΩ; niter=10)
     K = ApproximateGPs._chol_cov(fz)
     for _ in 1:niter
-        posts_u = u_posterior.(Ref(fz), m, S)
+        posts_u = u_posterior.(Ref(fz), ms, Ss)
         posts_fs = marginals.([p_u(x) for p_u in posts_u])
         aux_posterior!(qΩ, lik, y, SplitApplyCombine.invert(posts_fs))
         Ss .= inv.(Symmetric.(Ref(inv(K)) .+ Diagonal.(expected_auglik_precision(lik, qΩ, y))))
@@ -60,9 +60,8 @@ for i in 1:nlatent(lik)
         plt, x_te, u_posterior(fz, ms[i], Ss[i]); color=i, alpha=0.3, label=""
     )
 end  
-plt
 # We run CAVI for 3-4 iterations
-cavi!(fz, x, Y, ms, Ss, qΩ; niter=4);
+cavi!(fz, x, Y, ms, Ss, qΩ; niter=20);
 # And visualize the obtained variational posterior
 for i in 1:nlatent(lik)
     plot!(
@@ -74,7 +73,7 @@ for i in 1:nlatent(lik)
         label="",
     )
 end
-plt
+plt |> display
 # ## Classification - ELBO
 # How can one compute the Augmented ELBO?
 # Again AugmentedGPLikelihoods provides helper functions
@@ -87,29 +86,31 @@ function aug_elbo(lik, u_post, x, y)
 end
 
 # aug_elbo(lik, u_posterior(fz, m, S), x, y)
-# ## Classification - Gibbs Sampling
+# ## Gibbs Sampling
 # We create our Gibbs sampling algorithm (we could do something fancier with
 # AbstractMCMC)
-function gibbs_sample(fz, f, Ω; nsamples=200)
+function gibbs_sample(fz, fs, Ω; nsamples=200)
     K = ApproximateGPs._chol_cov(fz)
-    Σ = zeros(length(f), length(f))
-    μ = zeros(length(f))
+    Σ = [zeros(N, N) for _ in 1:nlatent(lik)]
+    μ = [zeros(N) for _ in 1:nlatent(lik)]
     return map(1:nsamples) do _
-        aux_sample!(Ω, lik, y, f)
-        Σ .= inv(Symmetric(inv(K) + Diagonal(only(auglik_precision(lik, Ω, y)))))
-        μ .= Σ * (only(auglik_potential(lik, Ω, y)) - K \ mean(fz))
-        rand!(MvNormal(μ, Σ), f)
-        return copy(f)
+        aux_sample!(Ω, lik, Y, invert(fs))
+        Σ .= inv.(Symmetric.(Ref(inv(K)) .+ Diagonal.(auglik_precision(lik, Ω, Y))))
+        μ .= Σ .* (auglik_potential(lik, Ω, Y) .- Ref(K \ mean(fz)))
+        rand!.(MvNormal.(μ, Σ), fs)
+        return copy(fs)
     end
 end;
 # We initialize our random variables
-f = randn(N)
+fs_init = nestedview(randn(N, nlatent(lik)))
 Ω = init_aux_variables(lik, N);
 # Run the sampling for default number of iterations (200)
-fs = gibbs_sample(fz, f, Ω);
+fs_samples = gibbs_sample(fz, fs_init, Ω);
 # And visualize the samples overlapped to the variational posterior
 # that we found earlier.
-for f in fs
-    plot!(plt, x, f; color=:black, alpha=0.07, label="")
+for fs in fs_samples
+    for i in 1:nlatent(lik)
+        plot!(plt, x, fs[i]; color=i, alpha=0.07, label="")
+    end
 end
 plt

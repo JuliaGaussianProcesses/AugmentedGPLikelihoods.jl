@@ -40,7 +40,7 @@ end
 function aux_full_conditional(
     lik::BijectiveLogisticSoftMaxLikelihood, y::AbstractVector{<:Bool}, f::AbstractVector{<:Real}
 )
-    return PolyaGammaNegativeMultinomial(y, abs(f), lik.invlink(-f))
+    return PolyaGammaNegativeMultinomial(y, abs.(f), lik.invlink(-f)[1:end-1])
 end
 
 function aux_full_conditional(
