@@ -1,7 +1,7 @@
 name = "AugmentedGPLikelihoods"
 uuid = "4689c64d-1a23-4d3c-ad26-1c612d54a282"
 authors = ["Théo Galy-Fajou <theo.galyfajou@gmail.com> and contributors"]
-version = "0.4.8"
+version = "0.4.9"
 
 [deps]
 ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
