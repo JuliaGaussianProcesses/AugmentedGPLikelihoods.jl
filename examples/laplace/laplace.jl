@@ -1,4 +1,4 @@
-# # Regression with Laplace noise with augmented variables
+# # Regression with Laplace noise
 
 # We load all the necessary packages
 using AbstractGPs
@@ -21,7 +21,7 @@ f, y = rand(lf(x));
 # We plot the sampled data
 plt = scatter(x, y; label="Data")
 plot!(plt, x, f; color=:red, label="Latent GP")
-# ## Laplace - CAVI Updates
+# ## CAVI Updates
 # We write our CAVI algorithmm
 function u_posterior(fz, m, S)
     return posterior(SparseVariationalApproximation(Centered(), fz, MvNormal(m, S)))
@@ -37,7 +37,7 @@ function cavi!(fz::AbstractGPs.FiniteGP, x, y, m, S, qΩ; niter=10)
         m .= S * (only(expected_auglik_potential(lik, qΩ, y)) - K \ mean(fz))
     end
     return m, S
-end
+end;
 # Now we just initialize the variational parameters
 m = zeros(N)
 S = Matrix{Float64}(I(N))
@@ -59,7 +59,7 @@ plot!(
     alpha=0.3,
     label="Final VI Posterior",
 )
-# ## Laplace - ELBO
+# ## ELBO
 # How can one compute the Augmented ELBO?
 # Again AugmentedGPLikelihoods provides helper functions
 # to not have to compute everything yourself
@@ -71,7 +71,7 @@ function aug_elbo(lik, u_post, x, y)
 end
 
 aug_elbo(lik, u_posterior(fz, m, S), x, y)
-# ## Laplace - Gibbs Sampling
+# ## Gibbs Sampling
 # We create our Gibbs sampling algorithm (we could do something fancier with
 # AbstractMCMC)
 function gibbs_sample(fz, f, Ω; nsamples=200)
