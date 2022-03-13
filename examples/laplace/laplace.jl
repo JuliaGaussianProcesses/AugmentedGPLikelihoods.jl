@@ -67,8 +67,7 @@ function aug_elbo(lik, u_post, x, y)
     qf = marginals(u_post(x))
     qΩ = aux_posterior(lik, y, qf)
     return expected_logtilt(lik, qΩ, y, qf) - aux_kldivergence(lik, qΩ, y) -
-           kldivergence(u_post.approx.q, u_post.approx.fz)
-    # approx.fz is the prior and approx.q is the posterior 
+           kldivergence(u_post.approx.q, u_post.approx.fz) # approx.fz is the prior and approx.q is the posterior 
 end
 
 aug_elbo(lik, u_posterior(fz, m, S), x, y)
