@@ -96,8 +96,6 @@ Note that ``p(\boldsymbol{\omega}^i, \boldsymbol{n}^i|
 
 ## Variational distributions (Variational Inference)
 
-### Bijective version
-
 We define the variational distribution with a block mean-field approximation:
 ```math
     q(\boldsymbol{F}, \boldsymbol{\Omega}, \boldsymbol{N}) = \prod_{j=1}^{K-1} \mathcal{N}(\boldsymbol{f}_j|\boldsymbol{\mu}_j,\boldsymbol{\Sigma}_j)\prod_{i=1}^N \operatorname{NM}(\boldsymbol{n}^i|1, \boldsymbol{p}^i)\prod_{j=1}^{K-1}\operatorname{PG}(\omega^i_j|y^i_j + n^i_j, c^i_j).
@@ -106,12 +104,21 @@ The optimal variational parameters are given by:
 ```math
 \begin{align*}
     c^i_j =& \sqrt{(\mu^i_j)^2 + S^{ii}_j},\\
-    p^i_j =& \frac{\widetilde{\sigma}(q(f_i^j))}{D + \sum_{j=1}^{K-1}\widetilde{\sigma}(q(f_i^j))},\\
     \Sigma_j =& \left(K^{-1} + \operatorname{Diagonal}(\theta_j)\right)^{-1},\\
     \mu_j =& \Sigma_j\left(\frac{y + \gamma_j}{2} + K^{-1}\mu_0\right),
 \end{align*}
 ```
 where ``\gamma_j^i = E_{q(\boldsymbol{p})}[n_j^i] = \frac{p_j^i}{1 - \sum_{j=1}^{K-1} p_j^i}``, ``\theta_j^i = E_{q(\omega^i_j,n^i_j)}[\omega_j^i] = \frac{y_j^i+\gamma^i_j}{2c_j^i}\tanh\left(\frac{c_j^i}{2}\right)`` and ``\widetilde{\sigma}(q(f_j^i)) = \frac{e^{-\mu_j^i}/2}{2\cosh(c_j^i/2)}`` which is an approximation of the expectation of ``E_{q(f_j^i)}[\sigma(-f_j^i)]``.
+
+For the **bijective version**
+```math
+p^i_j = \frac{\widetilde{\sigma}(q(f_i^j))}{D + \sum_{j=1}^{K-1}\widetilde{\sigma}(q(f_i^j))},
+```
+and for the **non-bijective version**
+
+```math
+p^i_j = \frac{\widetilde{\sigma}(q(f_i^j))}{K},
+```
 
 We get the ELBO as
 ```math
