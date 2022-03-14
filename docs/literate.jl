@@ -13,7 +13,7 @@ const EXAMPLEPATH = joinpath(@__DIR__, "..", "examples", EXAMPLE)
 const PKGDIR = joinpath(@__DIR__, "..")
 Pkg.activate(EXAMPLEPATH)
 Pkg.instantiate()
-Pkg.develop(PackageSpec(path=PKGDIR))
+Pkg.develop(Pkg.PackageSpec(path=PKGDIR))
 display(Pkg.status())
 using Literate: Literate
 
