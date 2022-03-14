@@ -1,4 +1,4 @@
-# # Classification with augmented variables
+# # Binary Classification
 
 # We load all the necessary packages
 using AbstractGPs
@@ -20,7 +20,7 @@ f, y = rand(lf(x));
 # We plot the sampled data
 plt = scatter(x, y; label="Data")
 plot!(plt, x, f; color=:red, label="Latent GP")
-# ## Classification - CAVI Updates
+# ## CAVI Updates
 # We write our CAVI algorithmm
 function u_posterior(fz, m, S)
     return posterior(SparseVariationalApproximation(Centered(), fz, MvNormal(m, S)))
@@ -33,10 +33,10 @@ function cavi!(fz::AbstractGPs.FiniteGP, x, y, m, S, qΩ; niter=10)
         post_fs = marginals(post_u(x))
         aux_posterior!(qΩ, lik, y, post_fs)
         S .= inv(Symmetric(inv(K) + Diagonal(only(expected_auglik_precision(lik, qΩ, y)))))
-        m .= S * (only(expected_auglik_potential(lik, qΩ, y)) - K \ mean(fz))
+        m .= S * (only(expected_auglik_potential(lik, qΩ, y)) + K \ mean(fz))
     end
     return m, S
-end
+end;
 # Now we just initialize the variational parameters
 m = zeros(N)
 S = Matrix{Float64}(I(N))
@@ -58,7 +58,7 @@ plot!(
     alpha=0.3,
     label="Final VI Posterior",
 )
-# ## Classification - ELBO
+# ## ELBO
 # How can one compute the Augmented ELBO?
 # Again AugmentedGPLikelihoods provides helper functions
 # to not have to compute everything yourself
@@ -66,11 +66,11 @@ function aug_elbo(lik, u_post, x, y)
     qf = marginals(u_post(x))
     qΩ = aux_posterior(lik, y, qf)
     return expected_logtilt(lik, qΩ, y, qf) - aux_kldivergence(lik, qΩ, y) -
-           ApproximateGPs._prior_kl(u_post.approx)
+           kldivergence(u_post.approx.q, u_post.approx.fz) # approx.fz is the prior and approx.q is the posterior 
 end
 
 aug_elbo(lik, u_posterior(fz, m, S), x, y)
-# ## Classification - Gibbs Sampling
+# ## Gibbs Sampling
 # We create our Gibbs sampling algorithm (we could do something fancier with
 # AbstractMCMC)
 function gibbs_sample(fz, f, Ω; nsamples=200)
@@ -80,7 +80,7 @@ function gibbs_sample(fz, f, Ω; nsamples=200)
     return map(1:nsamples) do _
         aux_sample!(Ω, lik, y, f)
         Σ .= inv(Symmetric(inv(K) + Diagonal(only(auglik_precision(lik, Ω, y)))))
-        μ .= Σ * (only(auglik_potential(lik, Ω, y)) - K \ mean(fz))
+        μ .= Σ * (only(auglik_potential(lik, Ω, y)) + K \ mean(fz))
         rand!(MvNormal(μ, Σ), f)
         return copy(f)
     end
