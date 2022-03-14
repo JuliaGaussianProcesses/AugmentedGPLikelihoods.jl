@@ -58,12 +58,12 @@ function expected_auglik_precision(::AugHeteroGaussian, qΩ, ::AbstractVector, q
     return (λ * approx_expected_logistic.(-mean.(qg), c), tvmean(qΩ).ω)
 end
 
-function expected_auglik_potential_and_precision(::AugHeteroGaussian, qΩ, y::AbstractVector)
+function expected_auglik_potential_and_precision(lik::AugHeteroGaussian, qΩ, y::AbstractVector, qg::AbstractVector{<:Normal})
     λ = lik.invlink.λ
     c = qΩ.pars.c
     θ = tvmean(qΩ)
     λσg = λ * approx_expected_logistic.(-mean.(qg), c)
-    return ((y .* λσg / 2, (1 // 2 - θ.n) / 2), (λσg, θ.ω))
+    return ((y .* λσg / 2, (1 // 2 .- θ.n) / 2), (λσg, θ.ω))
 end
 
 function logtilt(lik::AugHeteroGaussian, (ω, n)::Tuple{<:Real,<:Integer}, y::Real, (f,g)::AbstractVector{<:Real})

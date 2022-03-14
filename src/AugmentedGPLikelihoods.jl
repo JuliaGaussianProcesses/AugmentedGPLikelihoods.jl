@@ -27,7 +27,7 @@ export logtilt, expected_logtilt
 export aux_prior
 export aug_loglik, aux_kldivergence
 
-export ScaledLogistic
+export ScaledLogistic, InvScaledLogistic
 
 export LaplaceLikelihood, NegBinomialLikelihood, StudentTLikelihood
 
