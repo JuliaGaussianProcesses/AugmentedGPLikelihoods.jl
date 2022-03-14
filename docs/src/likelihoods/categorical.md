@@ -120,6 +120,8 @@ and for the **non-bijective version**
 p^i_j = \frac{\widetilde{\sigma}(q(f_i^j))}{K},
 ```
 
+TODO:
+
 We get the ELBO as
 ```math
 \begin{align*}
@@ -135,5 +137,3 @@ where
     E_{q(n_i)}\left[\operatorname{KL}(q(\omega_i|n_i)||p(\omega_i|n_i, y)\right] =& (y_i + \gamma_i)\log\cosh \left(\frac{c_i}{2}\right) - c_i^2 \frac{\theta_i}{2}.
 \end{align*}
 ```
-
-### Non-Bijective version
