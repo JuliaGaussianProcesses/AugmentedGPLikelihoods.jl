@@ -14,9 +14,9 @@ function approx_expected_logistic(μ::Real, c::Real)
 end
 
 # Same thing as above for softmax
-function approx_expected_logisticsoftmax(μ::AbstractVector, c::AbstractVector)
-    σs = approx_expected_logistic.(μ, c)
-    return σs / (logistic(0) + sum(σs))
+function approx_expected_logisticsoftmax(μ::AbstractVector, c::AbstractVector, θ::AbstractVector)
+    σs = θ[1:end-1] .* approx_expected_logistic.(μ, c)
+    return σs / (θ[end] * logistic(0) + sum(σs))
 end
 
 transpose_nested(x::ArrayOfSimilarArrays) = nestedview(flatview(x)')

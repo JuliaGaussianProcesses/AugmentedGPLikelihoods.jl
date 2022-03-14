@@ -14,18 +14,21 @@ using Plots
 # We create some random data (sorted for plotting reasons)
 N = 100
 Nclass = 4
-x = range(-10, 10; length=N)
-lik = CategoricalLikelihood(BijectiveSimplexLink(logisticsoftmax))
-AugmentedGPLikelihoods.nlatent(::CategoricalLikelihood) = Nclass - 1
+x = collect(range(-10, 10; length=N))
+# lik = CategoricalLikelihood(BijectiveSimplexLink(LogisticSoftMaxLink(vcat(zeros(Nclass - 1), log(1 / Nclass)))))
+# lik = CategoricalLikelihood(BijectiveSimplexLink(LogisticSoftMaxLink(randn(Nclass))))
+lik = CategoricalLikelihood(LogisticSoftMaxLink(zeros(Nclass)))
+AugmentedGPLikelihoods.nlatent(::CategoricalLikelihood{<:BijectiveSimplexLink}) = Nclass - 1
+AugmentedGPLikelihoods.nlatent(::CategoricalLikelihood{<:LogisticSoftMaxLink}) = Nclass
 SplitApplyCombine.invert(x::ArrayOfSimilarArrays) = nestedview(flatview(x)')
 X = MOInput(x, nlatent(lik))
-kernel = with_lengthscale(SqExponentialKernel(), 2.0)
+kernel = 10.0 * with_lengthscale(SqExponentialKernel(), 2.0)
 gp = GP(kernel)
 gpm = GP(IndependentMOKernel(kernel))
 fs = rand(gpm(X, 1e-6))
 fs = nestedview(reduce(hcat, Iterators.partition(fs, N)))
 y = rand(lik(invert(fs)))
-Y = nestedview(unique(y)[1:end-1] .== permutedims(y))
+Y = nestedview(sort(unique(y))[1:nlatent(lik)] .== permutedims(y))
 # lf = LatentGP(gp, lik, 1e-6)
 # f, y = rand(lf(X));
 # We plot the sampled data
@@ -34,7 +37,7 @@ plot!(plt, x, [fs, zeros(N)]; color=[1 2 3 4], label="", lw=3.0)
 # ## CAVI Updates
 # We write our CAVI algorithmm
 function u_posterior(fz, m, S)
-    return posterior(SparseVariationalApproximation(Centered(), fz, MvNormal(m, S)))
+    return posterior(SparseVariationalApproximation(Centered(), fz, MvNormal(copy(m), S)))
 end
 
 function cavi!(fz::AbstractGPs.FiniteGP, x, y, ms, Ss, qΩ; niter=10)
@@ -51,7 +54,6 @@ end
 # Now we just initialize the variational parameters
 ms = nestedview(zeros(N, nlatent(lik)))
 Ss = [Matrix{Float64}(I(N)) for _ in 1:nlatent(lik)]
-u_posterior.([fz], ms, Ss)
 qΩ = init_aux_posterior(lik, N)
 fz = gp(x, 1e-8);
 x_te = -10:0.01:10
@@ -69,7 +71,16 @@ for i in 1:nlatent(lik)
     )
 end
 plt |> display
-# ## Classification - ELBO
+
+##
+plt2 = vline(x, group=y, lw=20/length(x) * 20.0, alpha=0.3, ylims=(0,1),title="p(y=k|f)")
+ps = getproperty.(lik.(invert(mean.([u_post(x_te) for u_post in u_posterior.(Ref(fz), ms, Ss)]))), :p)
+for i in 1:Nclass
+    plot!(plt2, x_te, invert(ps)[i], color=i, lw =2.0, label="")
+end
+plt2 |> display
+##
+# ## ELBO
 # How can one compute the Augmented ELBO?
 # Again AugmentedGPLikelihoods provides helper functions
 # to not have to compute everything yourself
@@ -77,7 +88,7 @@ function aug_elbo(lik, u_post, x, y)
     qf = marginals(u_post(x))
     qΩ = aux_posterior(lik, y, qf)
     return expected_logtilt(lik, qΩ, y, qf) - aux_kldivergence(lik, qΩ, y) -
-           ApproximateGPs._prior_kl(u_post.approx)
+           kldivergence(u_post.approx.q, u_post.approx.fz)
 end
 
 # aug_elbo(lik, u_posterior(fz, m, S), x, y)
@@ -108,4 +119,4 @@ for fs in fs_samples
         plot!(plt, x, fs[i]; color=i, alpha=0.07, label="")
     end
 end
-plt
+# plt

@@ -3,7 +3,15 @@ function logisticsoftmax(x::AbstractVector{<:Real})
     return σs / sum(σs)
 end
 
-const LogisticSoftMaxLink = Link{typeof(logisticsoftmax)}
+struct LogisticSoftMaxLink{Tθ} <: AbstractLink
+    logθ::Tθ
+end
+
+function (l::LogisticSoftMaxLink)(f::AbstractVector{<:Real})
+    σs = exp.(l.logθ) .* logistic.(f)
+    return σs ./ sum(σs)
+end
+# const LogisticSoftMaxLink = Link{typeof(logisticsoftmax)}
 
 # Augmentations are possible for both options
 const BijectiveLogisticSoftMaxLikelihood = CategoricalLikelihood{
@@ -40,64 +48,66 @@ end
 function aux_full_conditional(
     lik::BijectiveLogisticSoftMaxLikelihood, y::AbstractVector{<:Bool}, f::AbstractVector{<:Real}
 )
-    return PolyaGammaNegativeMultinomial(y, abs.(f), lik.invlink(-f)[1:end-1])
+    return PolyaGammaNegativeMultinomial(y, abs.(f), lik.invlink(-f)[1:nlatent(lik)])
 end
 
 function aux_full_conditional(
     lik::LogisticSoftMaxLikelihood, y::AbstractVector{<:Bool}, f::AbstractVector{<:Real}
 )
-    return PolyaGammaNegativeMultinomial(y, abs(f)) # TODO
+    return PolyaGammaNegativeMultinomial(y, abs.(f), logistic.(-f) ./ nlatent(lik))
 end
 
 function aux_posterior!(
     qΩ,
-    ::BijectiveLogisticSoftMaxLikelihood,
+    lik::BijectiveLogisticSoftMaxLikelihood,
     y::AbstractVector{<:AbstractVector{<:Bool}},
     qf::AbstractVector{<:AbstractVector{<:Normal}},
 )
     φ = qΩ.pars
+    θ = exp.(lik.invlink.link.logθ)
     for (i, φᵢ) in enumerate(φ)
         @. φᵢ.c = sqrt(second_moment(qf[i]))
         φᵢ.y .= y[i]
-        φᵢ.p .= approx_expected_logisticsoftmax(-mean.(qf[i]), φᵢ.c)
+        φᵢ.p .= approx_expected_logisticsoftmax(-mean.(qf[i]), φᵢ.c, θ)
     end
     return qΩ
 end
 
-# function aux_posterior!(
-#     qΩ,
-#     lik::LogisticSoftMaxLikelihood,
-#     y::AbstractVector{<:AbstractVector},
-#     qf::AbstractVector{<:AbstractVector{<:Normal}},
-# )
-#     λ = lik.invlink.λ
-#     φ = qΩ.pars
-#     @. φ.c = sqrt(second_moment(qf))
-#     @. φ.y = y
-#     @. φ.λ = λ * approx_expected_logistic(-mean(qf), φ.c)
-#     return qΩ
-# end
+function aux_posterior!(
+    qΩ,
+    lik::LogisticSoftMaxLikelihood,
+    y::AbstractVector{<:AbstractVector},
+    qf::AbstractVector{<:AbstractVector{<:Normal}},
+)
+    φ = qΩ.pars
+        for (i, φᵢ) in enumerate(φ)
+        @. φᵢ.c = sqrt(second_moment(qf[i]))
+        φᵢ.y .= y[i]
+        φᵢ.p .= approx_expected_logistic.(-mean.(qf[i]), φᵢ.c) ./ nlatent(lik)
+    end
+    return qΩ
+end
 
 function auglik_potential(
-    ::BijectiveLogisticSoftMaxLikelihood, Ω, y::ArrayOfSimilarArrays{<:Bool}
+    ::LogisticSoftMaxLikelihoods, Ω, y::ArrayOfSimilarArrays{<:Bool}
 )
     return nestedview(((flatview(y) - flatview(Ω.n)) / 2)')
     # We want to have a Tuple of vector of the same size as the number of classes
 end
 
-function auglik_precision(::BijectiveLogisticSoftMaxLikelihood, Ω, ::AbstractVector)
+function auglik_precision(::LogisticSoftMaxLikelihoods, Ω, ::AbstractVector)
     return transpose_nested(Ω.ω)
 end
 
-function expected_auglik_potential(::BijectiveLogisticSoftMaxLikelihood, qΩ, y::ArrayOfSimilarArrays{<:Bool})
+function expected_auglik_potential(::LogisticSoftMaxLikelihoods, qΩ, y::ArrayOfSimilarArrays{<:Bool})
     return nestedview(((flatview(y) - flatview(tvmean(qΩ).n)) / 2)')
 end
 
-function expected_auglik_precision(::BijectiveLogisticSoftMaxLikelihood, qΩ, ::AbstractVector)
+function expected_auglik_precision(::LogisticSoftMaxLikelihoods, qΩ, ::AbstractVector)
     return transpose_nested(tvmean(qΩ).ω)
 end
 
-function expected_auglik_potential_and_precision(::BijectiveLogisticSoftMaxLikelihood, qΩ, y::AbstractVector)
+function expected_auglik_potential_and_precision(::LogisticSoftMaxLikelihoods, qΩ, y::AbstractVector)
     θ = tvmean(qΩ)
     return nestedview(((flatview(y) - flatview(θ.n)) / 2)'), transpose_nested(θ.ω)
 end
