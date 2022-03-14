@@ -18,7 +18,7 @@ function init_aux_variables(rng::AbstractRNG, ::AugHeteroGaussian, ndata::Int)
 end
 
 function init_aux_posterior(T::DataType, ::AugHeteroGaussian, n::Int)
-    return For(TupleVector(; c=zeros(T, n), λ=zeros(T, n))) do q
+    return For(TupleVector(; c=zeros(T, n), λ=zeros(T, n), ψ=zeros(T, n))) do q
         PolyaGammaPoisson(1//2, q.c, q.λ)
     end
 end
@@ -32,18 +32,18 @@ function aux_posterior!(
 )
     λ = lik.invlink.λ
     φ = qΩ.pars
-    ψ = second_moment.(first.(qfg) .- y) / 2
-    @. φ.c = sqrt(second_moment(first(qfg)))
-    @. φ.λ = λ * approx_expected_logistic(-mean(last(qfg)), φ.c) * ψ
+    @. φ.ψ = second_moment(first(qfg) - y) / 2
+    @. φ.c = sqrt(second_moment(last(qfg)))
+    @. φ.λ = λ * approx_expected_logistic(-mean(last(qfg)), φ.c) * φ.ψ
     return qΩ
 end
 
-function auglik_potential(lik::AugHeteroGaussian, Ω, y::AbstractVector, g::AbstractVector)
-    return (y .* inv.(lik.invlink(g)) / 2, (1//2 - Ω.n) / 2)
+function auglik_potential(lik::AugHeteroGaussian, Ω, y::AbstractVector, g::AbstractVector{<:Real})
+    return (y .* inv.(lik.invlink.(g)) / 2, (1//2 .- Ω.n) / 2)
 end
 
-function auglik_precision(::AugHeteroGaussian, Ω, ::AbstractVector)
-    return (Ω.λσg, Ω.ω)
+function auglik_precision(lik::AugHeteroGaussian, Ω, ::AbstractVector, g::AbstractVector{<:Real})
+    return (inv.(lik.invlink.(g)), Ω.ω)
 end
 
 function expected_auglik_potential(lik::AugHeteroGaussian, qΩ, y::AbstractVector, qg::AbstractVector{<:Normal})
