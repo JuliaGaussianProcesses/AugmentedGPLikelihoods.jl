@@ -64,7 +64,7 @@ makedocs(
     pages=[
         "Home" => "index.md",
         "Likelihoods" => joinpath.(Ref("likelihoods"), likelihoods),
-        "Examples" => joinpath.(Ref("examples"), likelihoods),
+        # "Examples" => joinpath.(Ref("examples"), likelihoods),
         "Misc" => "misc.md",
         "References" => "references.md",
     ],

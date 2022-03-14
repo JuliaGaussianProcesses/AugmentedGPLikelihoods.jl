@@ -51,6 +51,9 @@ SpecialDistributions.PolyaGammaPoisson
 
 ### Pólya-Gamma Negative Multinomial
 
+```@docs
+SpecialDistributions.PolyaGammaNegativeMultinomial
+```
 
 ## Additional likelihoods
 

@@ -8,7 +8,7 @@ A multivariate distribution, used as hierachical prior as:
 
 Random samples as well as statistics from the distribution will returned as a `NamedTuple` : `(;ω, n)`.
 
-This structured distributions is needed for the [`CategoricalLikelihood`](https://juliagaussianprocesses.github.io/GPLikelihoods.jl/dev/#GPLikelihoods.PoissonLikelihood) with a `LogisticSoftMaxLink`. 
+This structured distributions is needed for the [`CategoricalLikelihood`](https://juliagaussianprocesses.github.io/GPLikelihoods.jl/stable/api#GPLikelihoods.CategoricalLikelihood) with a `LogisticSoftMaxLink`. 
 """
 struct PolyaGammaNegativeMultinomial{Ty,Tc,Tp} <: AbstractNTDist
     y::Ty # Intermediate first parameter for PG(y + n, c)
