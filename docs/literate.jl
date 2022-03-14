@@ -10,8 +10,10 @@ const OUTDIR = ARGS[2]
 # Note that each example's Project.toml must include Literate as a dependency
 using Pkg: Pkg
 const EXAMPLEPATH = joinpath(@__DIR__, "..", "examples", EXAMPLE)
+const PKGDIR = joinpath(@__DIR_, "..")
 Pkg.activate(EXAMPLEPATH)
 Pkg.instantiate()
+Pkg.develop(PackageSpec(path=PKGDIR))
 display(Pkg.status())
 using Literate: Literate
 
