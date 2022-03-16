@@ -16,30 +16,28 @@ N = 100
 x = collect(range(-10, 10; length=N))
 lik = HeteroscedasticGaussianLikelihood(InvScaledLogistic(3.0))
 SplitApplyCombine.invert(x::ArrayOfSimilarArrays) = nestedview(flatview(x)')
-X = MOInput(x, nlatent(lik))
+
 kernel = 5.0 * with_lengthscale(SqExponentialKernel(), 2.0)
-gpf = GP(kernel)
+gp_f = GP(kernel)
 μ₀g = -3.0
-gpg = GP(μ₀g, kernel)
-gps = [gpf, gpg]
-gpm = GP(IndependentMOKernel(kernel))
-fs = rand(gpm(X, 1e-6))
-fs = nestedview(reduce(hcat, Iterators.partition(fs, N)))
-fs[2] .+= μ₀g
-py = lik(invert(fs))
-y = rand(py)
-# lf = LatentGP(gp, lik, 1e-6)
-# f, y = rand(lf(X));
+gp_g = GP(μ₀g, kernel)
+f = rand(gp_f(X, 1e-6))
+g = rand(gp_g(X, 1e-6))
+
+py = lik(invert([f, g]))  # invert turns [f, g] into [[f_1, g_1], ...]
+y = rand(py);
 # We plot the sampled data
-plt = plot(x, fs[1], ribbon=sqrt.(lik.invlink.(fs[2])), label="y|f,g", lw=2.0)
+plt = plot(x, mean(py), ribbon=sqrt.(var(py)), label="y|f,g", lw=2.0)
 scatter!(plt, x, y; msw=0.0, label="y")
-plt2 = plot(x, fs, label=["f" "g"], lw=2.0)
+plt2 = plot(x, [f, g], label=["f" "g"], lw=2.0)
+plot(plt, plt2)
 # ## CAVI Updates
 # We write our CAVI algorithmm
 function u_posterior(fz, m, S)
     return posterior(SparseVariationalApproximation(Centered(), fz, MvNormal(copy(m), S)))
-end
+end;
 
+# We can also optimize the likelihood parameter λ
 function opt_lik(lik::HeteroscedasticGaussianLikelihood, (qf, qg)::AbstractVector{<:AbstractVector{<:Normal}}, y::AbstractVector{<:Real})
     ψ = AugmentedGPLikelihoods.second_moment.(qf .- y) / 2
     c = sqrt.(AugmentedGPLikelihoods.second_moment.(qg))
@@ -65,7 +63,7 @@ end
 ms = nestedview(zeros(N, nlatent(lik)))
 Ss = [Matrix{Float64}(I(N)) for _ in 1:nlatent(lik)]
 qΩ = init_aux_posterior(lik, N)
-fzs = [gpf(x, 1e-8), gpg(x, 1e-8)];
+fzs = [gp_f(x, 1e-8), gp_g(x, 1e-8)];
 x_te = -10:0.01:10
 # We run CAVI for 3-4 iterations
 new_lik = cavi!(fzs, x, y, ms, Ss, qΩ, lik; niter=20);
@@ -99,18 +97,9 @@ function gibbs_sample(fzs, fs, Ω; nsamples=200)
     μ = [zeros(N) for _ in 1:nlatent(lik)]
     return map(1:nsamples) do _
         aux_sample!(Ω, lik, y, invert(fs))
-        # Σ .= inv.(Symmetric.(Ref(inv(K)) .+ Diagonal.(auglik_precision(lik, Ω, y, fs[2]))))
-        # μ .= Σ .* (auglik_potential(lik, Ω, y, fs[2]) .+ Ref(K) .\ mean.(fzs))
-        # rand!.(MvNormal.(μ, Σ), fs) # this corresponds to f -> g
-        Σ[2] .= inv(Symmetric(inv(K) + Diagonal(auglik_precision(lik, Ω, y, fs[2])[2])))
-        μ[2] .= Σ[2] * (auglik_potential(lik, Ω, y, fs[2])[2] + K \ mean(fzs[2]))
-        rand!(MvNormal(μ[2], Σ[2]), fs[2])
-        Σ[1] .= inv(Symmetric(inv(K) + Diagonal(auglik_precision(lik, Ω, y, fs[2])[1])))
-        μ[1] .= Σ[1] * (auglik_potential(lik, Ω, y, fs[2])[1] + K \ mean(fzs[1]))
-        rand!(MvNormal(μ[1], Σ[1]), fs[1]) # this corresponds to g -> f
-
-
-
+        Σ .= inv.(Symmetric.(Ref(inv(K)) .+ Diagonal.(auglik_precision(lik, Ω, y, fs[2]))))
+        μ .= Σ .* (auglik_potential(lik, Ω, y, fs[2]) .+ Ref(K) .\ mean.(fzs))
+        rand!.(MvNormal.(μ, Σ), fs) # this corresponds to f -> g
         return copy(fs)
     end
 end;
@@ -121,7 +110,9 @@ fs_init = nestedview(randn(N, nlatent(lik)))
 fs_samples = gibbs_sample(fz, fs_init, Ω);
 # And visualize the samples overlapped to the variational posterior
 # that we found earlier.
+
 for fs in fs_samples
+    plot!(plt, x, fs[1]; color=3, alpha=0.07,label="")
     for i in 1:nlatent(lik)
         plot!(plt2, x, fs[i]; color=i, alpha=0.07, label="")
     end

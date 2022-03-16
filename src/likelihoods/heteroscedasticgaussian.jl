@@ -24,7 +24,7 @@ function init_aux_posterior(T::DataType, ::AugHeteroGaussian, n::Int)
 end
 
 function aux_full_conditional(lik::AugHeteroGaussian, y::Real, (f,g)::AbstractVector{<:Real})
-    return PolyaGammaPoisson(1//2, abs(g), inv(lik.invlink(g)) * abs2(f - y) / 2)
+    return PolyaGammaPoisson(1//2, abs(g), inv(lik.invlink(-g)) * abs2(f - y) / 2)
 end
 
 function aux_posterior!(
@@ -39,7 +39,7 @@ function aux_posterior!(
 end
 
 function auglik_potential(lik::AugHeteroGaussian, Ω, y::AbstractVector, g::AbstractVector{<:Real})
-    return (y .* inv.(lik.invlink.(g)) / 2, (1//2 .- Ω.n) / 2)
+    return (y .* inv.(lik.invlink.(g)), (1//2 .- Ω.n) / 2)
 end
 
 function auglik_precision(lik::AugHeteroGaussian, Ω, ::AbstractVector, g::AbstractVector{<:Real})
@@ -49,16 +49,17 @@ end
 function expected_auglik_potential(lik::AugHeteroGaussian, qΩ, y::AbstractVector, qg::AbstractVector{<:Normal})
     λ = lik.invlink.λ
     c = qΩ.pars.c
-    return (y .* λ .* approx_expected_logistic.(-mean.(qg), c) / 2, (1//2 .- tvmean(qΩ).n) / 2)
+    return (y .* λ .* (1 .- approx_expected_logistic.(-mean.(qg), c)), (1//2 .- tvmean(qΩ).n) / 2)
 end
 
 function expected_auglik_precision(::AugHeteroGaussian, qΩ, ::AbstractVector, qg::AbstractVector{<:Normal})
     λ = lik.invlink.λ
     c = qΩ.pars.c
-    return (λ * approx_expected_logistic.(-mean.(qg), c), tvmean(qΩ).ω)
+    return (λ * (1 .- approx_expected_logistic.(-mean.(qg), c)), tvmean(qΩ).ω)
 end
 
 function expected_auglik_potential_and_precision(lik::AugHeteroGaussian, qΩ, y::AbstractVector, qg::AbstractVector{<:Normal})
+    # TODO
     λ = lik.invlink.λ
     c = qΩ.pars.c
     θ = tvmean(qΩ)
@@ -67,11 +68,13 @@ function expected_auglik_potential_and_precision(lik::AugHeteroGaussian, qΩ, y:
 end
 
 function logtilt(lik::AugHeteroGaussian, (ω, n)::Tuple{<:Real,<:Integer}, y::Real, (f,g)::AbstractVector{<:Real})
+    # TODO
     return y * logλ(lik) - (y + n) * logtwo - logfactorial(y) +
            ((y - n) * f - abs2(f) * ω) / 2
 end
 
 function aux_prior(lik::AugHeteroGaussian, y::AbstractVector{<:Real})
+    # TODO
     λ = lik.invlink.λ
     return For(y) do yᵢ
         PolyaGammaPoisson(yᵢ, 0, λ)
@@ -81,6 +84,7 @@ end
 aux_prior(lik::AugHeteroGaussian, y::Integer) = PolyaGammaPoisson(1 // 2, 0, lik.invlink.λ)
 
 function expected_logtilt(lik::AugHeteroGaussian, qΩ, y, qfg::AbstractVector{<:AbstractVector{<:Normal}})
+    # TODO
     logλ = log(lik.invlink.λ)
     return mapreduce(+, y, qf, @ignore_derivatives marginals(qΩ)) do yᵢ, qfᵢ, qω
         θ = ntmean(qω)
