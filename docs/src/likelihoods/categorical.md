@@ -67,7 +67,6 @@ Which is the same as the bijective version but with a different prior on ``\bold
 Let's define the set of all variables ``\boldsymbol{F} = \{\boldsymbol{f}_j\}_{j=1}^{K}``, ``\boldsymbol{N} = \{\boldsymbol{n}^i\}_{i=1}^N`` and ``\boldsymbol{\Omega} = \{\boldsymbol{\omega}^i\}_{i=1}^N``.
 
 We are interested in the full-conditionals ``p(\boldsymbol{f}_j|\boldsymbol{Y}, \boldsymbol{\Omega}, \boldsymbol{N})`` and ``p(\boldsymbol{\omega}^i, \boldsymbol{n}^i|\boldsymbol{Y},\boldsymbol{F})``
-### Bijective version
 
 
 ```math
@@ -75,23 +74,26 @@ We are interested in the full-conditionals ``p(\boldsymbol{f}_j|\boldsymbol{Y}, 
     p(\boldsymbol{f}_j|\boldsymbol{Y},\boldsymbol{\Omega}, \boldsymbol{N}) =& \mathcal{N}(\boldsymbol{f}_j|\mu_j,\Sigma_j)\\
     \Sigma_j =& \left(K^{-1} + \operatorname{Diagonal}(\boldsymbol{\omega}_j)\right)^{-1}\\
     \mu_j =& \Sigma_j\left(\frac{\boldsymbol{y}_j - \boldsymbol{n}_j}{2} + K^{-1}\boldsymbol{\mu}_0\right)\\
-    p(\boldsymbol{\omega}^i, \boldsymbol{n}^i|\boldsymbol{y}^i, \boldsymbol{F}) =& \prod_{j=1}^{K-1}\operatorname{PG}(\omega^i_j|y^i_j + n^i_j, |f^i_j|)\operatorname{NM}(\boldsymbol{n}^i|1, \left\{\frac{\sigma(-f^i_j)}{D + \sum_{k=1}^{K-1}\sigma(-f^i_k)}\right\}_{j=1}^{K-1})
+\end{align*}
+```
+
+For the **bijective version**
+
+```math
+\begin{align*}
+p(\boldsymbol{\omega}^i, \boldsymbol{n}^i|\boldsymbol{y}^i, \boldsymbol{F}) =& \prod_{j=1}^{K-1}\operatorname{PG}(\omega^i_j|y^i_j + n^i_j, |f^i_j|)\operatorname{NM}(\boldsymbol{n}^i|1, \left\{\frac{\sigma(-f^i_j)}{D + K - 1}\right\}_{j=1}^{K-1})
+\end{align*}
+```
+For the **non-bijective version**
+
+```math
+\begin{align*}
+    p(\boldsymbol{\omega}^i, \boldsymbol{n}^i|\boldsymbol{y}^i, \boldsymbol{F}) =& \prod_{j=1}^{K-1}\operatorname{PG}(\omega^i_j|y^i_j + n^i_j, |f^i_j|)\operatorname{NM}(\boldsymbol{n}^i|1, \left\{\frac{\sigma(-f^i_j)}{K}\right\}_{j=1}^{K-1})
 \end{align*}
 ```
 
 Note that ``p(\boldsymbol{\omega}^i, \boldsymbol{n}^i|
 \boldsymbol{Y},\boldsymbol{F})`` is defined in the package as a [`AugmentedGPLikelihoods.SpecialDistributions.PolyaGammaNegativeMultinomial`](@ref) distribution.
-
-### Non-bijective version
-
-```math
-\begin{align*}
-    p(\boldsymbol{f}_j|\boldsymbol{Y},\boldsymbol{\Omega}, \boldsymbol{N}) =& \mathcal{N}(\boldsymbol{f}_j|\mu_j,\Sigma_j)\\
-    \Sigma_j =& \left(K^{-1} + \operatorname{Diagonal}(\boldsymbol{\omega}_j)\right)^{-1}\\
-    \mu_j =& \Sigma_j\left(\frac{\boldsymbol{y}_j - \boldsymbol{n}_j}{2} + K^{-1}\boldsymbol{\mu}_0\right)\\
-    p(\boldsymbol{\omega}^i, \boldsymbol{n}^i|\boldsymbol{y}^i, \boldsymbol{F}) =& \prod_{j=1}^{K-1}\operatorname{PG}(\omega^i_j|y^i_j + n^i_j, |f^i_j|)\operatorname{NM}(\boldsymbol{n}^i|1, \left\{\frac{\sigma(-f^i_j)}{K}\right\}_{j=1}^{K-1})
-\end{align*}
-```
 
 
 ## Variational distributions (Variational Inference)

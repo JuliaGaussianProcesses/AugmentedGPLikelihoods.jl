@@ -7,6 +7,8 @@ struct LogisticSoftMaxLink{Tθ} <: AbstractLink
     logθ::Tθ
 end
 
+_get_const(l::BijectiveSimplexLink{<:LogisticSoftMaxLink}) = exp(last(l.link.logθ)) * logistic(0)
+
 function (l::LogisticSoftMaxLink)(f::AbstractVector{<:Real})
     σs = exp.(l.logθ) .* logistic.(f)
     return σs ./ sum(σs)
@@ -48,7 +50,7 @@ end
 function aux_full_conditional(
     lik::BijectiveLogisticSoftMaxLikelihood, y::AbstractVector{<:Bool}, f::AbstractVector{<:Real}
 )
-    return PolyaGammaNegativeMultinomial(y, abs.(f), lik.invlink(-f)[1:nlatent(lik)])
+    return PolyaGammaNegativeMultinomial(y, abs.(f), logistic.(-f) / (_get_const(lik.invlink) + nlatent(lik)))
 end
 
 function aux_full_conditional(
@@ -68,7 +70,7 @@ function aux_posterior!(
     for (i, φᵢ) in enumerate(φ)
         @. φᵢ.c = sqrt(second_moment(qf[i]))
         φᵢ.y .= y[i]
-        φᵢ.p .= approx_expected_logisticsoftmax(-mean.(qf[i]), φᵢ.c, θ)
+        φᵢ.p .= approx_expected_logistic.(-mean.(qf[i]), φᵢ.c) / (_get_const(lik.invlink) + nlatent(lik))
     end
     return qΩ
 end
