@@ -66,7 +66,6 @@ function aux_posterior!(
     qf::AbstractVector{<:AbstractVector{<:Normal}},
 )
     φ = qΩ.pars
-    θ = exp.(lik.invlink.link.logθ)
     for (i, φᵢ) in enumerate(φ)
         @. φᵢ.c = sqrt(second_moment(qf[i]))
         φᵢ.y .= y[i]
@@ -82,7 +81,7 @@ function aux_posterior!(
     qf::AbstractVector{<:AbstractVector{<:Normal}},
 )
     φ = qΩ.pars
-        for (i, φᵢ) in enumerate(φ)
+    for (i, φᵢ) in enumerate(φ)
         @. φᵢ.c = sqrt(second_moment(qf[i]))
         φᵢ.y .= y[i]
         φᵢ.p .= approx_expected_logistic.(-mean.(qf[i]), φᵢ.c) ./ nlatent(lik)
@@ -114,19 +113,19 @@ function expected_auglik_potential_and_precision(::LogisticSoftMaxLikelihoods, q
     return nestedview(((flatview(y) - flatview(θ.n)) / 2)'), transpose_nested(θ.ω)
 end
 
-function logtilt(lik::BijectiveLogisticSoftMaxLikelihood, (ω, n)::Tuple{<:Real,<:Integer}, y::Integer, f::Real)
-    # TODO
-    # return logistic(0) - y * logλ(lik) - (y + n) * logtwo - logfactorial(y) +
-        #    ((y - n) * f - abs2(f) * ω) / 2
+function logtilt(::LogisticSoftMaxLikelihoods, (ω, n)::Tuple{<:AbstractVector{<:Real},<:AbstractVector{<:Integer}}, y::AbstractVector{<:Integer}, f::AbstractVector{<:Real})
+    return - sum(y + n) * logtwo +
+        sum((y - n) .* f - abs2.(f) .* ω) / 2
 end
 
-function aux_prior(lik::BijectiveLogisticSoftMaxLikelihood, y::AbstractVector)
+function aux_prior(lik::BijectiveLogisticSoftMaxLikelihood, y::AbstractVector{<:Integer})
     return PolyaGammaNegativeMultinomial(
         y, zeros(Int, length(y)), repeat(logistic(0) + nlatent(lik), nlatent(lik))
     )
 end
-function aux_prior(lik::LogisticSoftMaxLikelihood, y::AbstractVector)
-    return PolyaGammaNegativeMultinomial(y, 0) # TODO
+function aux_prior(::LogisticSoftMaxLikelihood, y::AbstractVector{<:Integer})
+    # There is no proper prior for this so we just pretend this will work
+    return PolyaGammaNegativeMultinomial(y, zeros(Int, length(y)), repeat(1 / nlatent(lik), nlatent(lik)))
 end
 
 # function expected_logtilt(lik::AugPoisson, qΩ, y, qf::AbstractVector{<:Normal})
