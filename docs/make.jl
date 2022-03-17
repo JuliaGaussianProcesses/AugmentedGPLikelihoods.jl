@@ -3,7 +3,6 @@ const EXAMPLES_OUT = joinpath(@__DIR__, "src", "examples")
 ispath(EXAMPLES_OUT) && rm(EXAMPLES_OUT; recursive=true)
 mkpath(EXAMPLES_OUT)
 
-# TODO use the general approach of ApproximateGPs.jl
 examples = filter!(isdir, readdir(joinpath(@__DIR__, "..", "examples"); join=true))
 let script = "using Pkg; Pkg.activate(ARGS[1]); Pkg.instantiate()"
     for example in examples
@@ -47,6 +46,7 @@ DocMeta.setdocmeta!(
 bib = CitationBibliography(joinpath(@__DIR__, "references.bib"))
 
 likelihoods = filter!(filename -> endswith(filename, ".md"), readdir(EXAMPLES_OUT))
+likelihood_docs = readdir(joinpath(@__DIR__, "src", "likelihoods"))
 
 @info "Available likelihoods: $(likelihoods)"
 
@@ -63,8 +63,8 @@ makedocs(
     ),
     pages=[
         "Home" => "index.md",
-        "Likelihoods" => joinpath.(Ref("likelihoods"), likelihoods),
-        # "Examples" => joinpath.(Ref("examples"), likelihoods),
+        "Likelihoods" => joinpath.(Ref("likelihoods"), likelihood_docs),
+        "Examples" => joinpath.(Ref("examples"), likelihood_docs),
         "Misc" => "misc.md",
         "References" => "references.md",
     ],
