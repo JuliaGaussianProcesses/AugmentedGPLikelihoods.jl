@@ -1,7 +1,7 @@
 name = "AugmentedGPLikelihoods"
 uuid = "4689c64d-1a23-4d3c-ad26-1c612d54a282"
 authors = ["Théo Galy-Fajou <theo.galyfajou@gmail.com> and contributors"]
-version = "0.4.9"
+version = "0.4.10"
 
 [deps]
 ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
@@ -24,7 +24,7 @@ Distributions = "0.25"
 GPLikelihoods = "0.2, 0.3"
 IrrationalConstants = "0.1"
 LogExpFunctions = "0.3"
-MeasureBase = "0.5"
+MeasureBase = "0.5, 0.6"
 Reexport = "1"
 SpecialFunctions = "1, 2"
 TupleVectors = "0.1"
