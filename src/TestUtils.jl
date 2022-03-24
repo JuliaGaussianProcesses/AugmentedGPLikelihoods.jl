@@ -170,6 +170,7 @@ function test_auglik(
                 zeros(n_var * nlatent(lik), n)
             end
             Δ[i] = ϵ # We try one element at a time
+            @show i
             @test loss(φ_opt) <= loss(φ_opt + Δ)
             @test loss(φ_opt) <= loss(φ_opt - Δ)
         end
