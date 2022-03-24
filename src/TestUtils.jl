@@ -25,7 +25,7 @@ end
 
 function unflatten_params(φ, n_l, n)
     if n_l == 1
-        return collect(Iterator.partition(φ, n))
+        return collect(Iterators.partition(φ, n))
     else
         parts = Iterators.partition(1:size(φ, 1), n_l)
         return collect(nestedview(φ[part, :]) for part in parts)
@@ -155,29 +155,23 @@ function test_auglik(
         n_var = length(s)
         function loss(φ)
             q = ProductMeasure(
-                qΩ.f,
-                TupleVector(
-                    NamedTuple{s}(
-                        unflatten_params(φ, nlatent(lik), n)
-                    ),
-                ),
+                qΩ.f, TupleVector(NamedTuple{s}(unflatten_params(φ, nlatent(lik), n)))
             )
             return -expected_logtilt(lik, q, y, qf) + aux_kldivergence(lik, q, y)
         end
         ϵ = 1e-2
         # Test that by perturbing the value in random directions, the loss does not decrease
         for i in CartesianIndices(φ_opt)
-            
             Δ = if nlatent(lik) == 1
                 (lik isa PoissonLikelihood && i[1] <= n) && continue # We do not want to vary y
                 zeros(n_var * n)
             else
-                (lik isa CategoricalLikelihood && i[1] <= nlatent(lik)) && continue 
+                (lik isa CategoricalLikelihood && i[1] <= nlatent(lik)) && continue
                 zeros(n_var * nlatent(lik), n)
             end
             Δ[i] = ϵ # We try one element at a time
-            # @test loss(φ_opt) <= loss(φ_opt + Δ)
-            # @test loss(φ_opt) <= loss(φ_opt - Δ)
+            @test loss(φ_opt) <= loss(φ_opt + Δ)
+            @test loss(φ_opt) <= loss(φ_opt - Δ)
         end
         # Optim.optimize(loss, φ_opt)
         # values of the ELBO

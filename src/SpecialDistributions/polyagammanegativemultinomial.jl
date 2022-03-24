@@ -17,7 +17,7 @@ struct PolyaGammaNegativeMultinomial{Ty,Tc,Tp} <: AbstractNTDist
 end
 
 function Base.:(==)(p::PolyaGammaNegativeMultinomial, q::PolyaGammaNegativeMultinomial)
-    return (p.y == q.y) && (p.c == q.c) && (p.p == q.p) 
+    return (p.y == q.y) && (p.c == q.c) && (p.p == q.p)
 end
 
 NegativeMultinomial(d::PolyaGammaNegativeMultinomial) = NegativeMultinomial(1, d.p)
@@ -58,8 +58,8 @@ function Distributions.kldivergence(
 )
     # TODO: Optimize this
     (all(==(0), p.c) && all(p.y .== q.y)) ||
-        error("No solution for this prior. qΩ = $q, pΩ = $p")
-    n = mean(NegativeMultinomial(q))
-    return sum(kldivergence.(PolyaGamma.(q.y + n, q.c), PolyaGamma.(q.y + n, 0))) +
+        error("no kl divergence available for this prior. qΩ = $q, pΩ = $p")
+    b = q.y + mean(NegativeMultinomial(q))
+    return sum(kldivergence.(PolyaGamma.(b, q.c), PolyaGamma.(b, 0))) +
            kldivergence(NegativeMultinomial(q), NegativeMultinomial(p))
 end

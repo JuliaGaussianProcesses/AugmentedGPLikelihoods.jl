@@ -144,21 +144,22 @@ end
 
 function aux_prior(lik::BijectiveLogisticSoftMaxLikelihood, y::AbstractVector{<:Integer})
     return PolyaGammaNegativeMultinomial(
-        y, zeros(Int, length(y)), fill(inv(logistic(0) + nlatent(lik)), nlatent(lik))
+        y, zeros(Int, length(y)), fill(inv(_get_const(lik) + nlatent(lik)), nlatent(lik))
     )
 end
 function aux_prior(::LogisticSoftMaxLikelihood, y::AbstractVector{<:Integer})
     # There is no proper prior for this so we just pretend this will work
     return PolyaGammaNegativeMultinomial(
-        y, zeros(Int, length(y)), repeat(1 / nlatent(lik), nlatent(lik))
+        y, zeros(Int, length(y)), fill(1 / nlatent(lik), nlatent(lik))
     )
 end
 
-function expected_logtilt(lik::BijectiveLogisticSoftMaxLikelihood, qω, y, qf::AbstractVector{<:Normal})
+function expected_logtilt(
+    ::BijectiveLogisticSoftMaxLikelihood, qω, y, qf::AbstractVector{<:Normal}
+)
     θ = ntmean(qω)
-    m = mean.(qf)
-    v = var.(qf)
-    return  -sum(y + θ.n) * logtwo + mapreduce(+, y, θ.n, θ.ω, m, v) do yᵢ, nᵢ, ωᵢ, mᵢ, vᵢ
-               ((yᵢ - nᵢ) * mᵢ - (abs2(mᵢ) + vᵢ) * ωᵢ) / 2
+    return -sum(y + θ.n) * logtwo +
+           mapreduce(+, y, θ.n, θ.ω, mean.(qf), var.(qf)) do yᵢ, nᵢ, ωᵢ, mᵢ, vᵢ
+        ((yᵢ - nᵢ) * mᵢ - (abs2(mᵢ) + vᵢ) * ωᵢ) / 2
     end
 end

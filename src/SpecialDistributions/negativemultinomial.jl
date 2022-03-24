@@ -72,7 +72,10 @@ end
 function Distributions.kldivergence(p::NegativeMultinomial, q::NegativeMultinomial)
     p₀ = _p₀(p)
     x₀ = p.x₀
-    return x₀ * log(p₀) - q.x₀ * log(_p₀(q)) +
+    x₀ == q.x₀ || error(
+        "KL divergence cannot be computed with different x₍", "p: $(p.x₀), q: $(q.x₀)"
+    )
+    return x₀ * log(p₀) - x₀ * log(_p₀(q)) +
            x₀ / p₀ * sum(1:length(p)) do i
         p.p[i] * (log(p.p[i]) - log(q.p[i]))
     end
