@@ -14,8 +14,10 @@ function approx_expected_logistic(μ::Real, c::Real)
 end
 
 # Same thing as above for softmax
-function approx_expected_logisticsoftmax(μ::AbstractVector, c::AbstractVector, θ::AbstractVector)
-    σs = θ[1:end-1] .* approx_expected_logistic.(μ, c)
+function approx_expected_logisticsoftmax(
+    μ::AbstractVector, c::AbstractVector, θ::AbstractVector
+)
+    σs = θ[1:(end - 1)] .* approx_expected_logistic.(μ, c)
     return σs / (θ[end] * logistic(0) + sum(σs))
 end
 

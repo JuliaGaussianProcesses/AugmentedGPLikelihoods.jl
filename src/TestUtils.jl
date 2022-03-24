@@ -2,16 +2,21 @@ module TestUtils
 using AugmentedGPLikelihoods
 const AGPL = AugmentedGPLikelihoods
 using AugmentedGPLikelihoods.SpecialDistributions
+using ArraysOfArrays
 using Distributions
 using GPLikelihoods: AbstractLikelihood
 using LinearAlgebra
 using MeasureBase
+using SplitApplyCombine: invert
 using Random
 using Test
 using TupleVectors
 # Test API for augmented likelihood
 remove_ntdist_wrapper(d::NTDist) = d.d
 remove_ntdist_wrapper(d) = d
+
+invert_if_array_of_arrays(f::AbstractVector) = f
+invert_if_array_of_arrays(f::AbstractVector{<:AbstractVector}) = invert(f)
 
 function test_auglik(
     lik::AbstractLikelihood;
@@ -20,7 +25,9 @@ function test_auglik(
     qf=Normal.(randn(n), 1.0),
     rng::AbstractRNG=Random.GLOBAL_RNG,
 )
-    y = rand.(rng, lik.(f))
+    y = gen_y(rng, lik, f)
+    ft = invert_if_array_of_arrays(f)
+    qft = invert_if_array_of_arrays(qf)
     nf = nlatent(lik)
     # Testing sampling
     @testset "Sampling" begin
@@ -28,9 +35,9 @@ function test_auglik(
         @test Ω isa TupleVector
         @test first(Ω) isa NamedTuple
         @test length(Ω) == n
-        Ω = aux_sample!(rng, Ω, lik, y, f)
+        Ω = aux_sample!(rng, Ω, lik, y, ft)
         @test Ω isa TupleVector
-        new_Ω = aux_sample(rng, lik, y, f)
+        new_Ω = aux_sample(rng, lik, y, ft)
         @test new_Ω isa TupleVector
         @test length(Ω) == n
 
@@ -44,15 +51,15 @@ function test_auglik(
         @test all(map(≈, γs, γ2))
         @test all(x -> all(>=(0), x), γs) # Check that the variance is positive
 
-        sumlogtilt = logtilt(lik, Ω, y, f)
+        sumlogtilt = logtilt(lik, Ω, y, ft)
         @test sumlogtilt isa Real
-        @test logtilt(lik, AGPL.aux_field(lik, first(Ω)), first(y), first(f)) isa Real
-        sumlogtilt_alt = mapreduce(+, AGPL.aux_field(lik, Ω), y, f) do ωᵢ, yᵢ, fᵢ
+        @test logtilt(lik, AGPL.aux_field(lik, first(Ω)), first(y), first(ft)) isa Real
+        sumlogtilt_alt = mapreduce(+, AGPL.aux_field(lik, Ω), y, ft) do ωᵢ, yᵢ, fᵢ
             logtilt(lik, ωᵢ, yᵢ, fᵢ)
         end
         @test sumlogtilt ≈ sumlogtilt_alt
 
-        @test aug_loglik(lik, Ω, y, f) isa Real
+        @test aug_loglik(lik, Ω, y, ft) isa Real
 
         pΩ = aux_prior(lik, y)
         @test logdensity(pΩ, Ω) isa Real
@@ -61,29 +68,45 @@ function test_auglik(
 
         # Test that the full conditional is correct
         @testset "Full conditional Ω" begin
-            pcondΩ = aux_full_conditional(lik, y, f) # Compute the full conditional of Ω
+            pcondΩ = aux_full_conditional(lik, y, ft) # Compute the full conditional of Ω
             Ω₁ = tvrand(rng, pcondΩ) # Sample a set of aux. variables
             Ω₂ = tvrand(rng, pcondΩ) # Sample another set of aux. variables
             # We compute p(f, y) by doing C = p(f,y) = p(y|Ω,f)p(Ω)/p(Ω|y,f)
             # This should be the same no matter what Ω is
-            logC₁ = logtilt(lik, Ω₁, y, f) + logdensity(pΩ, Ω₁) - logdensity(pcondΩ, Ω₁)
-            logC₂ = logtilt(lik, Ω₂, y, f) + logdensity(pΩ, Ω₂) - logdensity(pcondΩ, Ω₂)
+            logC₁ = logtilt(lik, Ω₁, y, ft) + logdensity(pΩ, Ω₁) - logdensity(pcondΩ, Ω₁)
+            logC₂ = logtilt(lik, Ω₂, y, ft) + logdensity(pΩ, Ω₂) - logdensity(pcondΩ, Ω₂)
             @test logC₁ ≈ logC₂ atol = 1e-5
         end
 
         @testset "Full conditional f" begin
-            pcondΩ = aux_full_conditional(lik, y, f) # Compute the full conditional of Ω
+            pcondΩ = aux_full_conditional(lik, y, ft) # Compute the full conditional of Ω
             Ω = tvrand(rng, pcondΩ) # Sample a set of aux. variables
             K = (x -> x * x')(rand(n, n)) # Prior Covariance matrix
-            S = inv(Symmetric(inv(K) + Diagonal(only(auglik_precision(lik, Ω, y)))))
-            m = S * (only(auglik_potential(lik, Ω, y)))
-            qF = MvNormal(m, S)
-            pF = MvNormal(K)
-            f₁ = rand(rng, qF)
-            f₂ = rand(rng, qF)
-            logC₁ = logtilt(lik, Ω, y, f₁) + logpdf(pF, f₁) - logpdf(qF, f₁)
-            logC₂ = logtilt(lik, Ω, y, f₂) + logpdf(pF, f₂) - logpdf(qF, f₂)
-            @test logC₁ ≈ logC₂ atol = 1e-5
+            if nlatent(lik) == 1
+                S = inv(Symmetric(inv(K) + Diagonal(only(auglik_precision(lik, Ω, y)))))
+                m = S * (only(auglik_potential(lik, Ω, y)))
+                qF = MvNormal(m, S)
+                pF = MvNormal(K)
+                f₁ = rand(rng, qF)
+                f₂ = rand(rng, qF)
+                logC₁ = logtilt(lik, Ω, y, f₁) + logpdf(pF, f₁) - logpdf(qF, f₁)
+                logC₂ = logtilt(lik, Ω, y, f₂) + logpdf(pF, f₂) - logpdf(qF, f₂)
+                @test logC₁ ≈ logC₂ atol = 1e-5
+            else
+                S = inv.(Symmetric.(Ref(inv(K)) .+ Diagonal.(auglik_precision(lik, Ω, y))))
+                m = S .* auglik_potential(lik, Ω, y)
+                qF = MvNormal.(m, S)
+                pF = MvNormal(K)
+                f₁ = rand.(rng, qF)
+                f₂ = rand.(rng, qF)
+                logC₁ =
+                    logtilt(lik, Ω, y, invert(f₁)) + sum(logpdf.(Ref(pF), f₁)) -
+                    sum(logpdf.(qF, f₁))
+                logC₂ =
+                    logtilt(lik, Ω, y, invert(f₂)) + sum(logpdf.(Ref(pF), f₂)) -
+                    sum(logpdf.(qF, f₂))
+                @test logC₁ ≈ logC₂ atol = 1e-5
+            end
         end
     end
 
@@ -92,9 +115,9 @@ function test_auglik(
         qΩ = init_aux_posterior(lik, n)
         @test qΩ isa ProductMeasure
         @test_broken length(qΩ) == n
-        qΩ = aux_posterior!(qΩ, lik, y, qf)
+        qΩ = aux_posterior!(qΩ, lik, y, qft)
         @test qΩ isa ProductMeasure
-        new_qΩ = aux_posterior(lik, y, qf)
+        new_qΩ = aux_posterior(lik, y, qft)
         @test new_qΩ isa ProductMeasure
         @test_broken length(new_qΩ) == n
 
@@ -110,7 +133,7 @@ function test_auglik(
         @test all(x -> all(>=(0), x), γs) # Check that the variance is positive
 
         # TODO test that aux_posterior parameters return the minimizing
-        φ = TupleVectors.unwrap(aux_posterior(lik, y, qf).pars) # TupleVector
+        φ = TupleVectors.unwrap(aux_posterior(lik, y, qft).pars) # TupleVector
         φ_opt = vcat(values(φ)...)
         s = keys(φ)
         n_var = length(s)
@@ -139,8 +162,22 @@ function test_auglik(
         pΩ = aux_prior(lik, y)
         @test pΩ isa ProductMeasure
         @test kldivergence(first(marginals(qΩ)), first(marginals(pΩ))) isa Real
-        @test expected_logtilt(lik, qΩ, y, qf) isa Real
+        @test expected_logtilt(lik, qΩ, y, qft) isa Real
         @test aux_kldivergence(lik, qΩ, pΩ) isa Real
     end
 end
+
+function gen_y(rng::AbstractRNG, lik, f)
+    if nlatent(lik) == 1
+        return rand(rng, lik(f))
+    else
+        return rand(rng, lik(invert(f)))
+    end
+end
+
+function gen_y(rng::AbstractRNG, lik::CategoricalLikelihood, f)
+    y = rand(rng, lik(invert(f)))
+    return nestedview((sort(unique(y)) .== y')[1:nlatent(lik), :])
+end
+
 end

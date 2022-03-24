@@ -7,22 +7,28 @@ struct LogisticSoftMaxLink{Tθ} <: AbstractLink
     logθ::Tθ
 end
 
-_get_const(l::BijectiveSimplexLink{<:LogisticSoftMaxLink}) = exp(last(l.link.logθ)) * logistic(0)
+LogisticSoftMaxLink(nclass::Integer) = LogisticSoftMaxLikelihood(zeros(nclass))
+
+function _get_const(l::BijectiveSimplexLink{<:LogisticSoftMaxLink})
+    return exp(last(l.link.logθ)) * logistic(0)
+end
 
 function (l::LogisticSoftMaxLink)(f::AbstractVector{<:Real})
     σs = exp.(l.logθ) .* logistic.(f)
     return σs ./ sum(σs)
 end
-# const LogisticSoftMaxLink = Link{typeof(logisticsoftmax)}
 
 # Augmentations are possible for both options
 const BijectiveLogisticSoftMaxLikelihood = CategoricalLikelihood{
-    <:BijectiveSimplexLink{<:Union{LogisticSoftMaxLink,typeof(logisticsoftmax)}}
+    <:BijectiveSimplexLink{<:LogisticSoftMaxLink}
 }
-const LogisticSoftMaxLikelihood = CategoricalLikelihood{<:Union{LogisticSoftMaxLink,typeof(logisticsoftmax)}}
+const LogisticSoftMaxLikelihood = CategoricalLikelihood{<:LogisticSoftMaxLink}
 const LogisticSoftMaxLikelihoods = Union{
     BijectiveLogisticSoftMaxLikelihood,LogisticSoftMaxLikelihood
 }
+
+nlatent(l::BijectiveLogisticSoftMaxLikelihood) = length(l.invlink.link.logθ) - 1
+nlatent(l::LogisticSoftMaxLikelihood) = length(l.invlink.logθ)
 
 aux_field(::LogisticSoftMaxLikelihoods, Ω::NamedTuple) = values(Ω)
 aux_field(::LogisticSoftMaxLikelihoods, Ω::TupleVector) = zip(Ω.ω, Ω.n)
@@ -48,9 +54,13 @@ function init_aux_posterior(T::DataType, lik::LogisticSoftMaxLikelihoods, n::Int
 end
 
 function aux_full_conditional(
-    lik::BijectiveLogisticSoftMaxLikelihood, y::AbstractVector{<:Bool}, f::AbstractVector{<:Real}
+    lik::BijectiveLogisticSoftMaxLikelihood,
+    y::AbstractVector{<:Bool},
+    f::AbstractVector{<:Real},
 )
-    return PolyaGammaNegativeMultinomial(y, abs.(f), logistic.(-f) / (_get_const(lik.invlink) + nlatent(lik)))
+    return PolyaGammaNegativeMultinomial(
+        y, abs.(f), logistic.(-f) / (_get_const(lik.invlink) + nlatent(lik))
+    )
 end
 
 function aux_full_conditional(
@@ -69,7 +79,9 @@ function aux_posterior!(
     for (i, φᵢ) in enumerate(φ)
         @. φᵢ.c = sqrt(second_moment(qf[i]))
         φᵢ.y .= y[i]
-        φᵢ.p .= approx_expected_logistic.(-mean.(qf[i]), φᵢ.c) / (_get_const(lik.invlink) + nlatent(lik))
+        φᵢ.p .=
+            approx_expected_logistic.(-mean.(qf[i]), φᵢ.c) /
+            (_get_const(lik.invlink) + nlatent(lik))
     end
     return qΩ
 end
@@ -89,9 +101,7 @@ function aux_posterior!(
     return qΩ
 end
 
-function auglik_potential(
-    ::LogisticSoftMaxLikelihoods, Ω, y::ArrayOfSimilarArrays{<:Bool}
-)
+function auglik_potential(::LogisticSoftMaxLikelihoods, Ω, y::ArrayOfSimilarArrays{<:Bool})
     return nestedview(((flatview(y) - flatview(Ω.n)) / 2)')
     # We want to have a Tuple of vector of the same size as the number of classes
 end
@@ -100,7 +110,9 @@ function auglik_precision(::LogisticSoftMaxLikelihoods, Ω, ::AbstractVector)
     return transpose_nested(Ω.ω)
 end
 
-function expected_auglik_potential(::LogisticSoftMaxLikelihoods, qΩ, y::ArrayOfSimilarArrays{<:Bool})
+function expected_auglik_potential(
+    ::LogisticSoftMaxLikelihoods, qΩ, y::ArrayOfSimilarArrays{<:Bool}
+)
     return nestedview(((flatview(y) - flatview(tvmean(qΩ).n)) / 2)')
 end
 
@@ -108,24 +120,38 @@ function expected_auglik_precision(::LogisticSoftMaxLikelihoods, qΩ, ::Abstract
     return transpose_nested(tvmean(qΩ).ω)
 end
 
-function expected_auglik_potential_and_precision(::LogisticSoftMaxLikelihoods, qΩ, y::AbstractVector)
+function expected_auglik_potential_and_precision(
+    ::LogisticSoftMaxLikelihoods, qΩ, y::AbstractVector
+)
     θ = tvmean(qΩ)
     return nestedview(((flatview(y) - flatview(θ.n)) / 2)'), transpose_nested(θ.ω)
 end
 
-function logtilt(::LogisticSoftMaxLikelihoods, (ω, n)::Tuple{<:AbstractVector{<:Real},<:AbstractVector{<:Integer}}, y::AbstractVector{<:Integer}, f::AbstractVector{<:Real})
-    return - sum(y + n) * logtwo +
-        sum((y - n) .* f - abs2.(f) .* ω) / 2
+function logtilt(
+    ::LogisticSoftMaxLikelihoods,
+    (ω, n)::Tuple{<:AbstractVector{<:Real},<:AbstractVector{<:Integer}},
+    y::AbstractVector{<:Integer},
+    f::AbstractVector{<:Real},
+)
+    return -sum(y + n) * logtwo + sum((y - n) .* f - abs2.(f) .* ω) / 2
+end
+
+function aux_prior(lik::LogisticSoftMaxLikelihoods, y::ArrayOfSimilarArrays{<:Bool})
+    return For(y) do yᵢ
+        aux_prior(lik, yᵢ)
+    end
 end
 
 function aux_prior(lik::BijectiveLogisticSoftMaxLikelihood, y::AbstractVector{<:Integer})
     return PolyaGammaNegativeMultinomial(
-        y, zeros(Int, length(y)), repeat(logistic(0) + nlatent(lik), nlatent(lik))
+        y, zeros(Int, length(y)), fill(inv(logistic(0) + nlatent(lik)), nlatent(lik))
     )
 end
 function aux_prior(::LogisticSoftMaxLikelihood, y::AbstractVector{<:Integer})
     # There is no proper prior for this so we just pretend this will work
-    return PolyaGammaNegativeMultinomial(y, zeros(Int, length(y)), repeat(1 / nlatent(lik), nlatent(lik)))
+    return PolyaGammaNegativeMultinomial(
+        y, zeros(Int, length(y)), repeat(1 / nlatent(lik), nlatent(lik))
+    )
 end
 
 # function expected_logtilt(lik::AugPoisson, qΩ, y, qf::AbstractVector{<:Normal})

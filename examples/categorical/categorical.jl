@@ -17,7 +17,10 @@ Nclass = 3
 x = collect(range(-10, 10; length=N))
 
 # We will present simultaneously the bijective and non-bijective likelihood
-liks = [CategoricalLikelihood(BijectiveSimplexLink(LogisticSoftMaxLink(zeros(Nclass)))), CategoricalLikelihood(LogisticSoftMaxLink(zeros(Nclass)))]
+liks = [
+    CategoricalLikelihood(BijectiveSimplexLink(LogisticSoftMaxLink(zeros(Nclass)))),
+    CategoricalLikelihood(LogisticSoftMaxLink(zeros(Nclass))),
+]
 
 # This is small hack until https://github.com/JuliaGaussianProcesses/GPLikelihoods.jl/pull/68 is merged
 AugmentedGPLikelihoods.nlatent(::CategoricalLikelihood{<:BijectiveSimplexLink}) = Nclass - 1
@@ -30,7 +33,7 @@ gp = GP(kernel)
 fz = gp(x, 1e-8);
 # We use a multi-output GP to generate our (N-1) latent GPs
 gpm = GP(IndependentMOKernel(kernel))
-X = MOInput(x, Nclass-1);
+X = MOInput(x, Nclass - 1);
 
 # We sample (N-1) latent GPs to force the setting of the bijective version
 # which the non-bijective version should also be able to recover
@@ -46,11 +49,11 @@ Ys = map(liks) do lik
 end;
 # We plot the sampled data
 plts = map(["Bijective Logistic-softmax", "Logistic-softmax"]) do title
-    plt = plot(;title)
+    plt = plot(; title)
     scatter!(plt, x, y; group=y, label=[1 2 3 4], msw=0.0)
     plot!(plt, x, vcat(fs, [zeros(N)]); color=[1 2 3 4], label="", lw=3.0)
 end
-plot(plts[1], title="")
+plot(plts[1]; title="")
 # ## CAVI Updates
 # We write our CAVI algorithmm
 function u_posterior(fz, m, S)
@@ -63,7 +66,10 @@ function cavi!(fz::AbstractGPs.FiniteGP, lik, x, Y, ms, Ss, qΩ; niter=10)
         posts_u = u_posterior.(Ref(fz), ms, Ss)
         posts_fs = marginals.([p_u(x) for p_u in posts_u])
         aux_posterior!(qΩ, lik, Y, SplitApplyCombine.invert(posts_fs))
-        Ss .= inv.(Symmetric.(Ref(inv(K)) .+ Diagonal.(expected_auglik_precision(lik, qΩ, Y))))
+        Ss .=
+            inv.(
+                Symmetric.(Ref(inv(K)) .+ Diagonal.(expected_auglik_precision(lik, qΩ, Y)))
+            )
         ms .= Ss .* (expected_auglik_potential(lik, qΩ, Y) .- Ref(K \ mean(fz)))
     end
     return ms, Ss
@@ -73,9 +79,9 @@ ms_Ss = map(liks, Ys) do lik, Y
     m = nestedview(zeros(N, nlatent(lik)))
     S = [Matrix{Float64}(I(N)) for _ in 1:nlatent(lik)]
     qΩ = init_aux_posterior(lik, N)
-    fz = gp(x, 1e-8);
-    cavi!(fz, lik, x, Y, m, S, qΩ; niter=20);
-    return (;m, S)
+    fz = gp(x, 1e-8)
+    cavi!(fz, lik, x, Y, m, S, qΩ; niter=20)
+    return (; m, S)
 end
 # And visualize the obtained variational posterior
 x_te = -10:0.01:10
@@ -95,14 +101,28 @@ end
 plot(plts...)
 
 ##
-p_plts = [plot() for _ in 1:2] 
+p_plts = [plot() for _ in 1:2]
 for i in 1:2
     scatter!(p_plts[i], x, fs_ys[i].y / Nclass; group=fs_ys[i].y, label=[1 2 3 4], msw=0.0)
 
     # vline!(p_plts[i], x, group=fs_ys[i].y, lw=20/length(x) * 20.0, alpha=0.2, ylims=(0,1),title="p(y=k|f)", label="")
-    lik_pred = liks[i].(invert(mean.([u_post(x_te) for u_post in u_posterior.(Ref(fz), ms_Ss[i].m, ms_Ss[i].S)])))
+    lik_pred =
+        liks[i].(
+            invert(
+                mean.([
+                    u_post(x_te) for u_post in u_posterior.(Ref(fz), ms_Ss[i].m, ms_Ss[i].S)
+                ]),
+            ),
+        )
     ps = getproperty.(lik_pred, :p)
-    lik_pred_x = liks[i].(invert(mean.([u_post(x) for u_post in u_posterior.(Ref(fz), ms_Ss[i].m, ms_Ss[i].S)])))
+    lik_pred_x =
+        liks[i].(
+            invert(
+                mean.([
+                    u_post(x) for u_post in u_posterior.(Ref(fz), ms_Ss[i].m, ms_Ss[i].S)
+                ]),
+            ),
+        )
     ps_x = getproperty.(lik_pred_x, :p)
     ps_true = getproperty.(lik_true.v, :p)
     @show sum(norm, ps_x .- ps_true)
@@ -110,8 +130,8 @@ for i in 1:2
         logpdf(p, y)
     end
     for k in 1:Nclass
-        plot!(p_plts[i], x, invert(ps_true)[k], color=k, lw =2.0, label=k)
-        plot!(p_plts[i], x_te, invert(ps)[k], color=k, lw =2.0, label="", ls=:dash)
+        plot!(p_plts[i], x, invert(ps_true)[k]; color=k, lw=2.0, label=k)
+        plot!(p_plts[i], x_te, invert(ps)[k]; color=k, lw=2.0, label="", ls=:dash)
     end
 end
 plot(p_plts...)
@@ -146,9 +166,9 @@ end;
 # We initialize our random variables
 samples = map(liks, Ys, plts) do lik, Y, plt
     fs_init = nestedview(randn(N, nlatent(lik)))
-    Ω = init_aux_variables(lik, N);
+    Ω = init_aux_variables(lik, N)
     # Run the sampling for default number of iterations (200)
-    return gibbs_sample(fz, lik, Y, fs_init, Ω);
+    return gibbs_sample(fz, lik, Y, fs_init, Ω)
     # And visualize the samples overlapped to the variational posterior
     # that we found earlier.
 end;
