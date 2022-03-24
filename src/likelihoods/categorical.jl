@@ -154,13 +154,11 @@ function aux_prior(::LogisticSoftMaxLikelihood, y::AbstractVector{<:Integer})
     )
 end
 
-# function expected_logtilt(lik::AugPoisson, qΩ, y, qf::AbstractVector{<:Normal})
-#     logλ = log(lik.invlink.λ)
-#     return mapreduce(+, y, qf, @ignore_derivatives marginals(qΩ)) do yᵢ, qfᵢ, qω
-#         θ = ntmean(qω)
-#         m = mean(qfᵢ)
-#         return -(yᵢ + θ.n) * logtwo +
-#                ((yᵢ - θ.n) * m - (abs2(m) + var(qfᵢ)) * θ.ω) / 2 +
-#                yᵢ * logλ - logfactorial(yᵢ)
-#     end
-# end
+function expected_logtilt(lik::BijectiveLogisticSoftMaxLikelihood, qω, y, qf::AbstractVector{<:Normal})
+    θ = ntmean(qω)
+    m = mean.(qf)
+    v = var.(qf)
+    return  -sum(y + θ.n) * logtwo + mapreduce(+, y, θ.n, θ.ω, m, v) do yᵢ, nᵢ, ωᵢ, mᵢ, vᵢ
+               ((yᵢ - nᵢ) * mᵢ - (abs2(mᵢ) + vᵢ) * ωᵢ) / 2
+    end
+end

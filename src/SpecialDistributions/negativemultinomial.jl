@@ -45,7 +45,7 @@ function Distributions._rand!(
 end
 
 function Distributions._logpdf(d::NegativeMultinomial, x::AbstractVector)
-    return loggamma(sum(x)) + d.x₀ * log(_p₀(d)) - loggamma(d.x₀) +
+    return loggamma(d.x₀ + sum(x)) + d.x₀ * log(_p₀(d)) - loggamma(d.x₀) +
            mapreduce(+, d.p, x) do pᵢ, xᵢ
         xᵢ * log(pᵢ) - logfactorial(xᵢ)
     end

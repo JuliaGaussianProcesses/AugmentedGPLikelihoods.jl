@@ -38,7 +38,7 @@ function Distributions.logpdf(d::PolyaGamma, x::Real)
         return iszero(x) ? zero(x) : -Inf # The limit of PG when b->0  
     # is the delta dirac at 0.
     else
-        iszero(x) && -Inf # The limit to p(x) for x-> 0 is 0.
+        iszero(x) && return -Inf # The limit to p(x) for x-> 0 is 0.
         # valₘₐₓ = Γb - b^2 / (8x)
         ext = logtilt(x, b, c) + (b - 1) * logtwo - loggamma(b) - (log2π + 3 * log(x)) / 2
         xmax = loggamma(b) - abs2(b) / (8x)
