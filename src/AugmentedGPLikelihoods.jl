@@ -9,6 +9,7 @@ using GPLikelihoods: AbstractLikelihood, AbstractLink
 using IrrationalConstants
 using LogExpFunctions
 using MeasureBase
+using MeasureTheory: For
 using Random: AbstractRNG, GLOBAL_RNG
 using SpecialFunctions
 using TupleVectors

@@ -44,7 +44,7 @@ end
 function aux_posterior!(
     qΩ, lik::LaplaceLikelihood, y::AbstractVector, qf::AbstractVector{<:Normal}
 )
-    φ = qΩ.pars
+    φ = only(qΩ.inds)
     map!(φ.μ, y, qf) do yᵢ, qfᵢ
         inv(2 * lik.β * sqrt(second_moment(qfᵢ, yᵢ)))
     end
@@ -95,7 +95,7 @@ end
 
 aux_prior(lik::LaplaceLikelihood) = InverseGamma(1//2, laplace_λ(lik))
 
-function aux_kldivergence(::LaplaceLikelihood, qΩ::ProductMeasure, pΩ::ProductMeasure)
+function aux_kldivergence(::LaplaceLikelihood, qΩ::For, pΩ::For)
     return mapreduce(+, marginals(qΩ), marginals(pΩ)) do qωᵢ, pωᵢ
         μ = mean(dist(qωᵢ))
         λ = scale(dist(pωᵢ))
