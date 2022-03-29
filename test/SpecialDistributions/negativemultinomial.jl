@@ -1,3 +1,3 @@
-@test "negativemultinomial" begin
-    
+@testset "negativemultinomial" begin
+    # TODO add tests
 end

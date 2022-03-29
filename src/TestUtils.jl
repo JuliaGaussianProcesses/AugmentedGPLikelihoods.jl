@@ -165,7 +165,7 @@ function test_auglik(
         # Test that by perturbing the value in random directions, the loss does not decrease
         for i in CartesianIndices(φ_opt)
             Δ = if nlatent(lik) == 1
-                (lik isa PoissonLikelihood && i[1] <= n) && continue # We do not want to vary y
+                (lik isa Union{NegBinomialLikelihood,PoissonLikelihood} && i[1] <= n) && continue # We do not want to vary y
                 zeros(n_var * n)
             else
                 (lik isa CategoricalLikelihood && i[1] <= nlatent(lik)) && continue

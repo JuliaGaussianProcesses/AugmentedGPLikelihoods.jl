@@ -77,7 +77,7 @@ function aux_posterior!(
 )
     φ = only(qΩ.inds)
     for (i, φᵢ) in enumerate(φ)
-        @. φᵢ.c = sqrt(second_moment(qf[i]))
+        φᵢ.c .= sqrt.(second_moment.(qf[i]))
         φᵢ.y .= y[i]
         φᵢ.p .=
             approx_expected_logistic.(-mean.(qf[i]), φᵢ.c) /
