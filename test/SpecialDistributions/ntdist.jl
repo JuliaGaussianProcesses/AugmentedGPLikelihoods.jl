@@ -1,4 +1,4 @@
-@testset "ntdist.jl" begin
+@testset "ntdist" begin
     rng = MersenneTwister(42)
     q = Normal()
     d = NTDist(q)

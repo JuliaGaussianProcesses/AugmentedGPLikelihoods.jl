@@ -1,0 +1,3 @@
+@test "negativemultinomial" begin
+    
+end

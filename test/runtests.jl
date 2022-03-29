@@ -25,8 +25,10 @@ using TupleVectors
 
     @info "Testing SpecialDistributions"
     @testset "SpecialDistributions" begin
+        include("SpecialDistributions/negativemultinomial.jl")
         include("SpecialDistributions/ntdist.jl")
         include("SpecialDistributions/polyagamma.jl")
+        include("SpecialDistributions/polyagammanegativemultinomial.jl")
         include("SpecialDistributions/polyagammapoisson.jl")
     end
 

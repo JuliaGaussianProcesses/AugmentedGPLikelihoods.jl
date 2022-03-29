@@ -30,7 +30,7 @@ function ntrand(rng::AbstractRNG, d::PolyaGammaNegativeMultinomial)
     return (; ω, n)
 end
 
-function MeasureBase.logdensity(d::PolyaGammaNegativeMultinomial, x::NamedTuple)
+function MeasureBase.logdensity_def(d::PolyaGammaNegativeMultinomial, x::NamedTuple)
     logpdf_n = logpdf(NegativeMultinomial(d), x.n)
     logpdf_ω = sum(1:length(x)) do i
         return logpdf(PolyaGamma(d.y[i] + x.n[i], d.c[i]), x.ω[i])

@@ -147,7 +147,7 @@ function aux_prior(lik::BijectiveLogisticSoftMaxLikelihood, y::AbstractVector{<:
         y, zeros(Int, length(y)), fill(inv(_get_const(lik.invlink) + nlatent(lik)), nlatent(lik)) # TODO incorporate the theta parameters here.
     )
 end
-function aux_prior(::LogisticSoftMaxLikelihood, y::AbstractVector{<:Integer})
+function aux_prior(lik::LogisticSoftMaxLikelihood, y::AbstractVector{<:Integer})
     # There is no proper prior for this so we just pretend this will work
     return PolyaGammaNegativeMultinomial(
         y, zeros(Int, length(y)), fill(1 / nlatent(lik), nlatent(lik))
