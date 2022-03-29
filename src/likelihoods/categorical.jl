@@ -75,7 +75,7 @@ function aux_posterior!(
     y::AbstractVector{<:AbstractVector{<:Bool}},
     qf::AbstractVector{<:AbstractVector{<:Normal}},
 )
-    φ = qΩ.pars
+    φ = only(qΩ.inds)
     for (i, φᵢ) in enumerate(φ)
         @. φᵢ.c = sqrt(second_moment(qf[i]))
         φᵢ.y .= y[i]
@@ -92,7 +92,7 @@ function aux_posterior!(
     y::AbstractVector{<:AbstractVector},
     qf::AbstractVector{<:AbstractVector{<:Normal}},
 )
-    φ = qΩ.pars
+    φ = only(qΩ.inds)
     for (i, φᵢ) in enumerate(φ)
         @. φᵢ.c = sqrt(second_moment(qf[i]))
         φᵢ.y .= y[i]
