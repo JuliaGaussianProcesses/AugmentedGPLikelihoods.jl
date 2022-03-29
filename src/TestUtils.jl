@@ -36,6 +36,19 @@ end
 invert_if_array_of_arrays(f::AbstractVector) = f
 invert_if_array_of_arrays(f::AbstractVector{<:AbstractVector}) = invert(f)
 
+function gen_y(rng::AbstractRNG, lik, f)
+    if nlatent(lik) == 1
+        return rand(rng, lik(f))
+    else
+        return rand(rng, lik(invert(f)))
+    end
+end
+
+function gen_y(rng::AbstractRNG, lik::CategoricalLikelihood, f)
+    y = rand(rng, lik(invert(f)))
+    return nestedview((sort(unique(y)) .== y')[1:nlatent(lik), :])
+end
+
 function test_auglik(
     lik::AbstractLikelihood;
     n=10,
@@ -151,7 +164,7 @@ function test_auglik(
         @test all(x -> all(>=(0), x), γs) # Check that the variance is positive
 
         # TODO test that aux_posterior parameters return the minimizing
-        φ = TupleVectors.unwrap(only(aux_posterior(lik, y, qf).inds)) # TupleVector
+        φ = TupleVectors.unwrap(only(aux_posterior(lik, y, qft).inds)) # TupleVector
         φ_opt = flatten_params(φ, nlatent(lik))
         s = keys(φ)
         n_var = length(s)
@@ -172,7 +185,6 @@ function test_auglik(
                 zeros(n_var * nlatent(lik), n)
             end
             Δ[i] = ϵ # We try one element at a time
-            @show i
             @test loss(φ_opt) <= loss(φ_opt + Δ)
             @test loss(φ_opt) <= loss(φ_opt - Δ)
         end
@@ -184,19 +196,6 @@ function test_auglik(
         @test expected_logtilt(lik, qΩ, y, qft) isa Real
         @test aux_kldivergence(lik, qΩ, pΩ) isa Real
     end
-end
-
-function gen_y(rng::AbstractRNG, lik, f)
-    if nlatent(lik) == 1
-        return rand(rng, lik(f))
-    else
-        return rand(rng, lik(invert(f)))
-    end
-end
-
-function gen_y(rng::AbstractRNG, lik::CategoricalLikelihood, f)
-    y = rand(rng, lik(invert(f)))
-    return nestedview((sort(unique(y)) .== y')[1:nlatent(lik), :])
 end
 
 end
