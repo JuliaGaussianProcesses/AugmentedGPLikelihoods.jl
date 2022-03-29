@@ -129,7 +129,7 @@ function test_auglik(
         ϵ = 1e-2
         # Test that by perturbing the value in random directions, the loss does not decrease
         for i in n_var * n
-            (lik isa PoissonLikelihood && i <= n) && continue # We do not want to vary y
+            (lik isa Union{NegativeBinomialLikelihood, PoissonLikelihood} && i <= n) && continue # We do not want to vary y
             Δ = zeros(n_var * n)
             Δ[i] = ϵ # We try one element at a time
             @test loss(φ_opt) <= loss(φ_opt + Δ)
