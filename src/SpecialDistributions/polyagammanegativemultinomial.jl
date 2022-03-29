@@ -16,6 +16,10 @@ struct PolyaGammaNegativeMultinomial{Ty,Tc,Tp} <: AbstractNTDist
     p::Tp # Negative Multinomial parameters
 end
 
+function Base.:(==)(p::PolyaGammaNegativeMultinomial, q::PolyaGammaNegativeMultinomial)
+    return (p.y == q.y) && (p.c == q.c) && (p.p == q.p)
+end
+
 NegativeMultinomial(d::PolyaGammaNegativeMultinomial) = NegativeMultinomial(1, d.p)
 
 Distributions.length(::PolyaGammaNegativeMultinomial) = 2 * length(d.p)
@@ -29,16 +33,18 @@ end
 function MeasureBase.logdensity(d::PolyaGammaNegativeMultinomial, x::NamedTuple)
     logpdf_n = logpdf(NegativeMultinomial(d), x.n)
     logpdf_ω = sum(1:length(x)) do i
-        logpdf(PolyaGamma(d.y[i] + x.n[i], d.c[i]), x.ω[i])
+        return logpdf(PolyaGamma(d.y[i] + x.n[i], d.c[i]), x.ω[i])
     end
     return logpdf_ω + logpdf_n
 end
 
 function tvmean(ds::AbstractVector{<:PolyaGammaNegativeMultinomial})
-    n = nestedview(mapreduce(d->mean(NegativeMultinomial(d)), hcat, ds))
-    ω = nestedview(mapreduce(hcat, ds, n) do d, n
-        mean.(PolyaGamma.(d.y + n, d.c))
-    end)
+    n = nestedview(mapreduce(d -> mean(NegativeMultinomial(d)), hcat, ds))
+    ω = nestedview(
+        mapreduce(hcat, ds, n) do d, n
+            mean.(PolyaGamma.(d.y + n, d.c))
+        end,
+    )
     return TupleVector(; ω, n)
 end
 
@@ -52,7 +58,8 @@ function Distributions.kldivergence(
 )
     # TODO: Optimize this
     (all(==(0), p.c) && all(p.y .== q.y)) ||
-        error("No solution for this prior. qΩ = $q, pΩ = $p")
-    return sum(kldivergence.(PolyaGamma.(q.y + q.λ, q.c), PolyaGamma.(q.y + q.λ, 0))) +
+        error("no kl divergence available for this prior. qΩ = $q, pΩ = $p")
+    b = q.y + mean(NegativeMultinomial(q))
+    return sum(kldivergence.(PolyaGamma.(b, q.c), PolyaGamma.(b, 0))) +
            kldivergence(NegativeMultinomial(q), NegativeMultinomial(p))
 end
