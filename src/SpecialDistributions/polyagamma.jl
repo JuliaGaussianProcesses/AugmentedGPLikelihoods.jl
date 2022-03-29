@@ -66,7 +66,7 @@ Distributions.logpdf(d::PolyaGamma, x::NamedTuple{(:ω,),<:Tuple{<:Real}}) = log
 function Distributions.kldivergence(q::PolyaGamma, p::PolyaGamma)
     (q.b == p.b && iszero(p.c)) || error(
         "cannot compute the KL divergence for Polya-Gamma distributions",
-        "with different parameter b, (q.b = $(q.b), p.b = $(p.b))",
+        " with different parameter b, (q.b = $(q.b), p.b = $(p.b))",
         " or if p.c ≠ 0 (p.c = $(p.c))",
     )
     return logtilt(mean(q), q.b, q.c)
