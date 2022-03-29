@@ -64,7 +64,7 @@ function cavi!(fz::AbstractGPs.FiniteGP, lik, x, Y, ms, Ss, qΩ; niter=10)
         posts_fs = marginals.([p_u(x) for p_u in posts_u])
         aux_posterior!(qΩ, lik, Y, SplitApplyCombine.invert(posts_fs))
         Ss .= inv.(Symmetric.(Ref(inv(K)) .+ Diagonal.(expected_auglik_precision(lik, qΩ, Y))))
-        ms .= Ss .* (expected_auglik_potential(lik, qΩ, Y) .- Ref(K \ mean(fz)))
+        ms .= Ss .* (expected_auglik_potential(lik, qΩ, Y) .+ Ref(K \ mean(fz)))
     end
     return ms, Ss
 end
