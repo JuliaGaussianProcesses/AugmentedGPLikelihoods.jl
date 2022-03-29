@@ -55,7 +55,7 @@ function test_auglik(
         @test aug_loglik(lik, Ω, y, f) isa Real
 
         pΩ = aux_prior(lik, y)
-        @test logdensity(pΩ, Ω) isa Real
+        @test logdensity_def(pΩ, Ω) isa Real
         pω = aux_prior(lik, first(y)) # Scalar version
         @test pω == remove_ntdist_wrapper(first(marginals(pΩ)))
 
@@ -66,8 +66,8 @@ function test_auglik(
             Ω₂ = tvrand(rng, pcondΩ) # Sample another set of aux. variables
             # We compute p(f, y) by doing C = p(f,y) = p(y|Ω,f)p(Ω)/p(Ω|y,f)
             # This should be the same no matter what Ω is
-            logC₁ = logtilt(lik, Ω₁, y, f) + logdensity(pΩ, Ω₁) - logdensity(pcondΩ, Ω₁)
-            logC₂ = logtilt(lik, Ω₂, y, f) + logdensity(pΩ, Ω₂) - logdensity(pcondΩ, Ω₂)
+            logC₁ = logtilt(lik, Ω₁, y, f) + logdensity_def(pΩ, Ω₁) - logdensity_def(pcondΩ, Ω₁)
+            logC₂ = logtilt(lik, Ω₂, y, f) + logdensity_def(pΩ, Ω₂) - logdensity_def(pcondΩ, Ω₂)
             @test logC₁ ≈ logC₂ atol = 1e-5
         end
 

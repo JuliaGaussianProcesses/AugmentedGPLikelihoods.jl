@@ -46,7 +46,7 @@ function logtilt(
 end
 
 function aug_loglik(lik::AbstractLikelihood, Ω, y, f)
-    return logtilt(lik, Ω, y, f) + logdensity(aux_prior(lik, y), Ω)
+    return logtilt(lik, Ω, y, f) + logdensity_def(aux_prior(lik, y), Ω)
 end
 
 function aux_kldivergence(lik::AbstractLikelihood, qΩ::ProductMeasure, y)

@@ -11,7 +11,7 @@ Given `π::AbstractNTDist` and `Π::AbstractVector{<:AbstractNTDist}`
 ## Necessary
 - `ntrand(rng, π)` -> NamedTuple
 - `ntmean(π)` -> NamedTuple
-- `MeasureBase.logdensity(π, x::NamedTuple)` -> Real
+- `MeasureBase.logdensity_def(π, x::NamedTuple)` -> Real
 - `Distributions.kldivergence(π₀, π₁)` -> Real
 ## Optional
 - `tvrand(rng, Π)` -> TupleVector
@@ -46,7 +46,7 @@ dist(π::NTDist) = π.d
 Statistics.mean(π::NTDist) = ntmean(π)
 Statistics.mean(Π::AbstractVector{<:NTDist}) = tvmean(Π)
 
-MeasureBase.logdensity(π::NTDist, x::NamedTuple) = logpdf(dist(π), only(x))
+MeasureBase.logdensity_def(π::NTDist, x::NamedTuple) = logpdf(dist(π), only(x))
 
 ntrand(rng::AbstractRNG, d) = ntrand(rng, NTDist(d))
 function ntrand(rng::AbstractRNG, π::NTDist{Td,S}) where {Td,S}
