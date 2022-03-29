@@ -62,7 +62,7 @@ end
 
 Distributions.logpdf(d::PolyaGamma, x::NamedTuple{(:ω,),<:Tuple{<:Real}}) = logpdf(d, x.ω)
 
-# Shortcut for computating KL(PG(ω|b, c)||PG(b, 0))
+# Shortcut for computing KL(PG(ω|b,c) || PG(b, 0))
 function Distributions.kldivergence(q::PolyaGamma, p::PolyaGamma)
     (q.b == p.b && iszero(p.c)) || error(
         "cannot compute the KL divergence for Polya-Gamma distributions",
