@@ -20,7 +20,7 @@ end
 
 StudentTLikelihood(ν::Real, σ::Real) = StudentTLikelihood(ν, σ, abs2(σ), ν / 2)
 
-(lik::StudentTLikelihood)(f::Real) = LocationScale(f, lik.σ, TDist(lik.ν))
+(lik::StudentTLikelihood)(f::Real) = AffineDistribution(f, lik.σ, TDist(lik.ν))
 
 _α(lik::StudentTLikelihood) = (lik.ν + 1) / 2
 
@@ -48,7 +48,7 @@ end
 function aux_posterior!(
     qΩ, lik::StudentTLikelihood, y::AbstractVector, qf::AbstractVector{<:Normal}
 )
-    φ = qΩ.pars
+    φ = only(qΩ.inds)
     map!(φ.β, y, qf) do yᵢ, fᵢ
         (lik.ν / abs2(lik.σ) + second_moment(fᵢ, yᵢ)) / 2
     end

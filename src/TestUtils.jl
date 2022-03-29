@@ -6,6 +6,7 @@ using Distributions
 using GPLikelihoods: AbstractLikelihood
 using LinearAlgebra
 using MeasureBase
+using MeasureTheory: For
 using Random
 using Test
 using TupleVectors
@@ -90,13 +91,13 @@ function test_auglik(
     #Testing variational inference
     @testset "Variational Inference" begin
         qΩ = init_aux_posterior(lik, n)
-        @test qΩ isa ProductMeasure
-        @test_broken length(qΩ) == n
+        @test qΩ isa For
+        @test length(qΩ) == n
         qΩ = aux_posterior!(qΩ, lik, y, qf)
-        @test qΩ isa ProductMeasure
+        @test qΩ isa For
         new_qΩ = aux_posterior(lik, y, qf)
-        @test new_qΩ isa ProductMeasure
-        @test_broken length(new_qΩ) == n
+        @test new_qΩ isa For
+        @test length(new_qΩ) == n
 
         βs = expected_auglik_potential(lik, qΩ, y)
         γs = expected_auglik_precision(lik, qΩ, y)
@@ -110,12 +111,12 @@ function test_auglik(
         @test all(x -> all(>=(0), x), γs) # Check that the variance is positive
 
         # TODO test that aux_posterior parameters return the minimizing
-        φ = TupleVectors.unwrap(aux_posterior(lik, y, qf).pars) # TupleVector
+        φ = TupleVectors.unwrap(only(aux_posterior(lik, y, qf).inds)) # TupleVector
         φ_opt = vcat(values(φ)...)
         s = keys(φ)
         n_var = length(s)
         function loss(φ)
-            q = ProductMeasure(
+            q = For(
                 qΩ.f,
                 TupleVector(
                     NamedTuple{s}(
@@ -137,7 +138,7 @@ function test_auglik(
         # Optim.optimize(loss, φ_opt)
         # values of the ELBO
         pΩ = aux_prior(lik, y)
-        @test pΩ isa ProductMeasure
+        @test pΩ isa For
         @test kldivergence(first(marginals(qΩ)), first(marginals(pΩ))) isa Real
         @test expected_logtilt(lik, qΩ, y, qf) isa Real
         @test aux_kldivergence(lik, qΩ, pΩ) isa Real

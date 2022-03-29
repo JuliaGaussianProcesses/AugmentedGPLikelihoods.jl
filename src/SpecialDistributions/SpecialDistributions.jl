@@ -7,6 +7,7 @@ module SpecialDistributions
 using Distributions
 using LogExpFunctions
 using MeasureBase
+using MeasureTheory: For
 using Random
 using TupleVectors
 using Statistics
@@ -32,7 +33,7 @@ ntrand
 ntrand(d) = ntrand(Random.GLOBAL_RNG, d)
 
 @doc raw"""
-    tvrand([rng::AbstractRNG,] d::ProductMeasure) -> TupleVector
+    tvrand([rng::AbstractRNG,] d::For) -> TupleVector
     tvrand([rng::AbstractRNG,] d::AbstractVector{<:AbstractNTDist}) -> TupleVector
 
 Return a collection of samples as a TupleVector
@@ -41,7 +42,7 @@ tvrand
 
 tvrand(d) = tvrand(Random.GLOBAL_RNG, d)
 
-tvrand(rng::AbstractRNG, d::ProductMeasure) = TupleVector(rand(rng, d))
+tvrand(rng::AbstractRNG, d::For) = TupleVector(rand(rng, d))
 
 @doc raw"""
     ntmean(d::Distribution) -> NamedTuple
@@ -52,14 +53,14 @@ ntmean
 
 @doc raw"""
     tvmean(d::AbstractVector{<:AbstractNTDist}) -> TupleVector
-    tvmean(d::ProductMeasure)
+    tvmean(d::For)
 
 Return a collection of mean as a `TupleVector`.
 """
 tvmean
 
-tvmean(qΩ::ProductMeasure) = tvmean(marginals(qΩ))
-tvmeaninv(qΩ::ProductMeasure) = tvmeaninv(marginals(qΩ))
+tvmean(qΩ::For) = tvmean(marginals(qΩ))
+tvmeaninv(qΩ::For) = tvmeaninv(marginals(qΩ))
 
 include("polyagamma.jl")
 include("polyagammapoisson.jl")

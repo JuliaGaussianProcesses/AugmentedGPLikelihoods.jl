@@ -49,11 +49,11 @@ function aug_loglik(lik::AbstractLikelihood, Ω, y, f)
     return logtilt(lik, Ω, y, f) + logdensity_def(aux_prior(lik, y), Ω)
 end
 
-function aux_kldivergence(lik::AbstractLikelihood, qΩ::ProductMeasure, y)
+function aux_kldivergence(lik::AbstractLikelihood, qΩ::For, y)
     return aux_kldivergence(lik, qΩ, aux_prior(lik, y))
 end
 
-function aux_kldivergence(::AbstractLikelihood, qΩ::ProductMeasure, pΩ::ProductMeasure)
+function aux_kldivergence(::AbstractLikelihood, qΩ::For, pΩ::For)
     return mapreduce(Distributions.kldivergence, +, marginals(qΩ), marginals(pΩ))
 end
 
