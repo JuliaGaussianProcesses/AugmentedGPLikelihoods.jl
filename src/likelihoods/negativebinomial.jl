@@ -42,7 +42,7 @@ end
 function aux_posterior!(
     qΩ, ::NegBinomialLikelihood, y::AbstractVector, qf::AbstractVector{<:Normal}
 )
-    φ = qΩ.pars
+    φ = only(qΩ.inds)
     φ.y .= y
     map!(φ.c, qf) do fᵢ
         sqrt(second_moment(fᵢ))
