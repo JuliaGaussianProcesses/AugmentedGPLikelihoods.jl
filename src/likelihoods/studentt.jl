@@ -46,6 +46,7 @@ function aux_full_conditional(lik::StudentTLikelihood, y::Real, f::Real)
 end
 
 function aux_posterior(lik::StudentTLikelihood, y, f)
+    α = _α(lik)
     β = map(y, f) do yᵢ, fᵢ
         (lik.ν / abs2(lik.σ) + second_moment(fᵢ, yᵢ)) / 2
     end
