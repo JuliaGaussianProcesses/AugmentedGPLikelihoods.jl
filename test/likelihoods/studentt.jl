@@ -17,7 +17,7 @@
             return aug_elbo(lik, u_post, x, y)
         end
         θ0 = [1., 2., 3., 4., 5.]
-        @test loss(θ0) ≈ -51.95433668026266
+        @test loss(θ0) ≈ -99.78413403563133
         @test ForwardDiff.gradient(loss, θ0) ≈ ReverseDiff.gradient(loss, θ0)
     end
 end

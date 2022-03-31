@@ -11,14 +11,14 @@ Likelihood with a Student-T likelihood:
 - `ν::Real`, number of degrees of freedom, should be positive and larger than 0.5 to be able to compute moments
 - `σ::Real`, scaling of the inputs.
 """
-struct StudentTLikelihood{Tν<:Real,Tσ<:Real,Thalfν<:Real} <: AbstractLikelihood
+struct StudentTLikelihood{Tν,Tσ,Tσ2,Thalfν} <: AbstractLikelihood
     ν::Tν
     σ::Tσ
-    σ²::Tσ
+    σ²::Tσ2
     halfν::Thalfν
 end
 
-StudentTLikelihood(ν::Real, σ::Real) = StudentTLikelihood(ν, σ, abs2(σ), ν / 2)
+StudentTLikelihood(ν, σ) = StudentTLikelihood(ν, σ, abs2(σ), ν / 2)
 
 (lik::StudentTLikelihood)(f::Real) = Distributions.AffineDistribution(f, lik.σ, TDist(lik.ν))
 
