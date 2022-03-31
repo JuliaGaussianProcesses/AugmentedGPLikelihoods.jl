@@ -2,7 +2,7 @@ module AugmentedGPLikelihoods
 
 using Reexport
 
-using ChainRulesCore: @ignore_derivatives
+using ChainRulesCore: @ignore_derivatives, ignore_derivatives
 using Distributions
 @reexport using GPLikelihoods
 using GPLikelihoods: AbstractLikelihood, AbstractLink
