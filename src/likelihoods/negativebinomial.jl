@@ -39,6 +39,13 @@ function aux_full_conditional(lik::NegBinomialLikelihood, y::Real, f::Real)
     return NTDist(PolyaGamma(y + lik.r, abs(f)))
 end
 
+function aux_posterior(lik::NegBinomialLikelihood, y, f)
+    c = sqrt.(second_moment.(f))
+    return For(TupleVector(; y=y, c=c)) do φ
+        NTDist(PolyaGamma(φ.y + lik.r, φ.c)) # Distributions uses a different parametrization
+    end
+end
+
 function aux_posterior!(
     qΩ, ::NegBinomialLikelihood, y::AbstractVector, qf::AbstractVector{<:Normal}
 )

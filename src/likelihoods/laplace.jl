@@ -41,6 +41,14 @@ function aux_full_conditional(lik::LaplaceLikelihood, y::Real, f::Real)
     return NTDist(InverseGaussian(inv(2 * lik.β * abs(y - f)), 2 * laplace_λ(lik)))
 end
 
+function aux_posterior(lik::LaplaceLikelihood, y, f)
+    λ = laplace_λ(lik)
+    μ = inv.(2 .* lik.β .* sqrt.(second_moment.(f, y)))
+    return For(TupleVector(; μ=μ)) do φ
+        NTDist(InverseGaussian(φ.μ, λ))
+    end
+end
+
 function aux_posterior!(
     qΩ, lik::LaplaceLikelihood, y::AbstractVector, qf::AbstractVector{<:Normal}
 )

@@ -45,6 +45,15 @@ function aux_full_conditional(lik::StudentTLikelihood, y::Real, f::Real)
     return NTDist(Gamma(_α(lik), 2 / (lik.ν / abs2(lik.σ) + abs2(y - f))))
 end
 
+function aux_posterior(lik::StudentTLikelihood, y, f)
+    β = map(y, f) do yᵢ, fᵢ
+        (lik.ν / abs2(lik.σ) + second_moment(fᵢ, yᵢ)) / 2
+    end
+    return For(TupleVector(; β=β)) do φ
+        NTDist(Gamma(α, inv(φ.β))) # Distributions uses a different parametrization
+    end
+end
+
 function aux_posterior!(
     qΩ, lik::StudentTLikelihood, y::AbstractVector, qf::AbstractVector{<:Normal}
 )

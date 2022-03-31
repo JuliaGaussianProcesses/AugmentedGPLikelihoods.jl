@@ -27,6 +27,15 @@ function aux_full_conditional(lik::AugPoisson, y::Int, f::Real)
     return PolyaGammaPoisson(y, abs(f), lik.invlink(-f))
 end
 
+function aux_posterior(lik::AugPoisson, y, f)
+    λ = lik.invlink.λ
+    c = sqrt.(second_moment.(f))
+    λ_vector = @. λ * approx_expected_logistic(-mean(f), c)
+    return For(TupleVector(; y=y, c=c, λ=λ_vector)) do q
+        PolyaGammaPoisson(q.y, q.c, q.λ)
+    end
+end
+
 function aux_posterior!(
     qΩ, lik::AugPoisson, y::AbstractVector{<:Int}, qf::AbstractVector{<:Normal}
 )

@@ -14,6 +14,13 @@ function aux_full_conditional(::BernoulliLikelihood{<:LogisticLink}, ::Any, f::R
     return NTDist(PolyaGamma(1, abs(f)))
 end
 
+function aux_posterior(lik::BernoulliLikelihood{<:LogisticLink}, y, f)
+    c = map(sqrt ∘ second_moment, f)
+    return For(TupleVector(; c=c)) do φ
+        NTDist(PolyaGamma(1, φ.c))
+    end
+end
+
 function aux_posterior!(
     qΩ,
     ::BernoulliLikelihood{<:LogisticLink},
