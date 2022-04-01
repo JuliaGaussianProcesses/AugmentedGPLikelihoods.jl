@@ -33,8 +33,10 @@ makedocs(
     ),
     pages=[
         "Home" => "index.md",
-        "Likelihoods" => readdir("likelihoods"; join=true),
-        "Examples" => map(filter!(isdir, readdir("examples"))) do x
+        "Likelihoods" => map(readdir("src/likelihoods")) do x
+            joinpath("likelihoods", x) 
+        end,
+        "Examples" => map(filter!(isdir, readdir("src/examples"))) do x
             joinpath("examples", x, "example.md")
         end,
         "Misc" => "misc.md",
