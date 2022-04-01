@@ -20,10 +20,6 @@ DocMeta.setdocmeta!(
 
 bib = CitationBibliography(joinpath(@__DIR__, "references.bib"))
 
-likelihoods = filter!(filename -> endswith(filename, ".md"), readdir(EXAMPLES_OUT))
-
-@info "Available likelihoods: $(likelihoods)"
-
 makedocs(
     bib;
     modules=[AugmentedGPLikelihoods],
