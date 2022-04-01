@@ -35,7 +35,7 @@ makedocs(
         "Likelihoods" => map(readdir(joinpath(@__DIR__, "src", "likelihoods"))) do x
             joinpath("likelihoods", x) 
         end,
-        "Examples" => map(filter!(isdir, readdir(joinpath(@__DIR__, "src", "examples")))) do x
+        "Examples" => map(basenames.(filter!(isdir, readdir(joinpath(@__DIR__, "src", "examples"); join=true)))) do x
             joinpath("examples", x, "example.md")
         end,
         "Misc" => "misc.md",
