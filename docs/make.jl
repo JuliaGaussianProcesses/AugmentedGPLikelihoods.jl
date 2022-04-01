@@ -32,10 +32,10 @@ makedocs(
     ),
     pages=[
         "Home" => "index.md",
-        "Likelihoods" => map(readdir(joinpath("src", "likelihoods"))) do x
+        "Likelihoods" => map(readdir(joinpath(@__DIR__, "src", "likelihoods"))) do x
             joinpath("likelihoods", x) 
         end,
-        "Examples" => map(filter!(isdir, readdir(joinpath("src", "examples")))) do x
+        "Examples" => map(filter!(isdir, readdir(joinpath(@__DIR__, "src", "examples")))) do x
             joinpath("examples", x, "example.md")
         end,
         "Misc" => "misc.md",
