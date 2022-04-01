@@ -1,4 +1,3 @@
-## First process examples
 using Pkg
 Pkg.add(Pkg.PackageSpec(; url="https://github.com/JuliaGaussianProcesses/JuliaGPsDocs.jl")) 
 
@@ -33,10 +32,10 @@ makedocs(
     ),
     pages=[
         "Home" => "index.md",
-        "Likelihoods" => map(readdir("src/likelihoods")) do x
+        "Likelihoods" => map(readdir(joinpath("src", "likelihoods"))) do x
             joinpath("likelihoods", x) 
         end,
-        "Examples" => map(filter!(isdir, readdir("src/examples"))) do x
+        "Examples" => map(filter!(isdir, readdir(joinpath("src", "examples")))) do x
             joinpath("examples", x, "example.md")
         end,
         "Misc" => "misc.md",
