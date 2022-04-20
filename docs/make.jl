@@ -34,7 +34,7 @@ makedocs(
         "Likelihoods" => map(readdir(joinpath(@__DIR__, "src", "likelihoods"))) do x
             joinpath("likelihoods", x)
         end,
-        "Examples" => find_generated_examples(AugmentedGPLikelihoods),
+        "Examples" => JuliaGPsDocs.find_generated_examples(AugmentedGPLikelihoods),
         "Misc" => "misc.md",
         "References" => "references.md",
     ],
