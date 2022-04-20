@@ -102,9 +102,9 @@ plot(plts...)
 
 p_plts = [plot() for _ in 1:2]
 for i in 1:2
-    scatter!(p_plts[i], x, fs_ys[i].y / Nclass; group=fs_ys[i].y, label=[1 2 3 4], msw=0.0)
+    scatter!(p_plts[i], x, y / Nclass; group=y, label=[1 2 3 4], msw=0.0)
 
-## vline!(p_plts[i], x, group=fs_ys[i].y, lw=20/length(x) * 20.0, alpha=0.2, ylims=(0,1),title="p(y=k|f)", label="")
+    ## vline!(p_plts[i], x, group=fs_ys[i].y, lw=20/length(x) * 20.0, alpha=0.2, ylims=(0,1),title="p(y=k|f)", label="")
     lik_pred =
         liks[i].(
             invert(
