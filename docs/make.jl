@@ -1,6 +1,5 @@
 using Pkg
-Pkg.add(Pkg.PackageSpec(; url="https://github.com/JuliaGaussianProcesses/JuliaGPsDocs.jl")) 
-
+Pkg.add(Pkg.PackageSpec(; url="https://github.com/JuliaGaussianProcesses/JuliaGPsDocs.jl"))
 
 ## Build the docs
 using AugmentedGPLikelihoods
@@ -33,11 +32,9 @@ makedocs(
     pages=[
         "Home" => "index.md",
         "Likelihoods" => map(readdir(joinpath(@__DIR__, "src", "likelihoods"))) do x
-            joinpath("likelihoods", x) 
+            joinpath("likelihoods", x)
         end,
-        "Examples" => map(basename.(filter!(isdir, readdir(joinpath(@__DIR__, "src", "examples"); join=true)))) do x
-            joinpath("examples", x, "index.md")
-        end,
+        "Examples" => find_generated_examples(AugmentedGPLikelihoods),
         "Misc" => "misc.md",
         "References" => "references.md",
     ],

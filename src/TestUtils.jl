@@ -104,8 +104,12 @@ function test_auglik(
             Ω₂ = tvrand(rng, pcondΩ) # Sample another set of aux. variables
             # We compute p(f, y) by doing C = p(f,y) = p(y|Ω,f)p(Ω)/p(Ω|y,f)
             # This should be the same no matter what Ω is
-            logC₁ = logtilt(lik, Ω₁, y, ft) + logdensity_def(pΩ, Ω₁) - logdensity_def(pcondΩ, Ω₁)
-            logC₂ = logtilt(lik, Ω₂, y, ft) + logdensity_def(pΩ, Ω₂) - logdensity_def(pcondΩ, Ω₂)
+            logC₁ =
+                logtilt(lik, Ω₁, y, ft) + logdensity_def(pΩ, Ω₁) -
+                logdensity_def(pcondΩ, Ω₁)
+            logC₂ =
+                logtilt(lik, Ω₂, y, ft) + logdensity_def(pΩ, Ω₂) -
+                logdensity_def(pcondΩ, Ω₂)
             @test logC₁ ≈ logC₂ atol = 1e-5
         end
 
@@ -169,16 +173,15 @@ function test_auglik(
         s = keys(φ)
         n_var = length(s)
         function loss(φ)
-            q = For(
-                qΩ.f, TupleVector(NamedTuple{s}(unflatten_params(φ, nlatent(lik), n)))
-            )
+            q = For(qΩ.f, TupleVector(NamedTuple{s}(unflatten_params(φ, nlatent(lik), n))))
             return -expected_logtilt(lik, q, y, qf) + aux_kldivergence(lik, q, y)
         end
         ϵ = 1e-2
         # Test that by perturbing the value in random directions, the loss does not decrease
         for i in CartesianIndices(φ_opt)
             Δ = if nlatent(lik) == 1
-                (lik isa Union{NegBinomialLikelihood,PoissonLikelihood} && i[1] <= n) && continue # We do not want to vary y
+                (lik isa Union{NegBinomialLikelihood,PoissonLikelihood} && i[1] <= n) &&
+                    continue # We do not want to vary y
                 zeros(n_var * n)
             else
                 (lik isa CategoricalLikelihood && i[1] <= nlatent(lik)) && continue

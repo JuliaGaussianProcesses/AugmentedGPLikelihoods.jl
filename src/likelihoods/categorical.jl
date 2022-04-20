@@ -3,7 +3,7 @@ function logisticsoftmax(x::AbstractVector{<:Real})
     return σs / sum(σs)
 end
 
-struct LogisticSoftMaxLink{Tθ} <: AbstractLink
+struct LogisticSoftMaxLink{Tθ<:AbstractVector} <: AbstractLink
     logθ::Tθ
 end
 
@@ -144,7 +144,9 @@ end
 
 function aux_prior(lik::BijectiveLogisticSoftMaxLikelihood, y::AbstractVector{<:Integer})
     return PolyaGammaNegativeMultinomial(
-        y, zeros(Int, length(y)), fill(inv(_get_const(lik.invlink) + nlatent(lik)), nlatent(lik)) # TODO incorporate the theta parameters here.
+        y,
+        zeros(Int, length(y)),
+        fill(inv(_get_const(lik.invlink) + nlatent(lik)), nlatent(lik)), # TODO incorporate the theta parameters here.
     )
 end
 function aux_prior(lik::LogisticSoftMaxLikelihood, y::AbstractVector{<:Integer})
