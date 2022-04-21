@@ -31,7 +31,7 @@ function aux_posterior!(
     qΩ, lik::AugPoisson, y::AbstractVector{<:Int}, qf::AbstractVector{<:Normal}
 )
     λ = lik.invlink.λ
-    φ = qΩ.pars
+    φ = only(qΩ.inds)
     @. φ.c = sqrt(second_moment(qf))
     @. φ.y = y
     @. φ.λ = λ * approx_expected_logistic(-mean(qf), φ.c)
