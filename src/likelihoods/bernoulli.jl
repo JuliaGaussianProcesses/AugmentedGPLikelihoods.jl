@@ -20,7 +20,7 @@ function aux_posterior!(
     ::AbstractVector,
     qf::AbstractVector{<:Normal},
 )
-    map!(sqrt ∘ second_moment, qΩ.pars.c, qf)
+    map!(sqrt ∘ second_moment, only(qΩ.inds).c, qf)
     return qΩ
 end
 

@@ -26,7 +26,7 @@ function ntrand(rng::AbstractRNG, d::PolyaGammaPoisson)
     return (; ω, n)
 end
 
-function MeasureBase.logdensity(d::PolyaGammaPoisson, x::NamedTuple)
+function MeasureBase.logdensity_def(d::PolyaGammaPoisson, x::NamedTuple)
     logpdf_n = logpdf(Poisson(d), x.n)
     logpdf_ω = logpdf(PolyaGamma(d.y + x.n, d.c), x.ω)
     return logpdf_ω + logpdf_n
