@@ -14,20 +14,20 @@ using Plots
 # We create some random data (sorted for plotting reasons)
 N = 100
 Nclass = 3
-x = collect(range(-10, 10; length=N))
+x = collect(range(-10, 10; length=N));
 
 # We will present simultaneously the bijective and non-bijective likelihood
 liks = [
-    CategoricalLikelihood(BijectiveSimplexLink(LogisticSoftMaxLink(zeros(Nclass)))),
-    CategoricalLikelihood(LogisticSoftMaxLink(zeros(Nclass))),
-]
+    CategoricalLikelihood(BijectiveSimplexLink(LogisticSoftMaxLink(Nclass))),
+    CategoricalLikelihood(LogisticSoftMaxLink(Nclass)),
+];
 
 # This is small hack until https://github.com/JuliaGaussianProcesses/GPLikelihoods.jl/pull/68 is merged
 AugmentedGPLikelihoods.nlatent(::CategoricalLikelihood{<:BijectiveSimplexLink}) = Nclass - 1
 AugmentedGPLikelihoods.nlatent(::CategoricalLikelihood{<:LogisticSoftMaxLink}) = Nclass
 
 SplitApplyCombine.invert(x::ArrayOfSimilarArrays) = nestedview(flatview(x)')
-# We deifne the models
+# We define the models
 kernel = 5.0 * with_lengthscale(SqExponentialKernel(), 2.0)
 gp = GP(kernel)
 fz = gp(x, 1e-8);
@@ -129,7 +129,7 @@ for i in 1:2
         logpdf(p, y)
     end
     for k in 1:Nclass
-        plot!(p_plts[i], x, invert(ps_true)[k]; color=k, lw=2.0, label=k)
+        plot!(p_plts[i], x, invert(ps_true)[k]; color=k, lw=2.0, label="")
         plot!(p_plts[i], x_te, invert(ps)[k]; color=k, lw=2.0, label="", ls=:dash)
     end
 end

@@ -13,6 +13,20 @@ function _get_const(l::BijectiveSimplexLink{<:LogisticSoftMaxLink})
     return exp(last(l.link.logθ)) * logistic(0)
 end
 
+_sum_θ(l::LogisticSoftMaxLink) = exp(logsumexp(l.logθ))
+
+function _sum_θ(l::BijectiveSimplexLink{<:LogisticSoftMaxLink})
+    return _get_const(l) + exp(logsubexp(l.link.logθ[1:end-1]))
+end
+
+function _scale_σf(l::LogisticSoftMaxLink, f::AbstractVector{<:Real})
+    return exp.(l.logθ) .* logistic.(f)
+end
+
+function _scale_σf(l::BijectiveSimplexLink{<:LogisticSoftMaxLink}, f::AbstractVector{<:Real})
+    return exp.(l.logθ[1:end-1]) .* logistic.(f)
+end
+
 function (l::LogisticSoftMaxLink)(f::AbstractVector{<:Real})
     σs = exp.(l.logθ) .* logistic.(f)
     return σs ./ sum(σs)
@@ -54,19 +68,13 @@ function init_aux_posterior(T::DataType, lik::LogisticSoftMaxLikelihoods, n::Int
 end
 
 function aux_full_conditional(
-    lik::BijectiveLogisticSoftMaxLikelihood,
+    lik::LogisticSoftMaxLikelihoods,
     y::AbstractVector{<:Bool},
     f::AbstractVector{<:Real},
 )
     return PolyaGammaNegativeMultinomial(
-        y, abs.(f), logistic.(-f) / (_get_const(lik.invlink) + nlatent(lik))
+        y, abs.(f), _scale_σf(l.invlink, f) / _sum_θ(l.invlink))
     )
-end
-
-function aux_full_conditional(
-    lik::LogisticSoftMaxLikelihood, y::AbstractVector{<:Bool}, f::AbstractVector{<:Real}
-)
-    return PolyaGammaNegativeMultinomial(y, abs.(f), logistic.(-f) ./ nlatent(lik))
 end
 
 function aux_posterior!(
@@ -146,7 +154,7 @@ function aux_prior(lik::BijectiveLogisticSoftMaxLikelihood, y::AbstractVector{<:
     return PolyaGammaNegativeMultinomial(
         y,
         zeros(Int, length(y)),
-        fill(inv(_get_const(lik.invlink) + nlatent(lik)), nlatent(lik)), # TODO incorporate the theta parameters here.
+        fill(inv(_sum_θ(lik.invlink)), nlatent(lik)),
     )
 end
 function aux_prior(lik::LogisticSoftMaxLikelihood, y::AbstractVector{<:Integer})
