@@ -51,10 +51,6 @@ function _pdf_val_log_series(n::Integer, b::Real, x)
     return loggamma(n + b) - loggamma(n + 1) - abs2(2n + b) / (8x) + log(2n + b) # all terms where n is present
 end
 
-function _pdf_val_log_series2(n::Integer, b::Real, x)
-    return loggamma(n + b) - loggamma(n + 1) - abs2(2n + b) / (8x) + log(2n + b) # all terms where n is present
-end
-
 Distributions.logpdf(d::PolyaGamma, x::NamedTuple{(:ω,),<:Tuple{<:Real}}) = logpdf(d, x.ω)
 
 # Shortcut for computating KL(PG(ω|b, c)||PG(b, 0))
