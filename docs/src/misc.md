@@ -23,8 +23,8 @@ end
 
 ## Additional distributions
 
-
 ### Polya-Gamma
+
 ```@docs
 SpecialDistributions.PolyaGamma
 ```
@@ -34,17 +34,14 @@ pgs = [PolyaGamma(1, 0), PolyaGamma(2, 0), PolyaGamma(1, 2.5), PolyaGamma(3.5, 4
 plot_hist_and_pdf(pgs)
 savefig("pg-plots.svg"); nothing # hide
 ```
-![](pg-plots.svg)
 
-
+![Polya-Gamma plots](pg-plots.svg)
 
 ### Polya-Gamma Poisson
 
 ```@docs
 SpecialDistributions.PolyaGammaPoisson
 ```
-
-
 
 ## Additional likelihoods
 

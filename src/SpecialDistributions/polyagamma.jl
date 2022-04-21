@@ -40,10 +40,9 @@ function Distributions.logpdf(d::PolyaGamma, x::Real)
     else
         iszero(x) && -Inf # The limit to p(x) for x-> 0 is 0.
         ext = logtilt(x, b, c) + (b - 1) * logtwo - loggamma(b) - (log2π + 3 * log(x)) / 2
-        sumval = logsumexp(
-            (iseven(n) ? 1 : -1) * exp(_pdf_val_log_series(n, b, x)) for n in 0:201
-        )
-        return ext + sumval
+        pos_val = logsumexp(_pdf_val_log_series(n, b, x) for n in 0:2:201)
+        neg_val = logsumexp(_pdf_val_log_series(n, b, x) for n in 1:2:201)
+        return ext + log(exp(pos_val) - exp(neg_val))
     end
 end
 
