@@ -4,7 +4,7 @@
 
     for (b, c) in ((1, 0), (1, 2.0), (3, 0), (3, 2.5), (3, 3.2), (1.2, 3.2))
         p = PolyaGamma(b, c)
-        @test logpdf(p, rand(p)) isa Real
+        @test all(isreal, logpdf.(p, 10.0 * rand(p, 1000)))
         @test mean(rand(p, 10000)) ≈ mean(p) atol = 1e-2
     end
 
