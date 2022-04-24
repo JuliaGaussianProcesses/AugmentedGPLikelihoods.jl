@@ -16,7 +16,7 @@ end
 _sum_θ(l::LogisticSoftMaxLink) = exp(logsumexp(l.logθ))
 
 function _sum_θ(l::BijectiveSimplexLink{<:LogisticSoftMaxLink})
-    return _get_const(l) + exp(logsubexp(l.link.logθ[1:end-1]))
+    return _get_const(l) + exp(logsumexp(l.link.logθ[1:end-1]))
 end
 
 function _scale_σf(l::LogisticSoftMaxLink, f::AbstractVector{<:Real})
