@@ -7,7 +7,7 @@ struct LogisticSoftMaxLink{Tθ<:AbstractVector} <: AbstractLink
     logθ::Tθ
 end
 
-LogisticSoftMaxLink(nclass::Integer) = LogisticSoftMaxLikelihood(zeros(nclass))
+LogisticSoftMaxLink(nclass::Integer) = LogisticSoftMaxLink(zeros(nclass))
 
 function _get_const(l::BijectiveSimplexLink{<:LogisticSoftMaxLink})
     return exp(last(l.link.logθ)) * logistic(0)
