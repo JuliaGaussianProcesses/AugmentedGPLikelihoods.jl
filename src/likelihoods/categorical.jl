@@ -73,7 +73,7 @@ function aux_full_conditional(
     f::AbstractVector{<:Real},
 )
     return PolyaGammaNegativeMultinomial(
-        y, abs.(f), _scale_σf(l.invlink, f) / _sum_θ(l.invlink))
+        y, abs.(f), _scale_σf(l.invlink, f) / _sum_θ(l.invlink)
     )
 end
 
