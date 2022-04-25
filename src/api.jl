@@ -10,7 +10,7 @@ See also [`init_aux_posterior`](@ref) for variational inference.
 init_aux_variables
 
 @doc raw"""
-    init_aux_posterior([T::DataType], lik::Likelihood, n::Int) -> ProductMeasure
+    init_aux_posterior([T::DataType], lik::Likelihood, n::Int) -> AbstractProductMeasure
 
 Initialize collections of `n` (independent) posteriors for the auxiliary
 variables in the context of variational inference.
@@ -60,7 +60,7 @@ auxiliary variables `Ω`.
 """
 
 @doc raw"""
-    aux_posterior!(qΩ, lik::Likelihood, y, qf) -> ProductMeasure
+    aux_posterior!(qΩ, lik::Likelihood, y, qf) -> AbstractProductMeasure
 
 Compute the optimal posterior of the auxiliary variables ``q^*(\Omega)`` given 
 the marginal distributions `qf` by updating the variational parameters
@@ -74,10 +74,10 @@ See also [`aux_posterior`](@ref) and [`aux_sample!`](@ref)
 aux_posterior!
 
 @doc raw"""
-    aux_posterior(lik::Likelihood, y, qf) -> ProductMeasure
+    aux_posterior(lik::Likelihood, y, qf) -> AbstractProductMeasure
 
 Compute the optimal posterior of the auxiliary variables in a new
-`ProductMeasure`.
+`AbstractProductMeasure` (`For` by default).
 
 See [`aux_posterior!`](@ref) for more details
 """
@@ -164,8 +164,8 @@ specialized implementations are encouraged.
 aug_loglik
 
 @doc raw"""
-    aux_kldivergence(lik::Likelihood, qΩ::ProductMeasure, pΩ::ProductMeasure) -> Real
-    aux_kldivergence(lik::Likelihood, qΩ::ProductMeasure, y) -> Real
+    aux_kldivergence(lik::Likelihood, qΩ::For, pΩ::For) -> Real
+    aux_kldivergence(lik::Likelihood, qΩ::For, y) -> Real
 
 Compute the analytical KL divergence between the auxiliary variables posterior
 ``q(\Omega)``, obtained with [`aux_posterior`](@ref) and prior
@@ -174,7 +174,7 @@ Compute the analytical KL divergence between the auxiliary variables posterior
 aux_kldivergence
 
 @doc raw"""
-    aux_prior(lik::Likelihood, y) -> ProductMeasure
+    aux_prior(lik::Likelihood, y) -> AbstractProductMeasure
 
 Returns a `NamedTuple` of distributions with the same structure as [`aux_posterior`](@ref),
 [`init_aux_posterior`](@ref) and [`init_aux_variables`](@ref).
@@ -203,7 +203,7 @@ Compute the expectation of the quadratic part on $$f$$ of the augmented likeliho
 
 See also [`logtilt`](@ref).
 """
-function expected_logtilt(lik::AbstractLikelihood, qΩ, y, qf::AbstractVector{<:Normal})
+function expected_logtilt(lik::AbstractLikelihood, qΩ, y, qf::AbstractVector)
     return mapreduce(+, y, qf, @ignore_derivatives marginals(qΩ)) do yᵢ, qfᵢ, qΩᵢ
         expected_logtilt(lik, qΩᵢ, yᵢ, qfᵢ)
     end

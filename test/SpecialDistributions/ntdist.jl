@@ -1,4 +1,4 @@
-@testset "ntdist.jl" begin
+@testset "ntdist" begin
     rng = MersenneTwister(42)
     q = Normal()
     d = NTDist(q)
@@ -15,7 +15,7 @@
 
     x = ntrand(d)
     @test keys(x) == (:ω,)
-    @test logdensity(d, x) isa Real
+    @test logdensity_def(d, x) isa Real
 
     d2 = NTDist{:γ}(q)
     x = ntrand(d2)

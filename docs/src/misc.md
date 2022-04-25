@@ -24,7 +24,7 @@ end
 ## Additional distributions
 
 
-### Polya-Gamma
+### Pólya-Gamma
 ```@docs
 SpecialDistributions.PolyaGamma
 ```
@@ -37,14 +37,23 @@ savefig("pg-plots.svg"); nothing # hide
 ![](pg-plots.svg)
 
 
+### Negative Multinomial
 
-### Polya-Gamma Poisson
+```@docs
+SpecialDistributions.NegativeMultinomial
+```
+
+### Pólya-Gamma Poisson
 
 ```@docs
 SpecialDistributions.PolyaGammaPoisson
 ```
 
+### Pólya-Gamma Negative Multinomial
 
+```@docs
+SpecialDistributions.PolyaGammaNegativeMultinomial
+```
 
 ## Additional likelihoods
 

@@ -10,8 +10,11 @@ const OUTDIR = ARGS[2]
 # Note that each example's Project.toml must include Literate as a dependency
 using Pkg: Pkg
 const EXAMPLEPATH = joinpath(@__DIR__, "..", "examples", EXAMPLE)
+const PKGDIR = joinpath(@__DIR__, "..")
 Pkg.activate(EXAMPLEPATH)
 Pkg.instantiate()
+Pkg.develop(Pkg.PackageSpec(; path=PKGDIR))
+display(Pkg.status())
 using Literate: Literate
 
 function preprocess(content)
@@ -32,7 +35,7 @@ function preprocess(content)
 # [Literate.jl](https://github.com/fredrikekre/Literate.jl) from the
 # [Julia source file](@__REPO_ROOT_URL__/examples/@__NAME__/@__NAME__.jl).
 #md # The corresponding notebook can be viewed in [nbviewer](@__NBVIEWER_ROOT_URL__/examples/@__NAME__.ipynb).*
-#nb # The rendered HTML can be viewed [in the docs](https://juliagaussianprocesses.github.io/ApproximateGPs.jl/dev/examples/@__NAME__/).*
+#nb # The rendered HTML can be viewed [in the docs](https://juliagaussianprocesses.github.io/AugmentedGPLikelihoods.jl/dev/examples/@__NAME__/).*
 #
         """,
     )

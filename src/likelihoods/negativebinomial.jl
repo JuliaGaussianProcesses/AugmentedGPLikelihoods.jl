@@ -42,7 +42,7 @@ end
 function aux_posterior!(
     qΩ, ::NegBinomialLikelihood, y::AbstractVector, qf::AbstractVector{<:Normal}
 )
-    φ = qΩ.pars
+    φ = only(qΩ.inds)
     φ.y .= y
     map!(φ.c, qf) do fᵢ
         sqrt(second_moment(fᵢ))
@@ -70,8 +70,8 @@ negbin_logconst(y, r::Real) = loggamma(y + r) - loggamma(y + 1) - loggamma(r)
 negbin_logconst(y, r::Int) = first(logabsbinomial(y + r - 1, y))
 
 function logtilt(lik::NegBinomialLikelihood, ω::Real, y::Integer, f::Real)
-    negbin_logconst(y, lik.r) - (y + lik.r) * logtwo +
-        (f * (y - lik.r) - abs2(f) * ω) / 2
+    return negbin_logconst(y, lik.r) - (y + lik.r) * logtwo +
+           (f * (y - lik.r) - abs2(f) * ω) / 2
 end
 
 function expected_logtilt(

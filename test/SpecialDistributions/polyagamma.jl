@@ -9,8 +9,8 @@
     end
 
     p = PolyaGamma(1, 0)
-    @test insupport(p, 0)
-    @test !insupport(p, -1)
+    @test Distributions.insupport(p, 0)
+    @test !Distributions.insupport(p, -1)
     @test minimum(p) === 0
     @test maximum(p) == Inf
     @test Distributions.params(p) == (1, 0)
