@@ -24,7 +24,7 @@ function _scale_σf(l::LogisticSoftMaxLink, f::AbstractVector{<:Real})
 end
 
 function _scale_σf(l::BijectiveSimplexLink{<:LogisticSoftMaxLink}, f::AbstractVector{<:Real})
-    return exp.(l.logθ[1:end-1]) .* logistic.(f)
+    return exp.(l.link.logθ[1:end-1]) .* logistic.(f)
 end
 
 function (l::LogisticSoftMaxLink)(f::AbstractVector{<:Real})
@@ -73,7 +73,7 @@ function aux_full_conditional(
     f::AbstractVector{<:Real},
 )
     return PolyaGammaNegativeMultinomial(
-        y, abs.(f), _scale_σf(l.invlink, f) / _sum_θ(l.invlink)
+        y, abs.(f), _scale_σf(lik.invlink, f) / _sum_θ(lik.invlink)
     )
 end
 

@@ -124,10 +124,6 @@ for i in 1:2
         )
     ps_x = getproperty.(lik_pred_x, :p)
     ps_true = getproperty.(lik_true.v, :p)
-    @show sum(norm, ps_x .- ps_true)
-    @show sum(zip(lik_pred_x, y)) do (p, y)
-        logpdf(p, y)
-    end
     for k in 1:Nclass
         plot!(p_plts[i], x, invert(ps_true)[k]; color=k, lw=2.0, label="")
         plot!(p_plts[i], x_te, invert(ps)[k]; color=k, lw=2.0, label="", ls=:dash)
