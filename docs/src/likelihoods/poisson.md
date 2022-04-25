@@ -55,7 +55,7 @@ We are interested in the full-conditionals ``p(f|y,\omega, n, \lambda)`` and ``p
 \end{align*}
 ```
 
-Note that ``p(\omega,n |y,f,\lambda)`` is defined in the package as a [`PolyaGammaPoisson`](@ref) distribution.
+Note that ``p(\omega,n |y,f,\lambda)`` is defined in the package as a [`AugmentedGPLikelihoods.SpecialDistributions.PolyaGammaPoisson`](@ref) distribution.
 
 ## Variational distributions (Variational Inference)
 
