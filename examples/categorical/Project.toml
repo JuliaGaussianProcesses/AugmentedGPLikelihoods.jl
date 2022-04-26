@@ -11,6 +11,7 @@ SplitApplyCombine = "03a91e81-4c3e-53e1-a0a4-9c0c8f19dd66"
 [compat]
 AbstractGPs = "0.5"
 ApproximateGPs = "0.2"
+AugmentedGPLikelihoods = "0.4"
 Distributions = "0.25"
 Literate = "2"
 Plots = "1"
