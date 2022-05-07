@@ -6,7 +6,7 @@ using ArraysOfArrays
 using Distributions
 using GPLikelihoods: AbstractLikelihood
 using LinearAlgebra
-using MeasureBase
+using MeasureBase: MeasureBase, logdensity_def, marginals
 using MeasureTheory: For
 using SplitApplyCombine: invert
 using Random

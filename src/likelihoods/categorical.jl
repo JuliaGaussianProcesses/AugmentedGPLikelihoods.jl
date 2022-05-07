@@ -16,15 +16,17 @@ end
 _sum_θ(l::LogisticSoftMaxLink) = exp(logsumexp(l.logθ))
 
 function _sum_θ(l::BijectiveSimplexLink{<:LogisticSoftMaxLink})
-    return _get_const(l) + exp(logsumexp(l.link.logθ[1:end-1]))
+    return _get_const(l) + exp(logsumexp(l.link.logθ[1:(end - 1)]))
 end
 
 function _scale_σf(l::LogisticSoftMaxLink, f::AbstractVector{<:Real})
     return exp.(l.logθ) .* logistic.(f)
 end
 
-function _scale_σf(l::BijectiveSimplexLink{<:LogisticSoftMaxLink}, f::AbstractVector{<:Real})
-    return exp.(l.link.logθ[1:end-1]) .* logistic.(f)
+function _scale_σf(
+    l::BijectiveSimplexLink{<:LogisticSoftMaxLink}, f::AbstractVector{<:Real}
+)
+    return exp.(l.link.logθ[1:(end - 1)]) .* logistic.(f)
 end
 
 function (l::LogisticSoftMaxLink)(f::AbstractVector{<:Real})
@@ -68,9 +70,7 @@ function init_aux_posterior(T::DataType, lik::LogisticSoftMaxLikelihoods, n::Int
 end
 
 function aux_full_conditional(
-    lik::LogisticSoftMaxLikelihoods,
-    y::AbstractVector{<:Bool},
-    f::AbstractVector{<:Real},
+    lik::LogisticSoftMaxLikelihoods, y::AbstractVector{<:Bool}, f::AbstractVector{<:Real}
 )
     return PolyaGammaNegativeMultinomial(
         y, abs.(f), _scale_σf(lik.invlink, f) / _sum_θ(lik.invlink)
@@ -152,9 +152,7 @@ end
 
 function aux_prior(lik::BijectiveLogisticSoftMaxLikelihood, y::AbstractVector{<:Integer})
     return PolyaGammaNegativeMultinomial(
-        y,
-        zeros(Int, length(y)),
-        fill(inv(_sum_θ(lik.invlink)), nlatent(lik)),
+        y, zeros(Int, length(y)), fill(inv(_sum_θ(lik.invlink)), nlatent(lik))
     )
 end
 function aux_prior(lik::LogisticSoftMaxLikelihood, y::AbstractVector{<:Integer})
