@@ -1,5 +1,8 @@
 const NegBinomialLikelihood = NegativeBinomialLikelihood{<:NBParamFailure}
 
+@deprecate NegBinomialLikelihood(r::Real) NegativeBinomialLikelihood(NBParamFailure(r))
+@deprecate NegBinomialLikelihood(link::AbstractLink, r::Real) NegativeBinomialLikelihood(NBParamFailure(r), link)
+
 aux_field(::NegBinomialLikelihood, Ω) = getproperty(Ω, :ω)
 
 function init_aux_variables(rng::AbstractRNG, ::NegBinomialLikelihood, n::Int)
