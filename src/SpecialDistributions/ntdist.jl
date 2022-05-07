@@ -47,6 +47,7 @@ Statistics.mean(π::NTDist) = ntmean(π)
 Statistics.mean(Π::AbstractVector{<:NTDist}) = tvmean(Π)
 
 MeasureBase.logdensity_def(π::NTDist, x::NamedTuple) = logpdf(dist(π), only(x))
+MeasureBase.insupport(::NTDist{Td,S}, ::NamedTuple{Ts}) where {Td,S,Ts} = first(Ts) === S
 
 ntrand(rng::AbstractRNG, d) = ntrand(rng, NTDist(d))
 function ntrand(rng::AbstractRNG, π::NTDist{Td,S}) where {Td,S}
