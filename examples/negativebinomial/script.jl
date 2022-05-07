@@ -1,4 +1,4 @@
-# # Negative Binomial
+# # Event counting with Negative Binomial
 
 # We load all the necessary packages
 using AbstractGPs

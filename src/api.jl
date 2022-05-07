@@ -203,7 +203,7 @@ Compute the expectation of the quadratic part on $$f$$ of the augmented likeliho
 
 See also [`logtilt`](@ref).
 """
-function expected_logtilt(lik::AbstractLikelihood, qΩ, y, qf::AbstractVector{<:Normal})
+function expected_logtilt(lik::AbstractLikelihood, qΩ, y, qf::AbstractVector)
     return mapreduce(+, y, qf, @ignore_derivatives marginals(qΩ)) do yᵢ, qfᵢ, qΩᵢ
         expected_logtilt(lik, qΩᵢ, yᵢ, qfᵢ)
     end

@@ -2,10 +2,11 @@ module AugmentedGPLikelihoods
 
 using Reexport
 
+using ArraysOfArrays
 using ChainRulesCore: @ignore_derivatives
 using Distributions
 @reexport using GPLikelihoods
-using GPLikelihoods: AbstractLikelihood, AbstractLink
+using GPLikelihoods: AbstractLikelihood, AbstractLink, BijectiveSimplexLink
 using IrrationalConstants
 using LogExpFunctions
 using MeasureBase
@@ -29,6 +30,9 @@ export aux_prior
 export aug_loglik, aux_kldivergence
 
 export ScaledLogistic
+export logisticsoftmax
+export LogisticSoftMaxLink
+export BijectiveSimplexLink
 
 export LaplaceLikelihood, NegBinomialLikelihood, StudentTLikelihood
 
@@ -40,6 +44,7 @@ using .SpecialDistributions
 include("likelihoods/bernoulli.jl")
 include("likelihoods/laplace.jl")
 include("likelihoods/negativebinomial.jl")
+include("likelihoods/categorical.jl")
 include("likelihoods/poisson.jl")
 include("likelihoods/studentt.jl")
 

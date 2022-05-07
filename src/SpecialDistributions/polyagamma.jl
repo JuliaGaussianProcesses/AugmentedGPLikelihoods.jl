@@ -38,7 +38,7 @@ function Distributions.logpdf(d::PolyaGamma, x::Real)
         return iszero(x) ? zero(x) : -Inf # The limit of PG when b->0  
     # is the delta dirac at 0.
     else
-        iszero(x) && -Inf # The limit to p(x) for x-> 0 is 0.
+        iszero(x) && return -Inf # The limit to p(x) for x-> 0 is 0.
         # valₘₐₓ = Γb - b^2 / (8x)
         ext = logtilt(x, b, c) + (b - 1) * logtwo - loggamma(b) - (log2π + 3 * log(x)) / 2
         xmax = loggamma(b) - abs2(b) / (8x)
@@ -62,11 +62,11 @@ end
 
 Distributions.logpdf(d::PolyaGamma, x::NamedTuple{(:ω,),<:Tuple{<:Real}}) = logpdf(d, x.ω)
 
-# Shortcut for computating KL(PG(ω|b, c)||PG(b, 0))
+# Shortcut for computing KL(PG(ω|b,c) || PG(b, 0))
 function Distributions.kldivergence(q::PolyaGamma, p::PolyaGamma)
     (q.b == p.b && iszero(p.c)) || error(
         "cannot compute the KL divergence for Polya-Gamma distributions",
-        "with different parameter b, (q.b = $(q.b), p.b = $(p.b))",
+        " with different parameter b, (q.b = $(q.b), p.b = $(p.b))",
         " or if p.c ≠ 0 (p.c = $(p.c))",
     )
     return logtilt(mean(q), q.b, q.c)
