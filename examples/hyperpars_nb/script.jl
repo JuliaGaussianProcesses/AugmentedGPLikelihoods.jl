@@ -92,8 +92,8 @@ end
 # We define a standard diagonal sparse variational GP for comparison
 
 struct DSVGPLoss{Tx, Ty} <: AbstractLoss
-    x::Tx
-    y::Ty
+    x::Tx # input data
+    y::Ty # observations
 end
 
 function init(l::DSVGPLoss)
@@ -148,10 +148,10 @@ end
 # approximation
 
 struct AVGPLoss{Tx, Ty, Tm, TS} <: AbstractLoss
-    x::Tx
-    y::Ty
-    m::Tm
-    S::TS
+    x::Tx # input data
+    y::Ty # observations
+    m::Tm # variational mean
+    S::TS # variational covariance matrix
 end
 
 function AVGPLoss(x, y)
