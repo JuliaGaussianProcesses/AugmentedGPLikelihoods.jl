@@ -14,7 +14,7 @@ using Zygote
 
 # ## Global model settings
 kernel(θ) = θ.variance * SEKernel() ∘ ScaleTransform(θ.invlengthscale)
-likelihood(θ) = NegBinomialLikelihood(θ.r)
+likelihood(θ) = NegativeBinomialLikelihood(NBParamFailure(θ.r))
 
 # We subtract the logarithm of the likelihood parameter from the
 # mean. This accomplishes the same as if the likelihood were para-
@@ -239,14 +239,14 @@ end
 
 # ## Overloads for posterior over Y
 # We can calculate the mean and variance of Y analytically
-function Statistics.mean(f::AbstractGPs.LatentFiniteGP{T1, NegBinomialLikelihood{LogisticLink, T2}}) where {T1, T2}
-    r = f.lik.r
+function Statistics.mean(f::AbstractGPs.LatentFiniteGP{T1, NegativeBinomialLikelihood{NBParamFailure{T2}, LogisticLink}}) where {T1, T2}
+    r = f.lik.params.failures
     m, c = mean(f.fx), var(f.fx)
     return @. r * exp(m + c / 2)
 end
 
-function Statistics.var(f::AbstractGPs.LatentFiniteGP{T1, NegBinomialLikelihood{LogisticLink, T2}}) where {T1, T2}
-    r = f.lik.r
+function Statistics.var(f::AbstractGPs.LatentFiniteGP{T1, NegativeBinomialLikelihood{NBParamFailure{T2}, LogisticLink}}) where {T1, T2}
+    r = f.lik.params.failures
     c = var(f.fx)
     my = mean(f)
     return @. my * (1 + my * ((1 + inv(r)) * exp(c) - 1))
@@ -254,7 +254,7 @@ end
 
 # We approximate the posterior over Y by a truncated Gaussian distribution
 function AbstractGPs.marginals(
-    f::AbstractGPs.LatentFiniteGP{T1, NegBinomialLikelihood{LogisticLink, T2}}
+    f::AbstractGPs.LatentFiniteGP{T1, NegativeBinomialLikelihood{NBParamFailure{T2}, LogisticLink}}
 ) where {T1, T2}
     m, c = mean(f), var(f)
     return @. truncated(Normal(m, sqrt(c)), zero(eltype(m)), nothing)
@@ -271,7 +271,7 @@ x = range(0, 1; length=N)
 k = σ² * with_lengthscale(SEKernel(), 0.1)
 r = 100.
 gp = GP(μ - log(r), k)
-lik = NegBinomialLikelihood(r)
+lik = NegativeBinomialLikelihood(NBParamFailure(r))
 lgp = LatentGP(gp, lik, 1e-6)
 f, y = rand(lgp(x))
 
