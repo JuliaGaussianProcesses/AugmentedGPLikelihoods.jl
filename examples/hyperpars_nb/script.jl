@@ -237,30 +237,6 @@ function build_posterior(l::AVGPLoss, θ)
 end
 
 
-# ## Overloads for posterior over Y
-# We can calculate the mean and variance of Y analytically
-function Statistics.mean(f::AbstractGPs.LatentFiniteGP{T1, NegativeBinomialLikelihood{NBParamFailure{T2}, LogisticLink}}) where {T1, T2}
-    r = f.lik.params.failures
-    m, c = mean(f.fx), var(f.fx)
-    return @. r * exp(m + c / 2)
-end
-
-function Statistics.var(f::AbstractGPs.LatentFiniteGP{T1, NegativeBinomialLikelihood{NBParamFailure{T2}, LogisticLink}}) where {T1, T2}
-    r = f.lik.params.failures
-    c = var(f.fx)
-    my = mean(f)
-    return @. my * (1 + my * ((1 + inv(r)) * exp(c) - 1))
-end
-
-# We approximate the posterior over Y by a truncated Gaussian distribution
-function AbstractGPs.marginals(
-    f::AbstractGPs.LatentFiniteGP{T1, NegativeBinomialLikelihood{NBParamFailure{T2}, LogisticLink}}
-) where {T1, T2}
-    m, c = mean(f), var(f)
-    return @. truncated(Normal(m, sqrt(c)), zero(eltype(m)), nothing)
-end
-
-
 # ## Experiments
 # We generate some synthetic data
 
