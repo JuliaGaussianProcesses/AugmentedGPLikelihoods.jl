@@ -275,8 +275,7 @@ post1, res1 = build_posterior(loss1, θ1)
 post2, res2 = build_posterior(loss2, θ2)
 
 # We calculate the mean squared errors
-@show mean(abs2, res1) / var(y)
-@show mean(abs2, res2) / var(y)
+mean(abs2, res1) / var(y), mean(abs2, res2) / var(y)
 
 # We calculate Monte Carlo estimates of medians and quantiles of y
 function approx_post_95_CI(post, x::AbstractVector, N::Int)
