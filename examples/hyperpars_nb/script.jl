@@ -338,7 +338,7 @@ plot!(
 )
 
 p2 = scatter(x, f, label = "f", legend = :outerleft, color = :black, lw = 1)
-plot!(p2, x_pr, post1(x_pr).fx, label = "DSVGP posterior for f", color = :blue, ls = :dash)
-plot!(p2, x_pr, post2(x_pr).fx, label = "AVGP posterior for f", color = :green, ls = :dash)
+plot!(p2, x_pr, post1(x_pr).fx, label = "DSVGP posterior for f", color = :blue)
+plot!(p2, x_pr, post2(x_pr).fx, label = "AVGP posterior for f", color = :green)
 
 plt = plot(p1, p2; layout=(2, 1), size = (1000, 400))
