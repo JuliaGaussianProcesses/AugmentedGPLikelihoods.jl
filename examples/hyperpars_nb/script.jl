@@ -303,24 +303,36 @@ post2, res2 = build_posterior(loss2, θ2)
 @show mean(abs2, res1) / var(y)
 @show mean(abs2, res2) / var(y)
 
+# We calculate Monte Carlo estimates of medians and quantiles of y
+function approx_post_95_CI(post, x::AbstractVector, N::Int)
+    samples = mapreduce(i -> rand(post(x)).y, hcat, 1:N)
+    return quantile.(eachrow(samples), 0.025), 
+        quantile.(eachrow(samples), 0.5), 
+        quantile.(eachrow(samples), 0.975)
+end
+
+x_pr = vcat(x, 1.01:0.01:1.25) # input for posteriors
+q11, m1, q12 = approx_post_95_CI(post1, x_pr, 10000)
+q21, m2, q22 = approx_post_95_CI(post2, x_pr, 10000)
+
 
 
 
 # Finally, we plot all results
 p1 = scatter(x, y, label = "y", color = :black, markersize = 3, legend = :outerleft)
 
-x_pr = vcat(x, 1.01:0.01:1.25) # input for posteriors
-plot!(p1, x_pr, mode.(marginals(post1(x_pr))), label = "DSVGP posterior mode", color = :blue)
+plot!(p1, x_pr, m1, label = "DSVGP posterior median", color = :blue)
 plot!(
-    p1, x_pr, quantile.(marginals(post1(x_pr)), 0.025);
-    fillrange = quantile.(marginals(post1(x_pr)), 0.975), 
+    p1, x_pr, q11;
+    fillrange = q12, 
     label = "DSVGP posterior 95% CI", 
     color = :blue, lw = 0.1, fillalpha = 0.3, linealpha=0
 )
-plot!(p1, x_pr, mode.(marginals(post2(x_pr))), label = "AVGP posterior mode", color = :green)
+
+plot!(p1, x_pr, m2, label = "AVGP posterior median", color = :green)
 plot!(
-    p1, x_pr, quantile.(marginals(post2(x_pr)), 0.025);
-    fillrange = quantile.(marginals(post2(x_pr)), 0.975), 
+    p1, x_pr, q21;
+    fillrange = q22, 
     label = "AVGP posterior 95% CI", 
     color = :green, lw = 0.1, fillalpha = 0.3, linealpha=0
 )
@@ -328,6 +340,5 @@ plot!(
 p2 = scatter(x, f, label = "f", legend = :outerleft, color = :black, lw = 1)
 plot!(p2, x_pr, post1(x_pr).fx, label = "DSVGP posterior for f", color = :blue, ls = :dash)
 plot!(p2, x_pr, post2(x_pr).fx, label = "AVGP posterior for f", color = :green, ls = :dash)
-sticks!(p2, θ1.z, θ1.m, label = "variational mean")
 
 plt = plot(p1, p2; layout=(2, 1), size = (1000, 400))
