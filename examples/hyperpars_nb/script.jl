@@ -268,8 +268,7 @@ loss2 = AVGPLoss(x, y)
 @time θ2 = optimize(loss2)
 
 # We evaluate the loss function after training
-@show loss1(θ1)
-@show loss2(θ2)
+loss1(θ1), loss2(θ2)
 
 # We construct the posterior and residuals after training
 post1, res1 = build_posterior(loss1, θ1)
