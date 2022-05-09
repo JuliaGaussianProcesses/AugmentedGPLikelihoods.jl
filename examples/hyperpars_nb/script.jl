@@ -268,16 +268,14 @@ loss2 = AVGPLoss(x, y)
 @time θ2 = optimize(loss2)
 
 # We evaluate the loss function after training
-@show loss1(θ1)
-@show loss2(θ2)
+loss1(θ1), loss2(θ2)
 
 # We construct the posterior and residuals after training
 post1, res1 = build_posterior(loss1, θ1)
 post2, res2 = build_posterior(loss2, θ2)
 
 # We calculate the mean squared errors
-@show mean(abs2, res1) / var(y)
-@show mean(abs2, res2) / var(y)
+mean(abs2, res1) / var(y), mean(abs2, res2) / var(y)
 
 # We calculate Monte Carlo estimates of medians and quantiles of y
 function approx_post_95_CI(post, x::AbstractVector, N::Int)
