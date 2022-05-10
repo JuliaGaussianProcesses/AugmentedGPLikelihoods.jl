@@ -11,7 +11,7 @@ end
 
 function init_aux_posterior(T::DataType, lik::NegBinomialLikelihood, n::Int)
     return For(TupleVector(; y=zeros(Int, n), c=zeros(T, n))) do φ
-        NTDist(PolyaGamma(φ.y + lik.params.failures, φ.c)) # Distributions uses a different parametrization
+        NTDist(PolyaGamma(φ.y + lik.params.failures, φ.c))
     end
 end
 

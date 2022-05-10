@@ -34,7 +34,7 @@ export logisticsoftmax
 export LogisticSoftMaxLink
 export BijectiveSimplexLink
 
-export LaplaceLikelihood, NegBinomialLikelihood, StudentTLikelihood
+export LaplaceLikelihood, StudentTLikelihood
 
 include("api.jl")
 include("generic.jl")
