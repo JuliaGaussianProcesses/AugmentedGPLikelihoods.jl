@@ -1,6 +1,6 @@
 # Negative Binomial Likelihood (Logistic Link)
 
-The [`NegativeBinomialLikelihood`](@ref) with [the failure parametrization](https://en.wikipedia.org/wiki/Negative_binomial_distribution) with a [logistic](https://en.wikipedia.org/wiki/Logistic_function) link ``\sigma`` is defined as
+The [`NegativeBinomialLikelihood`](https://juliagaussianprocesses.github.io/GPLikelihoods.jl/stable/api/#GPLikelihoods.NegativeBinomialLikelihood) with [the failure parametrization](https://en.wikipedia.org/wiki/Negative_binomial_distribution) with a [logistic](https://en.wikipedia.org/wiki/Logistic_function) link ``\sigma`` is defined as
 
 ```math
     p(y|f,\text{failures}) = \operatorname{NB}(y|\sigma(f),\text{failures}) = {y + \text{failures} - 1 \choose y} (1 - \sigma(f))^{\text{failures}} \sigma^y(f)

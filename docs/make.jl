@@ -5,12 +5,11 @@ Pkg.add(Pkg.PackageSpec(; url="https://github.com/JuliaGaussianProcesses/JuliaGP
 using AugmentedGPLikelihoods
 using JuliaGPsDocs
 
-JuliaGPsDocs.generate_examples(AugmentedGPLikelihoods)
+# JuliaGPsDocs.generate_examples(AugmentedGPLikelihoods)
 
 using Documenter
 using DocumenterCitations
 using Literate
-using Pkg
 
 DocMeta.setdocmeta!(
     AugmentedGPLikelihoods, :DocTestSetup, :(using AugmentedGPLikelihoods); recursive=true
@@ -38,6 +37,7 @@ makedocs(
         "Misc" => "misc.md",
         "References" => "references.md",
     ],
+    strict=true,
 )
 
 deploydocs(;
