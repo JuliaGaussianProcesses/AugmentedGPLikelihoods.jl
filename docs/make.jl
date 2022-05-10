@@ -5,7 +5,7 @@ Pkg.add(Pkg.PackageSpec(; url="https://github.com/JuliaGaussianProcesses/JuliaGP
 using AugmentedGPLikelihoods
 using JuliaGPsDocs
 
-# JuliaGPsDocs.generate_examples(AugmentedGPLikelihoods)
+JuliaGPsDocs.generate_examples(AugmentedGPLikelihoods)
 
 using Documenter
 using DocumenterCitations
