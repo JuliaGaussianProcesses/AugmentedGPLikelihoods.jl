@@ -6,7 +6,7 @@ using ArraysOfArrays
 using Distributions
 using GPLikelihoods: AbstractLikelihood
 using LinearAlgebra
-using MeasureBase
+using MeasureBase: MeasureBase, logdensity_def, marginals
 using MeasureTheory: For
 using SplitApplyCombine: invert
 using Random
@@ -180,7 +180,7 @@ function test_auglik(
         # Test that by perturbing the value in random directions, the loss does not decrease
         for i in CartesianIndices(φ_opt)
             Δ = if nlatent(lik) == 1
-                (lik isa Union{NegBinomialLikelihood,PoissonLikelihood} && i[1] <= n) &&
+                (lik isa Union{NegativeBinomialLikelihood,PoissonLikelihood} && i[1] <= n) &&
                     continue # We do not want to vary y
                 zeros(n_var * n)
             else

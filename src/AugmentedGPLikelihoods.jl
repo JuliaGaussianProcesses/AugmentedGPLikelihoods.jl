@@ -9,7 +9,7 @@ using Distributions
 using GPLikelihoods: AbstractLikelihood, AbstractLink, BijectiveSimplexLink
 using IrrationalConstants
 using LogExpFunctions
-using MeasureBase
+using MeasureBase: MeasureBase, logdensity_def, marginals
 using MeasureTheory: For
 using Random: AbstractRNG, GLOBAL_RNG
 using SpecialFunctions
@@ -34,7 +34,7 @@ export logisticsoftmax
 export LogisticSoftMaxLink
 export BijectiveSimplexLink
 
-export LaplaceLikelihood, NegBinomialLikelihood, StudentTLikelihood
+export LaplaceLikelihood, StudentTLikelihood
 
 include("api.jl")
 include("generic.jl")

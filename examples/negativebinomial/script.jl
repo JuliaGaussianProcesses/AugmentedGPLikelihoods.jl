@@ -14,7 +14,7 @@ N = 100
 x = range(-10, 10; length=N)
 kernel = with_lengthscale(SqExponentialKernel(), 2.0)
 gp = GP(kernel)
-lik = NegBinomialLikelihood(15)
+lik = NegativeBinomialLikelihood(NBParamFailure(15))
 lf = LatentGP(gp, lik, 1e-6)
 f, y = rand(lf(x));
 # We plot the sampled data
