@@ -72,9 +72,9 @@ function test_auglik(
         @test new_Ω isa TupleVector
         @test length(Ω) == n
 
-        βs = auglik_potential(lik, Ω, y)
-        γs = auglik_precision(lik, Ω, y)
-        β2, γ2 = auglik_potential_and_precision(lik, Ω, y)
+        βs = auglik_potential(lik, Ω, y, ft)
+        γs = auglik_precision(lik, Ω, y, ft)
+        β2, γ2 = auglik_potential_and_precision(lik, Ω, y, ft)
         @test length(γs) == length(βs) == nf # Check that there are n latent vectors
         @test first(βs) isa AbstractVector
         @test first(γs) isa AbstractVector
@@ -156,9 +156,9 @@ function test_auglik(
         @test new_qΩ isa For
         @test length(new_qΩ) == n
 
-        βs = expected_auglik_potential(lik, qΩ, y)
-        γs = expected_auglik_precision(lik, qΩ, y)
-        β2, γ2 = expected_auglik_potential_and_precision(lik, qΩ, y)
+        βs = expected_auglik_potential(lik, qΩ, y, qft)
+        γs = expected_auglik_precision(lik, qΩ, y, qft)
+        β2, γ2 = expected_auglik_potential_and_precision(lik, qΩ, y, qft)
         @test length(γs) == length(βs) == nf # Check that there are n latent vectors
         @test first(βs) isa AbstractVector
         @test first(γs) isa AbstractVector

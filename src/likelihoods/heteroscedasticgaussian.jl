@@ -3,10 +3,11 @@ struct InvScaledLogistic{T} <: AbstractLink
 end
 
 (l::InvScaledLogistic)(f::Real) = inv(l.λ * logistic(f))
-_λ(l::InvScaledLogistic) = l.invlink.λ
 
 const AugHeteroGaussian = HeteroscedasticGaussianLikelihood{<:InvScaledLogistic}
 
+_λ(link::InvScaledLogistic) = link.λ
+_λ(lik::AugHeteroGaussian) = _λ(lik.invlink)
 nlatent(::HeteroscedasticGaussianLikelihood) = 2
 
 aux_field(::AugHeteroGaussian, Ω::NamedTuple) = values(Ω)
@@ -45,43 +46,45 @@ function aux_posterior!(
 end
 
 function auglik_potential(
-    lik::AugHeteroGaussian, Ω, y::AbstractVector, g::AbstractVector{<:Real}
+    lik::AugHeteroGaussian, Ω, y::AbstractVector, fg::AbstractVector{<:AbstractVector{<:Real}}
 )
+    g = last.(fg)
     return (y .* inv.(lik.invlink.(g)), (1//2 .- Ω.n) / 2)
 end
 
 function auglik_precision(
-    lik::AugHeteroGaussian, Ω, ::AbstractVector, g::AbstractVector{<:Real}
+    lik::AugHeteroGaussian, Ω, ::AbstractVector, fg::AbstractVector{<:AbstractVector{<:Real}}
 )
+    g = last.(fg)
     return (inv.(lik.invlink.(g)), Ω.ω)
 end
 
 function expected_auglik_potential(
-    lik::AugHeteroGaussian, qΩ, y::AbstractVector, qg::AbstractVector{<:Normal}
+    lik::AugHeteroGaussian, qΩ, y::AbstractVector, qfg::AbstractVector{<:AbstractVector{<:Normal}}
 )
     λ = _λ(lik)
     c = only(qΩ.inds).c
     return (
-        y .* λ .* (1 .- approx_expected_logistic.(-mean.(qg), c)),
+        y .* λ .* (1 .- approx_expected_logistic.(-mean.(last.(qfg)), c)),
         (1//2 .- tvmean(qΩ).n) / 2,
     )
 end
 
 function expected_auglik_precision(
-    ::AugHeteroGaussian, qΩ, ::AbstractVector, qg::AbstractVector{<:Normal}
+    lik::AugHeteroGaussian, qΩ, ::AbstractVector, qfg::AbstractVector{<:AbstractVector{<:Normal}}
 )
     λ = _λ(lik)
-    c = only(qΩ.pars).c
-    return (λ * (1 .- approx_expected_logistic.(-mean.(qg), c)), tvmean(qΩ).ω)
+    c = only(qΩ.inds).c
+    return (λ * (1 .- approx_expected_logistic.(-mean.(last.(qfg)), c)), tvmean(qΩ).ω)
 end
 
 function expected_auglik_potential_and_precision(
-    lik::AugHeteroGaussian, qΩ, y::AbstractVector, qg::AbstractVector{<:Normal}
+    lik::AugHeteroGaussian, qΩ, y::AbstractVector, qfg::AbstractVector{<:AbstractVector{<:Normal}}
 )
     λ = _λ(lik)
-    c = only(qΩ.pars).c
+    c = only(qΩ.inds).c
     θ = tvmean(qΩ)
-    λσg = λ * approx_expected_logistic.(-mean.(qg), c)
+    λσg = λ * approx_expected_logistic.(-mean.(last.(qfg)), c)
     return ((y .* λσg / 2, (1//2 .- θ.n) / 2), (λσg, θ.ω))
 end
 
@@ -101,12 +104,13 @@ function expected_aug_loglik(
     lik::AugHeteroGaussian, qΩ, y, qfg::AbstractVector{<:AbstractVector{<:Normal}}
 )
     λ = _λ(lik)
+    C = 1//2 * (log(λ) + log(twoinvπ))
     return mapreduce(+, y, qfg, @ignore_derivatives marginals(qΩ)) do yᵢ, qfgᵢ, qωᵢ
         θ = ntmean(qωᵢ)
         qg = last(qfgᵢ)
         qf = first(qfgᵢ)
         g = mean(qg)
-        return -(1//2 + θ.n) * logtwo +
+        return C -(1//2 + θ.n) * logtwo +
                ((1//2 - θ.n) * g - (abs2(g) + var(first(qg))) * θ.ω) / 2 +
                kldivergence(qωᵢ, PolyaGammaPoisson(1//2, 0, λ / 2 * (abs2(yᵢ - mean(qf)) + var(qf))))
     end
