@@ -27,9 +27,9 @@ g = rand(gp_g(X, 1e-6))
 py = lik(invert([f, g]))  # invert turns [f, g] into [[f_1, g_1], ...]
 y = rand(py);
 # We plot the sampled data
-plt = plot(x, mean(py), ribbon=sqrt.(var(py)), label="y|f,g", lw=2.0)
+plt = plot(x, mean(py); ribbon=sqrt.(var(py)), label="y|f,g", lw=2.0)
 scatter!(plt, x, y; msw=0.0, label="y")
-plt2 = plot(x, [f, g], label=["f" "g"], lw=2.0)
+plt2 = plot(x, [f, g]; label=["f" "g"], lw=2.0)
 plot(plt, plt2)
 # ## CAVI Updates
 # We write our CAVI algorithmm
@@ -38,7 +38,11 @@ function u_posterior(fz, m, S)
 end;
 
 # We can also optimize the likelihood parameter λ
-function opt_lik(lik::HeteroscedasticGaussianLikelihood, (qf, qg)::AbstractVector{<:AbstractVector{<:Normal}}, y::AbstractVector{<:Real})
+function opt_lik(
+    lik::HeteroscedasticGaussianLikelihood,
+    (qf, qg)::AbstractVector{<:AbstractVector{<:Normal}},
+    y::AbstractVector{<:Real},
+)
     ψ = AugmentedGPLikelihoods.second_moment.(qf .- y) / 2
     c = sqrt.(AugmentedGPLikelihoods.second_moment.(qg))
     σ̃g = AugmentedGPLikelihoods.approx_expected_logistic.(-mean.(qg), c)
@@ -53,7 +57,9 @@ function cavi!(fzs, x, y, ms, Ss, qΩ, lik; niter=10)
         posts_fs = marginals.([p_u(x) for p_u in posts_u])
         lik = opt_lik(lik, posts_fs, y)
         aux_posterior!(qΩ, lik, y, invert(posts_fs))
-        ηs, Λs = expected_auglik_potential_and_precision(lik, qΩ, y, last.(invert(posts_fs)))
+        ηs, Λs = expected_auglik_potential_and_precision(
+            lik, qΩ, y, last.(invert(posts_fs))
+        )
         Ss .= inv.(Symmetric.(Ref(inv(K)) .+ Diagonal.(Λs)))
         ms .= Ss .* (ηs .+ Ref(K) .\ mean.(fzs))
     end
@@ -70,10 +76,10 @@ new_lik = cavi!(fzs, x, y, ms, Ss, qΩ, lik; niter=20);
 # And visualize the obtained variational posterior
 f_te = u_posterior(fzs[1], ms[1], Ss[1])(x_te)
 g_te = u_posterior(fzs[2], ms[2], Ss[2])(x_te)
-plot!(plt, x_te, mean(f_te), ribbon=sqrt.(new_lik.invlink.(mean(g_te))), label="y|q(f,g)")
+plot!(plt, x_te, mean(f_te); ribbon=sqrt.(new_lik.invlink.(mean(g_te))), label="y|q(f,g)")
 plot!(plt2, f_te; color=1, linestye=:dash, alpha=0.5, label="q(f)")
 plot!(plt2, g_te; color=2, linestyle=:dash, alpha=0.5, label="q(g)")
-plot(plt, plt2) |> display
+display(plot(plt, plt2))
 
 ##
 # ## ELBO
@@ -112,7 +118,7 @@ fs_samples = gibbs_sample(fz, fs_init, Ω);
 # that we found earlier.
 
 for fs in fs_samples
-    plot!(plt, x, fs[1]; color=3, alpha=0.07,label="")
+    plot!(plt, x, fs[1]; color=3, alpha=0.07, label="")
     for i in 1:nlatent(lik)
         plot!(plt2, x, fs[i]; color=i, alpha=0.07, label="")
     end

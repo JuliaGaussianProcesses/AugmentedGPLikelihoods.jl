@@ -22,13 +22,6 @@ See also [`init_aux_variables`](@ref) for sampling.
 init_aux_posterior
 
 @doc raw"""
-    aux_full_conditional(lik::AbstractLikelihood, yᵢ, fᵢ) -> AbstractNTDist
-
-Return the full conditional distribution of `Ωᵢ`.
-"""
-aux_full_conditional
-
-@doc raw"""
     aux_sample!([rng::AbstractRNG], Ω, lik::Likelihood, y, f) -> TupleVector
 
 Sample the auxiliary variables `Ω` in-place based on the full-conditional [`aux_full_conditional`](@ref)
@@ -58,6 +51,7 @@ aux_sample
 Given the observation `y` and latent `f`, returns the full conditional on the
 auxiliary variables `Ω`.
 """
+aux_full_conditional
 
 @doc raw"""
     aux_posterior!(qΩ, lik::Likelihood, y, qf) -> AbstractProductMeasure
@@ -153,15 +147,42 @@ expected_auglik_potential_and_precision
 Return the augmented log-likelihood with the given parameters.
 The augmented log-likelihood is of the form 
 ```math
-    \log p(y,\Omega|f) = \log l(y,\Omega,f) + \log p(\Omega|y).
+    \log p(y,\Omega|f) = \log l(y,\Omega,f) + \log p(\Omega|y, f).
 ```
-To only obtain the $$p(\Omega|y)$$ part see [`aux_prior`](@ref) and see [`logtilt`](@ref)
-for $$\log l(y, \Omega, f)$$.
+To only obtain the ``p(\Omega|y, f)`` part see [`aux_prior`](@ref) and see [`logtilt`](@ref)
+for ``\log l(y, \Omega, f)``.
 
 A generic fallback exists based on [`logtilt`](@ref) and [`aux_prior`](@ref) but
 specialized implementations are encouraged.
 """
 aug_loglik
+
+@doc raw"""
+    expected_aug_loglik(lik::Likelihood, qΩ, y, qf) -> Real
+
+Return the expected augmented log-likelihood with the given parameters.
+The expected augmented log-likelihood is of the form 
+```math
+    E_{q(\Omega,f)}\left[\log p(y,\Omega|f)\right]
+```
+To only obtain the $$p(\Omega|y)$$ part see [`aux_prior`](@ref) and see [`logtilt`](@ref)
+for $$\log l(y, \Omega, f)$$.
+
+A generic fallback exists based on [`expected_logtilt`](@ref) and [`aux_kldivergence`](@ref) but
+specialized implementations are encouraged.
+"""
+expected_aug_loglik
+
+@doc raw"""
+    aux_prior(lik::Likelihood, y) -> AbstractProductMeasure
+
+Returns a `NamedTuple` of distributions with the same structure as [`aux_posterior`](@ref),
+[`init_aux_posterior`](@ref) and [`init_aux_variables`](@ref).
+Note that an auxiliary prior is not always available.
+Even if the likelihood is a valid density, there is no guarantee that the
+prior of the augmented variable is!
+"""
+aux_prior
 
 @doc raw"""
     aux_kldivergence(lik::Likelihood, qΩ::For, pΩ::For) -> Real
@@ -172,14 +193,6 @@ Compute the analytical KL divergence between the auxiliary variables posterior
 ``p(\Omega)``, obtained with [`aux_prior`](@ref).
 """
 aux_kldivergence
-
-@doc raw"""
-    aux_prior(lik::Likelihood, y) -> AbstractProductMeasure
-
-Returns a `NamedTuple` of distributions with the same structure as [`aux_posterior`](@ref),
-[`init_aux_posterior`](@ref) and [`init_aux_variables`](@ref).
-"""
-aux_prior
 
 @doc raw"""
     logtilt(lik::Likelihood, Ω, y, f) -> Real
