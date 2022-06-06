@@ -86,39 +86,49 @@ We can also treat $\lambda$ probabilistically by adding a [Gamma prior](https://
 We define the variational distribution with a block mean-field approximation:
 
 ```math
-    q(\boldsymbol{F}, \boldsymbol{\Omega}, \boldsymbol{N}) = \prod_{j=1}^{K-1} \mathcal{N}(\boldsymbol{f}_j|\boldsymbol{\mu}_j,\boldsymbol{\Sigma}_j)\prod_{i=1}^N \operatorname{NM}(\boldsymbol{n}^i|1, \boldsymbol{p}^i)\prod_{j=1}^{K-1}\operatorname{PG}(\omega^i_j|y^i_j + n^i_j, c^i_j).
+    q(\boldsymbol{f}, \boldsymbol{g}, \boldsymbol{n}, \boldsymbol{\omega},\lambda) = \mathcal{N}(\boldsymbol{f}|\boldsymbol{m}_f,\boldsymbol{S}_f)\mathcal{N}(\boldsymbol{g}|\boldsymbol{m}_g,\boldsymbol{S}_g)\prod_{i=1}^N \operatorname{PG}\left(\omega_i|\frac{1}{2} + n_i|c_i\right)\operatorname{Po}(n_i|\gamma_i).
 ```
+
+The CAVI updates are more complicated to get here.
+It's not possible to obtain the optimal parameters for $q(\boldsymbol{f})$ since the full-conditional are not available in closed form.
+We resort instead to a double bound approach described in a document soon to be published (see #97).
 
 The optimal variational parameters are given by:
 
 ```math
 \begin{align*}
-    c^i_j =& \sqrt{(\mu^i_j)^2 + S^{ii}_j},\\
-    \Sigma_j =& \left(K^{-1} + \operatorname{Diagonal}(\theta_j)\right)^{-1},\\
-    \mu_j =& \Sigma_j\left(\frac{y - \gamma_j}{2} + K^{-1}\mu_0\right),
+    c^i =& \sqrt{(m^i_g)^2 + S^{ii}_g},\\
+    \gamma^i =& \frac{\lambda}{2}\psi^i \sqrt{(y^i - m_f^i)^2 + S_f^{ii}} \\
+    \boldsymbol{S}_g =& \left(K^{-1} + \operatorname{Diagonal}(\boldsymbol{\theta})\right)^{-1},\\
+    \boldsymbol{m}_g =& \boldsymbol{S}_g\left(\frac{\frac{1}{2} - \boldsymbol{\gamma}}{2} + K_g^{-1}\mu_0\right),
 \end{align*}
 ```
 
-where ``\gamma_j^i = E_{q(\boldsymbol{p})}[n_j^i] = \frac{p_j^i}{1 - \sum_{j=1}^{K-1} p_j^i}``, ``\theta_j^i = E_{q(\omega^i_j,n^i_j)}[\omega_j^i] = \frac{y_j^i+\gamma^i_j}{2c_j^i}\tanh\left(\frac{c_j^i}{2}\right)`` and ``\widetilde{\sigma}(q(f_j^i)) = \frac{e^{-\mu_j^i}/2}{2\cosh(c_j^i/2)}`` which is an approximation of the expectation of ``E_{q(f_j^i)}[\sigma(-f_j^i)]``.
-
-For the **bijective version**
+where
 
 ```math
-p^i_j = \frac{\widetilde{\sigma}(q(f_i^j))}{D + K - 1},
+\begin{align*}
+    \psi^i = \frac{e^{-m_g^i/2}}{\sqrt{(m_g^i)^2 + S_g^{ii}}/2}
+\end{align*}
 ```
 
-and for the **non-bijective version**
+For $\boldsymbol{f}$ the optimal parameters are:
 
 ```math
-p^i_j = \frac{\widetilde{\sigma}(q(f_i^j))}{K},
+\begin{align*}
+    \boldsymbol{S}_f =& \left(K^{-1} + \lambda\operatorname{Diagonal}(1 - \boldsymbol{\psi})\right)^{-1},\\
+    \boldsymbol{m}_f =& \boldsymbol{S}_f\left(\lambda \mathrm{Diagonal}(1 - \boldsymbol{\psi})\boldsymbol{y} + K_g^{-1}\mu_0\right),
+\end{align*}
 ```
+
+As stated earlier the ELBO is made in two steps and is currently not implemented.
 
 We get the ELBO as
 
 ```math
 \begin{align*}
-    \mathcal{L} =& \sum_{i=1}^N\sum_{j=1}^K -  (y^i + \gamma^i_j) \log 2 + \frac{(y_j^i - \gamma^i_j) m^i_j}{2} - \frac{(m^i_j)^2 + S_j^{ii}}{2}\theta^i_j\\ 
-    &- \operatorname{KL}(q(\boldsymbol{\Omega},\boldsymbol{N})||p(\boldsymbol{\Omega},\boldsymbol{N}|\boldsymbol{Y})) - \operatorname{KL}(q(\boldsymbol{F})||p(\boldsymbol{F})),
+    \mathcal{L} =& \sum_{i=1}^N -  (\frac{1}{2} + \gamma^i_j) \log 2 + \frac{(\frac{1}{2} - \gamma^i) m^i_g}{2} - \frac{(m^i_g)^2 + S_g^{ii}}{2}\theta^i\\ 
+    &- \operatorname{KL}(q(\boldsymbol{\omega},\boldsymbol{n})||p(\boldsymbol{\omega},\boldsymbol{n}|\boldsymbol{y})) - \operatorname{KL}(q(\boldsymbol{f,g})||p(\boldsymbol{f,g})),
 \end{align*}
 ```
 
@@ -127,20 +137,6 @@ where
 ```math
 \begin{align*}
     \operatorname{KL}(\prod_{j} q(\omega^i_j|n^i_j)q(\bm n^i)||\prod_j p(\omega^i_j|\bm n^i, \boldsymbol{y}^i)p(\bm n^i)) =& \operatorname{KL}(q(\bm n^i)||p(\bm n^i)) + \sum_j E_{q(\bm n^i)}\left[\operatorname{KL}(q(\omega^i_j|\bm n^i)||p(\omega^i_j|\bm n^i, \boldsymbol{y}^i)\right],\\
-    E_{q(\bm n^i)}\left[\operatorname{KL}(q(\omega^i_j|\bm n^i)||p(\omega^i_j|n^i_j, y^i)\right] =& (y^i + \gamma^i_j)\log\cosh \left(\frac{c^i_j}{2}\right) - (c^i_j)^2 \frac{\theta^i_j}{2}.
+    E_{q(\bm \omega^i,\bm n^i)}\left[\operatorname{KL}(q(\omega^i_j|\bm n^i)||p(\omega^i_j|n^i_j, y^i)\right] =& (y^i + \gamma^i_j)\log\cosh \left(\frac{c^i_j}{2}\right) - (c^i_j)^2 \frac{\theta^i_j}{2}.
 \end{align*}
 ```
-
-For the **bijective version**
-
-```math
-\operatorname{KL}(q(\bm n_i)||p(\bm n_i)) = \log p_0^q - \log p_0^p + \sum_j \gamma_i (\log p_i^q - \log p_i^p),
-```
-
-while for the **non-bijective version**
-
-```math
-\operatorname{KL}(q(\bm n_i)||\tilde{p}(\bm n_i)) = \log p_0^q + \sum_j \gamma_i (\log p_i^q - \log p_i^p),
-```
-
-Note that we ignored the ``p_0^p`` term since we were working with the unnormalized version of the distribution.

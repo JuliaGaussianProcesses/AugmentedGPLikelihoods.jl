@@ -120,7 +120,7 @@ Note that ``p(\boldsymbol{\omega}^i, \boldsymbol{n}^i|
 We define the variational distribution with a block mean-field approximation:
 
 ```math
-    q(\boldsymbol{F}, \boldsymbol{\Omega}, \boldsymbol{N}) = \prod_{j=1}^{K-1} \mathcal{N}(\boldsymbol{f}_j|\boldsymbol{\mu}_j,\boldsymbol{\Sigma}_j)\prod_{i=1}^N \operatorname{NM}(\boldsymbol{n}^i|1, \boldsymbol{p}^i)\prod_{j=1}^{K-1}\operatorname{PG}(\omega^i_j|y^i_j + n^i_j, c^i_j).
+    q(\boldsymbol{F}, \boldsymbol{\Omega}, \boldsymbol{N}) = \prod_{j=1}^{K-1} \mathcal{N}(\boldsymbol{f}_j|\boldsymbol{m}_j,\boldsymbol{S}_j)\prod_{i=1}^N \operatorname{NM}(\boldsymbol{n}^i|1, \boldsymbol{p}^i)\prod_{j=1}^{K-1}\operatorname{PG}(\omega^i_j|y^i_j + n^i_j, c^i_j).
 ```
 
 The optimal variational parameters are given by:
@@ -128,8 +128,8 @@ The optimal variational parameters are given by:
 ```math
 \begin{align*}
     c^i_j =& \sqrt{(\mu^i_j)^2 + S^{ii}_j},\\
-    \Sigma_j =& \left(K^{-1} + \operatorname{Diagonal}(\theta_j)\right)^{-1},\\
-    \mu_j =& \Sigma_j\left(\frac{y - \gamma_j}{2} + K^{-1}\mu_0\right),
+    \boldsymbol{S}_j =& \left(K^{-1} + \operatorname{Diagonal}(\theta_j)\right)^{-1},\\
+    \boldsymbol{m}_j =& \Sigma_j\left(\frac{y - \gamma_j}{2} + K^{-1}\mu_0\right),
 \end{align*}
 ```
 
