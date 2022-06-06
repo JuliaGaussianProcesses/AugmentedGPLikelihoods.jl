@@ -12,8 +12,9 @@ Note that two versions are possible:
 - The non-bijective, or over-parametrized, version where we have ``K`` latent GPs.
 
 To call:
-- the first one, build: `CategoricalLikelihood(BijectiveSimplex(LogisticSoftmaxLink(zeros(nclass))))`
-- the second one : `CategoricalLikelihood(LogisticSoftmaxLink(zeros(nclass)))`.
+
+- The first one, build: `CategoricalLikelihood(BijectiveSimplex(LogisticSoftmaxLink(zeros(nclass))))`
+- The second one : `CategoricalLikelihood(LogisticSoftmaxLink(zeros(nclass)))`.
 
 For ease of computation, we one-hot encode the labels as ``\boldsymbol{Y}`` where ``Y_j^i = y^i == j``.
 
