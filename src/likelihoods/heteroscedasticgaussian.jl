@@ -46,32 +46,44 @@ function aux_posterior!(
 end
 
 function auglik_potential(
-    lik::AugHeteroGaussian, Ω, y::AbstractVector, fg::AbstractVector{<:AbstractVector{<:Real}}
+    lik::AugHeteroGaussian,
+    Ω,
+    y::AbstractVector,
+    fg::AbstractVector{<:AbstractVector{<:Real}},
 )
     g = last.(fg)
     return (y .* inv.(lik.invlink.(g)), (1//2 .- Ω.n) / 2)
 end
 
 function auglik_precision(
-    lik::AugHeteroGaussian, Ω, ::AbstractVector, fg::AbstractVector{<:AbstractVector{<:Real}}
+    lik::AugHeteroGaussian,
+    Ω,
+    ::AbstractVector,
+    fg::AbstractVector{<:AbstractVector{<:Real}},
 )
     g = last.(fg)
     return (inv.(lik.invlink.(g)), Ω.ω)
 end
 
 function expected_auglik_potential(
-    lik::AugHeteroGaussian, qΩ, y::AbstractVector, qfg::AbstractVector{<:AbstractVector{<:Normal}}
+    lik::AugHeteroGaussian,
+    qΩ,
+    y::AbstractVector,
+    qfg::AbstractVector{<:AbstractVector{<:Normal}},
 )
     λ = _λ(lik)
     c = only(qΩ.inds).c
     return (
-        y .* λ .* (1 .- approx_expected_logistic.(-mean.(last.(qfg)), c)),
+        y .* λ .* (1 .- approx_expected_logistic.(-mean.(last.(qfg)), c)) / 2,
         (1//2 .- tvmean(qΩ).n) / 2,
     )
 end
 
 function expected_auglik_precision(
-    lik::AugHeteroGaussian, qΩ, ::AbstractVector, qfg::AbstractVector{<:AbstractVector{<:Normal}}
+    lik::AugHeteroGaussian,
+    qΩ,
+    ::AbstractVector,
+    qfg::AbstractVector{<:AbstractVector{<:Normal}},
 )
     λ = _λ(lik)
     c = only(qΩ.inds).c
@@ -79,20 +91,34 @@ function expected_auglik_precision(
 end
 
 function expected_auglik_potential_and_precision(
-    lik::AugHeteroGaussian, qΩ, y::AbstractVector, qfg::AbstractVector{<:AbstractVector{<:Normal}}
+    lik::AugHeteroGaussian,
+    qΩ,
+    y::AbstractVector,
+    qfg::AbstractVector{<:AbstractVector{<:Normal}},
 )
     λ = _λ(lik)
     c = only(qΩ.inds).c
     θ = tvmean(qΩ)
-    λσg = λ * approx_expected_logistic.(-mean.(last.(qfg)), c)
+    λσg = λ * (1 .- approx_expected_logistic.(-mean.(last.(qfg)), c))
     return ((y .* λσg / 2, (1//2 .- θ.n) / 2), (λσg, θ.ω))
+end
+
+function aug_loglik(
+    lik::AugHeteroGaussian,
+    Ω,
+    y::AbstractVector{<:Real},
+    fg::AbstractVector{Union{<:NTuple,AbstractVector{<:Real}}}
+)
+    mapreduce(+, Ω, y, fg) do Ωᵢ, yᵢ, fgᵢ
+        aug_loglik(lik, Ωᵢ, yᵢ, fgᵢ) 
+    end
 end
 
 function aug_loglik(
     lik::AugHeteroGaussian,
     (ω, n)::Tuple{<:Real,<:Integer},
     y::Real,
-    (f, g)::AbstractVector{<:Real},
+    (f, g)::Union{AbstractVector{<:Real},NTuple{2,<:Real}},
 )
     return -(1//2 + n) * logtwo +
            ((1//2 - n) * g - abs2(g) * ω) / 2 +
@@ -110,8 +136,10 @@ function expected_aug_loglik(
         qg = last(qfgᵢ)
         qf = first(qfgᵢ)
         g = mean(qg)
-        return C -(1//2 + θ.n) * logtwo +
+        return C - (1//2 + θ.n) * logtwo +
                ((1//2 - θ.n) * g - (abs2(g) + var(first(qg))) * θ.ω) / 2 +
-               kldivergence(qωᵢ, PolyaGammaPoisson(1//2, 0, λ / 2 * (abs2(yᵢ - mean(qf)) + var(qf))))
+               kldivergence(
+                   qωᵢ, PolyaGammaPoisson(1//2, 0, λ / 2 * (abs2(yᵢ - mean(qf)) + var(qf)))
+               )
     end
 end

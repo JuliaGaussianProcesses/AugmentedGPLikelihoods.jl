@@ -1,4 +1,5 @@
 @testset "Heteroscedastic Regression" begin
+    TestUtils.can_split(::AGPL.AugHeteroGaussian) = false
     n = 10
     lik = HeteroscedasticGaussianLikelihood(InvScaledLogistic(5.0))
     @test lik isa AGPL.AugHeteroGaussian

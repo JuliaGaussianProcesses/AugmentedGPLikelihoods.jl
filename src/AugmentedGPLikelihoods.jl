@@ -26,8 +26,8 @@ export expected_auglik_potential,
     expected_auglik_precision, expected_auglik_potential_and_precision
 
 export logtilt, expected_logtilt
-export aux_prior
-export aug_loglik, aux_kldivergence
+export aux_prior, aux_kldivergence
+export aug_loglik, expected_aug_loglik
 
 export ScaledLogistic, InvScaledLogistic
 export logisticsoftmax

@@ -1,6 +1,6 @@
 using AugmentedGPLikelihoods
 using AugmentedGPLikelihoods.SpecialDistributions
-using AugmentedGPLikelihoods.TestUtils: test_auglik
+using AugmentedGPLikelihoods.TestUtils: TestUtils, test_auglik
 const AGPL = AugmentedGPLikelihoods
 using Distributions
 using GPLikelihoods

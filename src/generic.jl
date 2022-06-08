@@ -49,7 +49,7 @@ function aug_loglik(lik::AbstractLikelihood, Ω, y, f)
     return logtilt(lik, Ω, y, f) + logdensity_def(aux_prior(lik, y), Ω)
 end
 
-function expected_aug_loglik(lik::AbstractLikelihood, Ω, y, f)
+function expected_aug_loglik(lik::AbstractLikelihood, qΩ, y, qf)
     return expected_logtilt(lik, qΩ, y, qf) + aux_kldivergence(lik, qΩ, y)
 end
 
@@ -66,14 +66,20 @@ function auglik_potential_and_precision(lik::AbstractLikelihood, Ω, y, f=nothin
 end
 
 function expected_auglik_potential_and_precision(lik::AbstractLikelihood, qΩ, y, f=nothing)
-    return (expected_auglik_potential(lik, qΩ, y, f), expected_auglik_precision(lik, qΩ, y, f))
+    return (
+        expected_auglik_potential(lik, qΩ, y, f), expected_auglik_precision(lik, qΩ, y, f)
+    )
 end
 
-auglik_potential(lik::AbstractLikelihood, Ω, y, _=nothing) = auglik_potential(lik, Ω, y)
-auglik_precision(lik::AbstractLikelihood, Ω, y, _=nothing) = auglik_precision(lik, Ω, y)
+auglik_potential(lik::AbstractLikelihood, Ω, y, _) = auglik_potential(lik, Ω, y)
+auglik_precision(lik::AbstractLikelihood, Ω, y, _) = auglik_precision(lik, Ω, y)
 
-expected_auglik_potential(lik::AbstractLikelihood, qΩ, y, _) = expected_auglik_potential(lik, qΩ, y)
-expected_auglik_precision(lik::AbstractLikelihood, qΩ, y, _) = expected_auglik_precision(lik, qΩ, y)
+function expected_auglik_potential(lik::AbstractLikelihood, qΩ, y, _)
+    return expected_auglik_potential(lik, qΩ, y)
+end
+function expected_auglik_precision(lik::AbstractLikelihood, qΩ, y, _)
+    return expected_auglik_precision(lik, qΩ, y)
+end
 
 # Generic wrapper for prior not taking any argument
 aux_prior(lik::AbstractLikelihood, ::Real) = aux_prior(lik)
