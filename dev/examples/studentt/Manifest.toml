@@ -35,6 +35,12 @@ version = "2.3.0"
 [[deps.ArgTools]]
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
 
+[[deps.ArrayLayouts]]
+deps = ["FillArrays", "LinearAlgebra", "SparseArrays"]
+git-tree-sha1 = "26c659b14c4dc109b6b9c3398e4455eebc523814"
+uuid = "4c555306-a7a7-4459-81d9-ec55ddd5c99a"
+version = "0.8.8"
+
 [[deps.ArraysOfArrays]]
 deps = ["Adapt", "ChainRulesCore", "Requires", "Statistics", "UnsafeArrays"]
 git-tree-sha1 = "cbc76e824d185fd310cb7f6af02c566e10500e68"
@@ -46,7 +52,7 @@ uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
 
 [[deps.AugmentedGPLikelihoods]]
 deps = ["ArraysOfArrays", "ChainRulesCore", "Distributions", "GPLikelihoods", "IrrationalConstants", "LinearAlgebra", "LogExpFunctions", "MeasureBase", "MeasureTheory", "Random", "Reexport", "SpecialFunctions", "SplitApplyCombine", "Statistics", "Test", "TupleVectors"]
-git-tree-sha1 = "b17870f324dba6595df2bc5e75965e1234a3cf44"
+git-tree-sha1 = "4e9f02224733175354ff6995972b30743a83e56f"
 repo-rev = "main"
 repo-url = "/home/runner/work/AugmentedGPLikelihoods.jl/AugmentedGPLikelihoods.jl"
 uuid = "4689c64d-1a23-4d3c-ad26-1c612d54a282"
@@ -527,6 +533,12 @@ git-tree-sha1 = "46a39b9c58749eefb5f2dc1178cb8fab5332b1ab"
 uuid = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
 version = "0.15.15"
 
+[[deps.LazyArrays]]
+deps = ["ArrayLayouts", "FillArrays", "LinearAlgebra", "MacroTools", "MatrixFactorizations", "SparseArrays", "StaticArrays"]
+git-tree-sha1 = "d9a962fac652cc6b0224622b18199f0ed46d316a"
+uuid = "5078a376-72f3-5289-bfd5-ec5146d43c02"
+version = "0.22.11"
+
 [[deps.LibCURL]]
 deps = ["LibCURL_jll", "MozillaCACerts_jll"]
 uuid = "b27032c2-a3e7-50c8-80cd-2d36dbcbfd21"
@@ -639,6 +651,12 @@ version = "0.4.1"
 deps = ["Base64"]
 uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
 
+[[deps.MatrixFactorizations]]
+deps = ["ArrayLayouts", "LinearAlgebra", "Printf", "Random"]
+git-tree-sha1 = "2212d36f97e01347adb1460a6914e20f2feee853"
+uuid = "a3b82374-2e81-5b9e-98ce-41277c0e4c87"
+version = "0.9.1"
+
 [[deps.MbedTLS]]
 deps = ["Dates", "MbedTLS_jll", "Random", "Sockets"]
 git-tree-sha1 = "1c38e51c3d08ef2278062ebceade0e46cefc96fe"
@@ -650,16 +668,16 @@ deps = ["Artifacts", "Libdl"]
 uuid = "c8ffd9c3-330d-5841-b78e-0817d7145fa1"
 
 [[deps.MeasureBase]]
-deps = ["Compat", "ConstructionBase", "DensityInterface", "FillArrays", "IfElse", "IrrationalConstants", "LinearAlgebra", "LogExpFunctions", "LogarithmicNumbers", "MappedArrays", "NaNMath", "PrettyPrinting", "Random", "Reexport", "Static", "Statistics", "Test", "Tricks"]
-git-tree-sha1 = "0ef994cdd80e0e07aa482202757944f347fc4885"
+deps = ["ChainRulesCore", "ChangesOfVariables", "Compat", "ConstructionBase", "DensityInterface", "FillArrays", "IfElse", "InverseFunctions", "IrrationalConstants", "LinearAlgebra", "LogExpFunctions", "LogarithmicNumbers", "MappedArrays", "NaNMath", "PrettyPrinting", "Random", "Reexport", "Static", "Statistics", "Test", "Tricks"]
+git-tree-sha1 = "a315b35ddf4793666ab7f3354b9977714021aab4"
 uuid = "fa1605e6-acd5-459c-a1e6-7e635759db14"
-version = "0.9.4"
+version = "0.12.1"
 
 [[deps.MeasureTheory]]
-deps = ["Accessors", "ChangesOfVariables", "Compat", "ConcreteStructs", "ConstructionBase", "DensityInterface", "Distributions", "DynamicIterators", "FillArrays", "IfElse", "Infinities", "InteractiveUtils", "InverseFunctions", "KeywordCalls", "LinearAlgebra", "LogExpFunctions", "MLStyle", "MacroTools", "MappedArrays", "MeasureBase", "NamedTupleTools", "NestedTuples", "PositiveFactorizations", "PrettyPrinting", "Random", "Reexport", "SpecialFunctions", "Static", "StaticArrays", "Statistics", "StatsBase", "StatsFuns", "TransformVariables", "Tricks"]
-git-tree-sha1 = "775e848f1a0ceec519aa2c5c8e7d7fc5fff058c5"
+deps = ["Accessors", "ChangesOfVariables", "Compat", "ConcreteStructs", "ConstructionBase", "DensityInterface", "Distributions", "DynamicIterators", "FillArrays", "IfElse", "Infinities", "InteractiveUtils", "InverseFunctions", "KeywordCalls", "LazyArrays", "LinearAlgebra", "LogExpFunctions", "MLStyle", "MacroTools", "MappedArrays", "MeasureBase", "NamedTupleTools", "NestedTuples", "PositiveFactorizations", "PrettyPrinting", "Random", "Reexport", "SpecialFunctions", "Static", "StaticArrays", "Statistics", "StatsBase", "StatsFuns", "TransformVariables", "Tricks"]
+git-tree-sha1 = "24ba25b4a8e32f442b1f0aa7de1220115288d42f"
 uuid = "eadaa1a4-d27c-401d-8699-e962e1bbc33b"
-version = "0.16.2"
+version = "0.16.4"
 
 [[deps.Measures]]
 git-tree-sha1 = "e498ddeee6f9fdb4551ce855a46f54dbd900245f"
