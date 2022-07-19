@@ -26,10 +26,10 @@ export expected_auglik_potential,
     expected_auglik_precision, expected_auglik_potential_and_precision
 
 export logtilt, expected_logtilt
-export aux_prior
-export aug_loglik, aux_kldivergence
+export aux_prior, aux_kldivergence
+export aug_loglik, expected_aug_loglik
 
-export ScaledLogistic
+export ScaledLogistic, InvScaledLogistic
 export logisticsoftmax
 export LogisticSoftMaxLink
 export BijectiveSimplexLink
@@ -42,6 +42,7 @@ include("SpecialDistributions/SpecialDistributions.jl")
 using .SpecialDistributions
 
 include("likelihoods/bernoulli.jl")
+include("likelihoods/heteroscedasticgaussian.jl")
 include("likelihoods/laplace.jl")
 include("likelihoods/negativebinomial.jl")
 include("likelihoods/categorical.jl")
