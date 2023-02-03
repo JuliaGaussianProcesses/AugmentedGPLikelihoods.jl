@@ -44,11 +44,10 @@ function Distributions.logpdf(d::PolyaGamma, x::Real)
         ext = logtilt(x, b, c) + (b - 1) * logtwo - (log2π + 3 * log(x)) / 2
 
         if x < 1e-2
-            return ext + calc_log_series(x, b, 200)
+            return ext + calc_log_series(x, b, 100)
         else
-            X_MIN = nextfloat(zero(eltype(x)))
-            sum_series = calc_series(x, b, 200)
-            return ext + log(max(sum_series, X_MIN))
+            sum_series = calc_series(x, b, 100)
+            return ext + log(max(sum_series, floatmin(sum_series)))
         end
     end
 end
@@ -57,36 +56,38 @@ function calc_log_series(x::Real, b::Real, max_half_n::Integer)
     max_n = 2*max_half_n
 
     log_series_m_prods = cumsum(log.(1 .+ ((b - 1) ./ (1:max_n))))
-    log_series_prods = [0.; log_series_m_prods[2:2:end]]
 
-    n = 0:2:max_n
-    Rn = 2n .+ b
+    log_out = map(0:2:max_n) do n
+        Rn = 2n + b
+        log_exp_out = Rn^2 / -8x
 
-    c_nb = log.(n .+ b) .- log.(n .+ 1) .+ log.(2) .- log.(Rn .+ 1)
+        log_c_nb = log(n + b) - log(n + 1) + log(2 / Rn + 1)
+        log_inner = log1mexp(log_c_nb + ((Rn + 1) / -2x))
 
-    exp_out = -(Rn .^2) ./ (8 * x)
+        log_series_prod = if n == 0 0.0 else log_series_m_prods[n] end
 
-    inner = log.(1 .- c_nb .* exp.((Rn .+ 1) ./ (-2 * x)))
+        log_series_prod + log(Rn) + log_exp_out + log_inner
+    end
 
-    return logsumexp(log_series_prods .+ Rn .+ exp_out .+ inner)
+    logsumexp(log_out)
 end
 
 function calc_series(x::Real, b::Real, max_half_n::Integer)
     max_n = 2*max_half_n
 
     series_m_prods = cumprod(1 .+ ((b - 1) ./ (1:max_n)))
-    series_prods = [1; series_m_prods[2:2:end]]
 
-    n = 0:2:max_n
-    Rn = 2n .+ b
+    sum(0:2:max_n) do n
+        Rn = 2n + b
+        exp_out = exp(Rn^2 / -8x)
 
-    c_nb = ((n .+ b) ./ (n .+ 1)) .* (2 ./ Rn .+ 1)
+        c_nb = ((n + b) / (n + 1)) * (2 / Rn + 1)
+        inner = 1 - c_nb * exp((Rn + 1) / -2x)
 
-    exp_out = exp.(-(Rn .^2) ./ (8 * x))
+        series_prod = if n == 0 1.0 else series_m_prods[n] end
 
-    inner = 1 .- c_nb .* exp.((Rn .+ 1) ./ (-2 * x))
-
-    return sum(series_prods .* Rn .* exp_out .* inner)
+        series_prod * Rn * exp_out * inner
+    end
 end
 
 

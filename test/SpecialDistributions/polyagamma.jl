@@ -29,8 +29,9 @@ end
 
     for (b, c) in ((1, 0), (1, 2.0), (3, 0), (3, 2.5), (3, 3.2), (1.2, 3.2))
         p = PolyaGamma(b, c)
-        xs = rand(p, 1000)
-        @test all(isreal, logpdf.(p, 1000*xs))
+        @test all(isreal, logpdf.(p, 10 .^ (-7:0.1:7)))
+
+        xs = 10 .^ (-2.5:0.1:0.5)
         @test ref_logpdf.(p, xs) ≈ logpdf.(p, xs)
         @test mean(rand(p, 10000)) ≈ mean(p) atol = 1e-2
     end
