@@ -1,3 +1,5 @@
+using Statistics
+
 const PG_T = 0.64
 const π²_8 = π^2 / 8
 
@@ -39,16 +41,56 @@ function Distributions.logpdf(d::PolyaGamma, x::Real)
     # is the delta dirac at 0.
     else
         iszero(x) && -Inf # The limit to p(x) for x-> 0 is 0.
-        ext = logtilt(x, b, c) + (b - 1) * logtwo - loggamma(b) - (log2π + 3 * log(x)) / 2
-        pos_val = logsumexp(_pdf_val_log_series(n, b, x) for n in 0:2:201)
-        neg_val = logsumexp(_pdf_val_log_series(n, b, x) for n in 1:2:201)
-        return ext + log(exp(pos_val) - exp(neg_val))
+        ext = logtilt(x, b, c) + (b - 1) * logtwo - (log2π + 3 * log(x)) / 2
+
+        if x < 1e-2
+            return ext + calc_log_series(x, b, 200)
+        else
+            X_MIN = nextfloat(zero(eltype(x)))
+            sum_series = calc_series(x, b, 200)
+            return ext + log(max(sum_series, X_MIN))
+        end
     end
 end
 
-function _pdf_val_log_series(n::Integer, b::Real, x)
-    return loggamma(n + b) - loggamma(n + 1) - abs2(2n + b) / (8x) + log(2n + b) # all terms where n is present
+function calc_log_series(x::Real, b::Real, max_half_n::Integer)
+    max_n = 2*max_half_n
+
+    log_series_m_prods = cumsum(log.(1 .+ ((b - 1) ./ (1:max_n))))
+    log_series_prods = [0.; log_series_m_prods[2:2:end]]
+
+    n = 0:2:max_n
+    Rn = 2n .+ b
+
+    c_nb = log.(n .+ b) .- log.(n .+ 1) .+ log.(2) .- log.(Rn .+ 1)
+
+    exp_out = -(Rn .^2) ./ (8 * x)
+
+    inner = log.(1 .- c_nb .* exp.((Rn .+ 1) ./ (-2 * x)))
+
+    return logsumexp(log_series_prods .+ Rn .+ exp_out .+ inner)
 end
+
+function calc_series(x::Real, b::Real, max_half_n::Integer)
+    max_n = 2*max_half_n
+
+    series_m_prods = cumprod(1 .+ ((b - 1) ./ (1:max_n)))
+    series_prods = [1; series_m_prods[2:2:end]]
+
+    n = 0:2:max_n
+    Rn = 2n .+ b
+
+    c_nb = ((n .+ b) ./ (n .+ 1)) .* (2 ./ Rn .+ 1)
+
+    exp_out = exp.(-(Rn .^2) ./ (8 * x))
+
+    inner = 1 .- c_nb .* exp.((Rn .+ 1) ./ (-2 * x))
+
+    return sum(series_prods .* Rn .* exp_out .* inner)
+end
+
+
+# calc_series(x, b, 10) * gamma(b) ≈ _series_term_naive.(x, b, 0:10)
 
 Distributions.logpdf(d::PolyaGamma, x::NamedTuple{(:ω,),<:Tuple{<:Real}}) = logpdf(d, x.ω)
 
