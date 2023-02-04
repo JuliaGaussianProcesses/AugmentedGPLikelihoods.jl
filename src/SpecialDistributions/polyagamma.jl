@@ -64,7 +64,7 @@ function calc_log_series(x::Real, b::Real, max_half_n::Integer)
         log_c_nb = log(n + b) - log(n + 1) + log(2 / Rn + 1)
         log_inner = log1mexp(log_c_nb + ((Rn + 1) / -2x))
 
-        log_series_prod = if n == 0 0.0 else log_series_m_prods[n] end
+        log_series_prod = iszero(n) ? zero(log_inner) : log_series_m_prods[n]
 
         log_series_prod + log(Rn) + log_exp_out + log_inner
     end
