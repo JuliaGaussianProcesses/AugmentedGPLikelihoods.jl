@@ -84,7 +84,7 @@ function calc_series(x::Real, b::Real, max_half_n::Integer)
         c_nb = ((n + b) / (n + 1)) * (2 / Rn + 1)
         inner = 1 - c_nb * exp((Rn + 1) / -2x)
 
-        series_prod = if n == 0 1.0 else series_m_prods[n] end
+        series_prod = iszero(n) ? one(exp_out) : series_m_prods[n]
 
         series_prod * Rn * exp_out * inner
     end
