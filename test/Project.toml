@@ -1,6 +1,7 @@
 [deps]
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 GPLikelihoods = "6031954c-0455-49d7-b3b9-3e1c99afaf40"
+IrrationalConstants = "92d709cd-6900-40b7-9082-c6be49f344b6"
 LogExpFunctions = "2ab3a3ac-af41-5b50-aa03-7779005ae688"
 MeasureBase = "fa1605e6-acd5-459c-a1e6-7e635759db14"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
