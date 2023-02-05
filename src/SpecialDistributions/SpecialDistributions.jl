@@ -4,6 +4,7 @@
 =#
 
 module SpecialDistributions
+using ArraysOfArrays
 using Distributions
 using LogExpFunctions
 using MeasureBase
@@ -15,7 +16,9 @@ using SpecialFunctions
 using IrrationalConstants: logtwo, twoπ, halfπ, inv2π, fourinvπ, invπ, log2π
 
 export PolyaGamma
+export NegativeMultinomial
 export PolyaGammaPoisson
+export PolyaGammaNegativeMultinomial
 
 export NTDist, dist
 export ntrand, ntmean
@@ -62,6 +65,8 @@ tvmean
 tvmean(qΩ::For) = tvmean(marginals(qΩ))
 tvmeaninv(qΩ::For) = tvmeaninv(marginals(qΩ))
 
+include("negativemultinomial.jl")
 include("polyagamma.jl")
+include("polyagammanegativemultinomial.jl")
 include("polyagammapoisson.jl")
 end
