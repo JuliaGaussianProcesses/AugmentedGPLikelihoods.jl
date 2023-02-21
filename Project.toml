@@ -1,7 +1,7 @@
 name = "AugmentedGPLikelihoods"
 uuid = "4689c64d-1a23-4d3c-ad26-1c612d54a282"
 authors = ["Théo Galy-Fajou <theo.galyfajou@gmail.com> and contributors"]
-version = "0.4.17"
+version = "0.4.18"
 
 [deps]
 ArraysOfArrays = "65a8f2f4-9b39-5baf-92e2-a9cc46fdf018"
@@ -26,7 +26,7 @@ ArraysOfArrays = "0.5, 0.6"
 ChainRulesCore = "1"
 Distributions = "0.25"
 GPLikelihoods = "0.3, 0.4"
-IrrationalConstants = "0.1"
+IrrationalConstants = "0.1, 0.2"
 LogExpFunctions = "0.3"
 MeasureBase = "0.9, 0.10, 0.11, 0.12, 0.13"
 MeasureTheory = "0.14, 0.15, 0.16, 0.17"
