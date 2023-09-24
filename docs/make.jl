@@ -37,7 +37,6 @@ makedocs(
         "Misc" => "misc.md",
         "References" => "references.md",
     ],
-    strict=true,
 )
 
 deploydocs(;
