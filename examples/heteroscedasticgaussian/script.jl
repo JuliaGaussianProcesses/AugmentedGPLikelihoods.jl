@@ -21,8 +21,8 @@ kernel = 5.0 * with_lengthscale(SqExponentialKernel(), 2.0)
 gp_f = GP(kernel)
 μ₀g = -3.0
 gp_g = GP(μ₀g, kernel)
-f = rand(gp_f(X, 1e-6))
-g = rand(gp_g(X, 1e-6))
+f = rand(gp_f(x, 1e-6))
+g = rand(gp_g(x, 1e-6))
 
 py = lik(invert([f, g]))  # invert turns [f, g] into [[f_1, g_1], ...]
 y = rand(py);
@@ -54,12 +54,10 @@ function cavi!(fzs, x, y, ms, Ss, qΩ, lik; niter=10)
     K = ApproximateGPs._chol_cov(fzs[1])
     for _ in 1:niter
         posts_u = u_posterior.(fzs, ms, Ss)
-        posts_fs = marginals.([p_u(x) for p_u in posts_u])
+        posts_fs = AbstractGPs.marginals.([p_u(x) for p_u in posts_u])
         lik = opt_lik(lik, posts_fs, y)
         aux_posterior!(qΩ, lik, y, invert(posts_fs))
-        ηs, Λs = expected_auglik_potential_and_precision(
-            lik, qΩ, y, last.(invert(posts_fs))
-        )
+        ηs, Λs = expected_auglik_potential_and_precision(lik, qΩ, y, invert(posts_fs))
         Ss .= inv.(Symmetric.(Ref(inv(K)) .+ Diagonal.(Λs)))
         ms .= Ss .* (ηs .+ Ref(K) .\ mean.(fzs))
     end
@@ -103,8 +101,13 @@ function gibbs_sample(fzs, fs, Ω; nsamples=200)
     μ = [zeros(N) for _ in 1:nlatent(lik)]
     return map(1:nsamples) do _
         aux_sample!(Ω, lik, y, invert(fs))
-        Σ .= inv.(Symmetric.(Ref(inv(K)) .+ Diagonal.(auglik_precision(lik, Ω, y, fs[2]))))
-        μ .= Σ .* (auglik_potential(lik, Ω, y, fs[2]) .+ Ref(K) .\ mean.(fzs))
+        Σ .=
+            inv.(
+                Symmetric.(
+                    Ref(inv(K)) .+ Diagonal.(auglik_precision(lik, Ω, y, invert(fs)))
+                )
+            )
+        μ .= Σ .* (auglik_potential(lik, Ω, y, invert(fs)) .+ Ref(K) .\ mean.(fzs))
         rand!.(MvNormal.(μ, Σ), fs) # this corresponds to f -> g
         return copy(fs)
     end
@@ -113,7 +116,7 @@ end;
 fs_init = nestedview(randn(N, nlatent(lik)))
 Ω = init_aux_variables(lik, N);
 # Run the sampling for default number of iterations (200)
-fs_samples = gibbs_sample(fz, fs_init, Ω);
+fs_samples = gibbs_sample(fzs, fs_init, Ω);
 # And visualize the samples overlapped to the variational posterior
 # that we found earlier.
 
