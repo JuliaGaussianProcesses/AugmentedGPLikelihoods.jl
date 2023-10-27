@@ -17,9 +17,9 @@ DocMeta.setdocmeta!(
 
 bib = CitationBibliography(joinpath(@__DIR__, "references.bib"))
 
-makedocs(
-    bib;
+makedocs(;
     modules=[AugmentedGPLikelihoods],
+    plugins=[bib],
     authors="Théo Galy-Fajou <theo.galyfajou@gmail.com> and contributors",
     repo="https://github.com/JuliaGaussianProcesses/AugmentedGPLikelihoods.jl/blob/{commit}{path}#{line}",
     sitename="AugmentedGPLikelihoods.jl",
