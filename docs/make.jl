@@ -27,6 +27,7 @@ makedocs(;
         prettyurls=get(ENV, "CI", "false") == "true",
         canonical="https://JuliaGaussianProcesses.github.io/AugmentedGPLikelihoods.jl",
         assets=String[],
+        size_threshold=nothing,
     ),
     pages=[
         "Home" => "index.md",
