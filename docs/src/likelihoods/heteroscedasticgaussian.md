@@ -8,6 +8,8 @@ p(y|f, g, \lambda) = \frac{\sqrt{\lambda \sigma(g)}}{2\pi}\exp\left(-\frac{\lamb
 
 ## The augmentation
 
+The reference for the augmentation is in [galy23](@cite).
+
 ```math
 \begin{align*}
     p(y|f, g, \lambda) =& \frac{\sqrt{\lambda \sigma(g)}}{2\pi}\exp\left(-\frac{\lambda\sigma(g)}{2}\left(y - f\right)^2\right),\\
