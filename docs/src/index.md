@@ -131,7 +131,6 @@ aux_posterior
 expected_auglik_potential
 expected_auglik_precision
 expected_auglik_potential_and_precision
-expected_aug_loglik
 ```
 
 [`init_aux_posterior`](@ref) initializes the posterior
@@ -182,6 +181,7 @@ helping functions:
 
 ```@docs
 aug_loglik
+expected_aug_loglik
 aux_prior
 aux_kldivergence
 logtilt
