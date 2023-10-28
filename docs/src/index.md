@@ -181,6 +181,7 @@ helping functions:
 
 ```@docs
 aug_loglik
+expected_aug_loglik
 aux_prior
 aux_kldivergence
 logtilt
