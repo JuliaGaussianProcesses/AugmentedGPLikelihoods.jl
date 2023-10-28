@@ -1,4 +1,4 @@
-# Heteroscedastic Gaussian Regression
+# # Heteroscedastic Gaussian Regression
 
 # We load all the necessary packages
 using AbstractGPs
@@ -77,7 +77,7 @@ g_te = u_posterior(fzs[2], ms[2], Ss[2])(x_te)
 plot!(plt, x_te, mean(f_te); ribbon=sqrt.(new_lik.invlink.(mean(g_te))), label="y|q(f,g)")
 plot!(plt2, f_te; color=1, linestye=:dash, alpha=0.5, label="q(f)")
 plot!(plt2, g_te; color=2, linestyle=:dash, alpha=0.5, label="q(g)")
-display(plot(plt, plt2))
+plot(plt, plt2)
 
 ##
 # ## ELBO
@@ -91,7 +91,6 @@ function aug_elbo(lik, u_post, x, y)
            kldivergence(u_post.approx.q, u_post.approx.fz)
 end
 
-# aug_elbo(lik, u_posterior(fz, m, S), x, y)
 # ## Gibbs Sampling
 # We create our Gibbs sampling algorithm (we could do something fancier with
 # AbstractMCMC)
