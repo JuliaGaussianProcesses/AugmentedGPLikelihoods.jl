@@ -20,13 +20,17 @@ end
 
 StudentTLikelihood(ν::Real, σ::Real) = StudentTLikelihood(ν, σ, abs2(σ), ν / 2)
 
-(lik::StudentTLikelihood)(f::Real) = LocationScale(f, lik.σ, TDist(lik.ν))
+function (lik::StudentTLikelihood)(f::Real)
+    return Distributions.AffineDistribution(f, lik.σ, TDist(lik.ν))
+end
 
 _α(lik::StudentTLikelihood) = (lik.ν + 1) / 2
 
 function (lik::StudentTLikelihood)(f::AbstractVector{<:Real})
     return Product(lik.(f))
 end
+
+aux_field(::StudentTLikelihood, Ω) = getproperty(Ω, :ω)
 
 function init_aux_variables(rng::AbstractRNG, ::StudentTLikelihood, n::Int)
     return TupleVector((; ω=rand(rng, Gamma(), n)))
@@ -46,7 +50,7 @@ end
 function aux_posterior!(
     qΩ, lik::StudentTLikelihood, y::AbstractVector, qf::AbstractVector{<:Normal}
 )
-    φ = qΩ.pars
+    φ = only(qΩ.inds)
     map!(φ.β, y, qf) do yᵢ, fᵢ
         (lik.ν / abs2(lik.σ) + second_moment(fᵢ, yᵢ)) / 2
     end
@@ -69,21 +73,19 @@ function expected_auglik_precision(::StudentTLikelihood, qΩ, ::AbstractVector)
     return (tvmean(qΩ).ω,)
 end
 
-function logtilt(::StudentTLikelihood, Ω, y, f)
-    return mapreduce(+, y, f, Ω.ω) do yᵢ, fᵢ, ωᵢ
-        logpdf(Normal(fᵢ, sqrt(inv(ωᵢ))), yᵢ)
-    end
+function logtilt(::StudentTLikelihood, ω::Real, y::Real, f::Real)
+    return logpdf(Normal(f, sqrt(inv(ω))), y)
 end
 
-function expected_logtilt(::StudentTLikelihood, qΩ, y, qf)
-    return mapreduce(+, y, qf, marginals(qΩ)) do yᵢ, fᵢ, qωᵢ
-        θ = ntmean(qωᵢ)
-        logpdf(Normal(yᵢ, sqrt(inv(θ.ω))), mean(fᵢ)) - var(fᵢ) * θ.ω / 2
-    end
+function expected_logtilt(::StudentTLikelihood, qωᵢ::NTDist{<:Gamma}, yᵢ::Real, qfᵢ::Normal)
+    θ = ntmean(qωᵢ)
+    return logpdf(Normal(yᵢ, sqrt(inv(θ.ω))), mean(qfᵢ)) - var(qfᵢ) * θ.ω / 2
 end
 
-function aux_prior(lik::StudentTLikelihood, y)
+function aux_prior(lik::StudentTLikelihood, y::AbstractVector{<:Real})
     return For(length(y)) do _
-        NTDist(Gamma(lik.halfν, lik.σ² / lik.halfν))
+        NTDist(aux_prior(lik))
     end
 end
+
+aux_prior(lik::StudentTLikelihood) = Gamma(lik.halfν, lik.σ² / lik.halfν)

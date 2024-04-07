@@ -1,5 +1,15 @@
 [deps]
 AugmentedGPLikelihoods = "4689c64d-1a23-4d3c-ad26-1c612d54a282"
+Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 DocumenterCitations = "daee34ce-89f3-4625-b898-19384cb65244"
 Literate = "98b081ad-f1c9-55d3-8b20-4c87d4299306"
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+
+[compat]
+AugmentedGPLikelihoods = "0.4"
+Distributions = "0.25"
+Documenter = "0.27, 1"
+DocumenterCitations = "0.2, 1"
+Literate = "2"
+Plots = "1"

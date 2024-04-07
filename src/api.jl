@@ -10,7 +10,7 @@ See also [`init_aux_posterior`](@ref) for variational inference.
 init_aux_variables
 
 @doc raw"""
-    init_aux_posterior([T::DataType], lik::Likelihood, n::Int) -> ProductMeasure
+    init_aux_posterior([T::DataType], lik::Likelihood, n::Int) -> AbstractProductMeasure
 
 Initialize collections of `n` (independent) posteriors for the auxiliary
 variables in the context of variational inference.
@@ -20,13 +20,6 @@ The real variational parameters will be given type `T` (`Float64` by default)
 See also [`init_aux_variables`](@ref) for sampling.
 """
 init_aux_posterior
-
-@doc raw"""
-    aux_full_conditional(lik::AbstractLikelihood, yᵢ, fᵢ) -> AbstractNTDist
-
-Return the full conditional distribution of `Ωᵢ`.
-"""
-aux_full_conditional
 
 @doc raw"""
     aux_sample!([rng::AbstractRNG], Ω, lik::Likelihood, y, f) -> TupleVector
@@ -58,9 +51,10 @@ aux_sample
 Given the observation `y` and latent `f`, returns the full conditional on the
 auxiliary variables `Ω`.
 """
+aux_full_conditional
 
 @doc raw"""
-    aux_posterior!(qΩ, lik::Likelihood, y, qf) -> ProductMeasure
+    aux_posterior!(qΩ, lik::Likelihood, y, qf) -> AbstractProductMeasure
 
 Compute the optimal posterior of the auxiliary variables ``q^*(\Omega)`` given 
 the marginal distributions `qf` by updating the variational parameters
@@ -74,10 +68,10 @@ See also [`aux_posterior`](@ref) and [`aux_sample!`](@ref)
 aux_posterior!
 
 @doc raw"""
-    aux_posterior(lik::Likelihood, y, qf) -> ProductMeasure
+    aux_posterior(lik::Likelihood, y, qf) -> AbstractProductMeasure
 
 Compute the optimal posterior of the auxiliary variables in a new
-`ProductMeasure`.
+`AbstractProductMeasure` (`For` by default).
 
 See [`aux_posterior!`](@ref) for more details
 """
@@ -153,10 +147,10 @@ expected_auglik_potential_and_precision
 Return the augmented log-likelihood with the given parameters.
 The augmented log-likelihood is of the form 
 ```math
-    \log p(y,\Omega|f) = \log l(y,\Omega,f) + \log p(\Omega|y).
+    \log p(y,\Omega|f) = \log l(y,\Omega,f) + \log p(\Omega|y, f).
 ```
-To only obtain the $$p(\Omega|y)$$ part see [`aux_prior`](@ref) and see [`logtilt`](@ref)
-for $$\log l(y, \Omega, f)$$.
+To only obtain the ``p(\Omega|y, f)`` part see [`aux_prior`](@ref) and see [`logtilt`](@ref)
+for ``\log l(y, \Omega, f)``.
 
 A generic fallback exists based on [`logtilt`](@ref) and [`aux_prior`](@ref) but
 specialized implementations are encouraged.
@@ -164,22 +158,41 @@ specialized implementations are encouraged.
 aug_loglik
 
 @doc raw"""
-    aux_kldivergence(lik::Likelihood, qΩ::ProductMeasure, pΩ::ProductMeasure) -> Real
-    aux_kldivergence(lik::Likelihood, qΩ::ProductMeasure, y) -> Real
+    expected_aug_loglik(lik::Likelihood, qΩ, y, qf) -> Real
+
+Return the expected augmented log-likelihood with the given parameters.
+The expected augmented log-likelihood is of the form 
+```math
+    E_{q(\Omega,f)}\left[\log p(y,\Omega|f)\right]
+```
+To only obtain the $$p(\Omega|y)$$ part see [`aux_prior`](@ref) and see [`logtilt`](@ref)
+for $$\log l(y, \Omega, f)$$.
+
+A generic fallback exists based on [`expected_logtilt`](@ref) and [`aux_kldivergence`](@ref) but
+specialized implementations are encouraged.
+"""
+expected_aug_loglik
+
+@doc raw"""
+    aux_prior(lik::Likelihood, y) -> AbstractProductMeasure
+
+Returns a `NamedTuple` of distributions with the same structure as [`aux_posterior`](@ref),
+[`init_aux_posterior`](@ref) and [`init_aux_variables`](@ref).
+Note that an auxiliary prior is not always available.
+Even if the likelihood is a valid density, there is no guarantee that the
+prior of the augmented variable is!
+"""
+aux_prior
+
+@doc raw"""
+    aux_kldivergence(lik::Likelihood, qΩ::For, pΩ::For) -> Real
+    aux_kldivergence(lik::Likelihood, qΩ::For, y) -> Real
 
 Compute the analytical KL divergence between the auxiliary variables posterior
 ``q(\Omega)``, obtained with [`aux_posterior`](@ref) and prior
 ``p(\Omega)``, obtained with [`aux_prior`](@ref).
 """
 aux_kldivergence
-
-@doc raw"""
-    aux_prior(lik::Likelihood, y) -> ProductMeasure
-
-Returns a `NamedTuple` of distributions with the same structure as [`aux_posterior`](@ref),
-[`init_aux_posterior`](@ref) and [`init_aux_variables`](@ref).
-"""
-aux_prior
 
 @doc raw"""
     logtilt(lik::Likelihood, Ω, y, f) -> Real
@@ -203,4 +216,8 @@ Compute the expectation of the quadratic part on $$f$$ of the augmented likeliho
 
 See also [`logtilt`](@ref).
 """
-expected_logtilt
+function expected_logtilt(lik::AbstractLikelihood, qΩ, y, qf::AbstractVector)
+    return mapreduce(+, y, qf, @ignore_derivatives marginals(qΩ)) do yᵢ, qfᵢ, qΩᵢ
+        expected_logtilt(lik, qΩᵢ, yᵢ, qfᵢ)
+    end
+end

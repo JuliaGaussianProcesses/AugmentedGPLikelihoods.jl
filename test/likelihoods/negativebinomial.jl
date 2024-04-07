@@ -1,5 +1,4 @@
-@testset "NegBinomialLikelihood{<:LogisticLink}" begin
-    test_interface(NegBinomialLikelihood(10.0), NegativeBinomial)
-    test_auglik(NegBinomialLikelihood(LogisticLink(), 10))
-    test_auglik(NegBinomialLikelihood(LogisticLink(), 5.5))
+@testset "NegativeBinomialLikelihood{<:NBParamFailure,<:LogisticLink}" begin
+    test_auglik(NegativeBinomialLikelihood(NBParamFailure(10), LogisticLink()))
+    test_auglik(NegativeBinomialLikelihood(NBParamFailure(5.5), LogisticLink()))
 end

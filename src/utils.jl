@@ -8,7 +8,17 @@ end
 
 # This is not exactly an approximation but corresponds anyway
 # to the expectation of the function σ(f)
-function approx_expected_logistic(μ, c)
+function approx_expected_logistic(μ::Real, c::Real)
     lower, upper = LogExpFunctions._logistic_bounds(μ)
     return μ < lower ? zero(μ) : (μ > upper ? one(μ) : exp(μ / 2) * sech(c / 2) / 2)
 end
+
+# Same thing as above for softmax
+function approx_expected_logisticsoftmax(
+    μ::AbstractVector, c::AbstractVector, θ::AbstractVector
+)
+    σs = θ[1:(end - 1)] .* approx_expected_logistic.(μ, c)
+    return σs / (θ[end] * logistic(0) + sum(σs))
+end
+
+transpose_nested(x::ArrayOfSimilarArrays) = nestedview(flatview(x)')

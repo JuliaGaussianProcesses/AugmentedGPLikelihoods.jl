@@ -24,6 +24,8 @@ end
 
 @inline laplace_λ(lik::LaplaceLikelihood) = inv(abs2(2 * lik.β))
 
+aux_field(::LaplaceLikelihood, Ω) = getproperty(Ω, :ω)
+
 function init_aux_variables(rng::AbstractRNG, ::LaplaceLikelihood, n::Int)
     return TupleVector((; ω=rand(rng, InverseGamma(), n)))
 end
@@ -42,7 +44,7 @@ end
 function aux_posterior!(
     qΩ, lik::LaplaceLikelihood, y::AbstractVector, qf::AbstractVector{<:Normal}
 )
-    φ = qΩ.pars
+    φ = only(qΩ.inds)
     map!(φ.μ, y, qf) do yᵢ, qfᵢ
         inv(2 * lik.β * sqrt(second_moment(qfᵢ, yᵢ)))
     end
@@ -65,27 +67,35 @@ function expected_auglik_precision(::LaplaceLikelihood, qΩ, ::AbstractVector)
     return (2 * tvmean(qΩ).ω,)
 end
 
-function logtilt(lik::LaplaceLikelihood, Ω, y, f)
+function logtilt(
+    lik::LaplaceLikelihood, Ω::TupleVector, y::AbstractVector, f::AbstractVector{<:Real}
+)
     return length(y) * (loggamma(1//2) - log(sqrtπ) - log(2 * lik.β)) +
-           mapreduce(+, y, f, Ω.ω) do yᵢ, fᵢ, ωᵢ
+           mapreduce(+, aux_field(lik, Ω), y, f) do ωᵢ, yᵢ, fᵢ
         -abs2(yᵢ - fᵢ) * ωᵢ
     end
 end
 
-function expected_logtilt(lik::LaplaceLikelihood, qΩ, y, qf)
+function logtilt(lik::LaplaceLikelihood, ω::Real, y::Real, f::Real)
+    return loggamma(1//2) - log(sqrtπ) - log(2 * lik.β) - abs2(y - f) * ω
+end
+
+function expected_logtilt(lik::LaplaceLikelihood, qΩ, y, qf::AbstractVector{<:Normal})
     return length(y) * (loggamma(1//2) - log(sqrtπ) - log(2 * lik.β)) +
-           mapreduce(+, y, qf, marginals(qΩ)) do yᵢ, qfᵢ, qωᵢ
+           mapreduce(+, y, qf, @ignore_derivatives marginals(qΩ)) do yᵢ, qfᵢ, qωᵢ
         -second_moment(qfᵢ, yᵢ) * ntmean(qωᵢ).ω
     end
 end
 
-function aux_prior(lik::LaplaceLikelihood, y)
+function aux_prior(lik::LaplaceLikelihood, y::AbstractVector{<:Real})
     return For(length(y)) do _
-        NTDist(InverseGamma(1//2, laplace_λ(lik)))
+        NTDist(aux_prior(lik))
     end
 end
 
-function aux_kldivergence(::LaplaceLikelihood, qΩ::ProductMeasure, pΩ::ProductMeasure)
+aux_prior(lik::LaplaceLikelihood) = InverseGamma(1//2, laplace_λ(lik))
+
+function aux_kldivergence(::LaplaceLikelihood, qΩ::For, pΩ::For)
     return mapreduce(+, marginals(qΩ), marginals(pΩ)) do qωᵢ, pωᵢ
         μ = mean(dist(qωᵢ))
         λ = scale(dist(pωᵢ))
