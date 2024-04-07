@@ -20,7 +20,6 @@ remove_ntdist_wrapper(d) = d
 
 can_split(::AbstractLikelihood) = true
 
-
 function flatten_params(φ, n_l)
     if n_l == 1
         return vcat(values(φ)...)
@@ -73,7 +72,7 @@ function test_auglik(
         aug_logpdf = log(mapreduce(+, (tvrand(rng, aux_dist) for _ in 1:S)) do Ω
             exp(logtilt(lik, Ω, y, f))
         end / S)
-        @test orig_logpdf ≈ aug_logpdf atol=1e-1 # This is high cause we estimate the thing 
+        @test orig_logpdf ≈ aug_logpdf atol = 1e-1 # This is high cause we estimate the thing 
         # not in log-space
     end
     # Testing sampling
@@ -141,7 +140,12 @@ function test_auglik(
                 logC₂ = logtilt(lik, Ω, y, f₂) + logpdf(pF, f₂) - logpdf(qF, f₂)
                 @test logC₁ ≈ logC₂ atol = 1e-5
             else
-                S = inv.(Symmetric.(Ref(inv(K)) .+ Diagonal.(auglik_precision(lik, Ω, y, ft))))
+                S =
+                    inv.(
+                        Symmetric.(
+                            Ref(inv(K)) .+ Diagonal.(auglik_precision(lik, Ω, y, ft))
+                        )
+                    )
                 m = S .* auglik_potential(lik, Ω, y, ft)
                 qF = MvNormal.(m, S)
                 pF = MvNormal(K)
@@ -181,15 +185,17 @@ function test_auglik(
 
         @test all(x -> all(>=(0), x), γs) # Check that the variance is positive
 
-<<<<<<< HEAD
         @testset "expected_logtilt" begin
             @test expected_logtilt(lik, qΩ, y, qf) isa Real
             S = 1_000_000
             val = expected_logtilt(lik, qΩ, y, qf)
-            samp_val = mapreduce(+, (tvrand(rng, qΩ) for _ in 1:S), (rand.(rng, qf) for _ in 1:S)) do Ω, f
-                logtilt(lik, Ω, y, f)
-            end / S
-            @test val ≈ samp_val atol=1e-2 # This is still pretty high
+            samp_val =
+                mapreduce(
+                    +, (tvrand(rng, qΩ) for _ in 1:S), (rand.(rng, qf) for _ in 1:S)
+                ) do Ω, f
+                    logtilt(lik, Ω, y, f)
+                end / S
+            @test val ≈ samp_val atol = 1e-2 # This is still pretty high
         end
 
         @testset "aux_posterior" begin
@@ -222,7 +228,7 @@ function test_auglik(
         @test pΩ isa ProductMeasure
         @test kldivergence(first(marginals(qΩ)), first(marginals(pΩ))) isa Real
         @test aux_kldivergence(lik, qΩ, pΩ) isa Real
-=======
+
         # TODO test that aux_posterior parameters return the minimizing
         φ = TupleVectors.unwrap(only(aux_posterior(lik, y, qft).inds)) # TupleVector
         φ_opt = flatten_params(φ, nlatent(lik))
@@ -255,7 +261,6 @@ function test_auglik(
             @test expected_logtilt(lik, qΩ, y, qft) isa Real
             @test aux_kldivergence(lik, qΩ, pΩ) isa Real
         end
->>>>>>> main
     end
 end
 
