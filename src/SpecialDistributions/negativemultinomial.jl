@@ -17,7 +17,7 @@ struct NegativeMultinomial{Tx₀<:Real,Tp<:AbstractVector} <:
         x₀ > 0 || throw(ArgumentError("x₀ has to be positive"))
         (all(>=(0), p) && sum(p) < 1) || throw(
             ArgumentError(
-                "All p should be positive and their sum should be strictly smaller than 1",
+                "All p should be positive and their sum should be strictly smaller than 1, got $(p).",
             ),
         )
         return new{typeof(x₀),typeof(p)}(x₀, p)
