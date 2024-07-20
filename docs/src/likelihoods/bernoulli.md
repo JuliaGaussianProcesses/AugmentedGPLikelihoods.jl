@@ -11,6 +11,8 @@ where we set ``y\in\{-1,1\}``.
 
 ## The augmentation
 
+The technique comes from [polson2013bayesian](@cite) and was expanded in [wenzel2019efficient](@cite)
+
 We can rewrite the sigmoid function as:
 
 ```math

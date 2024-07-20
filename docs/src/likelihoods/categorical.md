@@ -20,6 +20,8 @@ For ease of computation, we one-hot encode the labels as ``\boldsymbol{Y}`` wher
 
 ## The augmentation
 
+The augmentation is first described in [galy2020multi](@cite) and its different versions are expanded in [galy23](@cite).
+
 ### Bijective version
 
 We have ``\sigma(f_K) = \sigma(C) = D \in [0, 1]``.

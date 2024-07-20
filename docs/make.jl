@@ -15,7 +15,7 @@ DocMeta.setdocmeta!(
     AugmentedGPLikelihoods, :DocTestSetup, :(using AugmentedGPLikelihoods); recursive=true
 )
 
-bib = CitationBibliography(joinpath(@__DIR__, "references.bib"))
+bib = CitationBibliography(joinpath(pkgdir(AugmentedGPLikelihoods), "CITATIONS.bib"))
 
 makedocs(;
     modules=[AugmentedGPLikelihoods],

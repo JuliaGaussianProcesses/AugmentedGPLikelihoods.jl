@@ -11,8 +11,7 @@ including uncertainty.
 On top of Gaussian regression, GPs can be used as latent functions for a lot of
 different tasks such as non-Gaussian regression, classification, multi-class
 classification or event counting.
-However, these tasks involve non-conjugate likelihoods and the GP posterior 
-is then intractable.
+However, these tasks involve non-conjugate likelihoods and the GP posterior is then intractable.
 The typical solution is to approximate the posterior by either sampling from it
 or approximating it with another distribution.
 However, both these methods are computationally involved, require gradient
@@ -20,7 +19,7 @@ and are not always guaranteed to converge.
 
 ## The augmentation
 
-An alternative proposed in [galy20](@cite) is to represent these non-conjugate
+An alternative proposed in [galy20](@cite) and [galy23](@cite) is to represent these non-conjugate
 likelihoods as scale-mixtures (sometimes requiring multiple steps) to obtain
 a __conditionally conjugate likelihood__.
 More concretely, some likelihoods can be written as:
