@@ -162,6 +162,13 @@ function aux_prior(lik::LogisticSoftMaxLikelihood, y::AbstractVector{<:Integer})
     )
 end
 
+function aux_kldivergence(::LogisticSoftMaxLikelihood, qΩ::For, pΩ::For)
+    return error(
+        "due to the ill-conditioning of the augmented prior of the `LogisticSoftMaxLink` (non-bijective), the kl-divergence cannot be computed, use the `BijectiveLogisticSoftMaxLink` instead.
+        It might be possible to provide a more global workaround, but it is not listed as a priority for the package right now.",
+    )
+end
+
 function expected_logtilt(
     ::BijectiveLogisticSoftMaxLikelihood, qω, y, qf::AbstractVector{<:Normal}
 )

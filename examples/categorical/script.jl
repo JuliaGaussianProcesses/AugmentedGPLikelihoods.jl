@@ -26,6 +26,7 @@ liks = [
 AugmentedGPLikelihoods.nlatent(::CategoricalLikelihood{<:BijectiveSimplexLink}) = Nclass - 1
 AugmentedGPLikelihoods.nlatent(::CategoricalLikelihood{<:LogisticSoftMaxLink}) = Nclass
 
+# This is type piracy, but it makes life so much easier ;)
 SplitApplyCombine.invert(x::ArrayOfSimilarArrays) = nestedview(flatview(x)')
 # We define the models
 kernel = 5.0 * with_lengthscale(SqExponentialKernel(), 2.0)
@@ -134,14 +135,21 @@ plot(p_plts...)
 # How can one compute the Augmented ELBO?
 # Again AugmentedGPLikelihoods provides helper functions
 # to not have to compute everything yourself
-function aug_elbo(lik, u_post, x, y)
-    qf = marginals(u_post(x))
-    qΩ = aux_posterior(lik, y, qf)
-    return expected_logtilt(lik, qΩ, y, qf) - aux_kldivergence(lik, qΩ, y) -
-           kldivergence(u_post.approx.q, u_post.approx.fz)
+function aug_elbo(lik, u_posts, x, y)
+    qfs = marginals.([post(x) for post in u_posts])
+    qΩ = aux_posterior(lik, y, invert(qfs))
+    return expected_logtilt(lik, qΩ, y, invert(qfs)) - aux_kldivergence(lik, qΩ, y) -
+           sum(post -> kldivergence(post.approx.q, post.approx.fz), u_posts)
 end
 
-# aug_elbo(lik, u_posterior(fz, m, S), x, y)
+# However the ELBO is non-valid to compute for the bijective likelihood,
+# we only test it there.
+let (lik, (; m, S), y) = (liks[1], ms_Ss[1], Ys[1])
+    u_posts = u_posterior.(Ref(fz), m, S)
+    qfs = marginals.([post(x) for post in u_posts])
+    qΩ = aux_posterior(lik, y, invert(qfs))
+    aug_elbo(lik, u_posterior.(Ref(fz), m, S), x, y)
+end
 # ## Gibbs Sampling
 # We create our Gibbs sampling algorithm (we could do something fancier with
 # AbstractMCMC)
