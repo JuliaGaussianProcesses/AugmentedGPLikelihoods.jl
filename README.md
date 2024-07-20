@@ -8,6 +8,7 @@
 [![ColPrac: Contributor's Guide on Collaborative Practices for Community Packages](https://img.shields.io/badge/ColPrac-Contributor's%20Guide-blueviolet)](https://github.com/SciML/ColPrac)
 [![DOI](https://zenodo.org/badge/434548515.svg)](https://zenodo.org/badge/latestdoi/434548515)
 
-
-
 Provides all necessary functions to work with augmented likelihoods for Gaussian Processes and more, check out the docs for more info.
+
+For a global overview over the approach, see the PhD thesis [Latent variable augmentation for approximate Bayesian inference,
+applications for Gaussian processes](https://depositonce.tu-berlin.de/items/02f8e83d-72c9-4f69-bded-556caf15cc62).
