@@ -1,4 +1,5 @@
 [deps]
+ArraysOfArrays = "65a8f2f4-9b39-5baf-92e2-a9cc46fdf018"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 GPLikelihoods = "6031954c-0455-49d7-b3b9-3e1c99afaf40"
 IrrationalConstants = "92d709cd-6900-40b7-9082-c6be49f344b6"

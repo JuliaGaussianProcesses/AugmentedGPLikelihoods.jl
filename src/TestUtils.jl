@@ -6,6 +6,7 @@ using ArraysOfArrays
 using Distributions
 using GPLikelihoods: AbstractLikelihood
 using LinearAlgebra
+using LogExpFunctions: logsumexp
 using MeasureBase: MeasureBase, logdensity_def, marginals
 using MeasureTheory: For
 using SplitApplyCombine: invert
@@ -64,14 +65,19 @@ function test_auglik(
     ft = invert_if_array_of_arrays(f)
     qft = invert_if_array_of_arrays(qf)
     nf = nlatent(lik)
-    @testset "Augmentation test" begin
-        S = 1_000_000
+    @testset "Marginalizing resolve to original pdf" begin
+        # We draw S samples from the auxiliary variable and checks that the marginal
+        # resolve to the true pdf.
         orig_lik = lik(f)
         orig_logpdf = logpdf(orig_lik, y)
+        S = 1_000_000
         aux_dist = aux_prior(lik, y)
-        aug_logpdf = log(mapreduce(+, (tvrand(rng, aux_dist) for _ in 1:S)) do Ω
-            exp(logtilt(lik, Ω, y, f))
-        end / S)
+        aug_logpdf = logsumexp(
+            map(1:S) do Ω
+                Ω = tvrand(rng, aux_dist)
+                logtilt(lik, Ω, y, f) - log(S)
+            end,
+        )
         @test orig_logpdf ≈ aug_logpdf atol = 1e-1 # This is high cause we estimate the thing 
         # not in log-space
     end
@@ -198,13 +204,14 @@ function test_auglik(
             @test val ≈ samp_val atol = 1e-2 # This is still pretty high
         end
 
+        # Check that the obtained auxiliary posterior is indeed a maximum.
         @testset "aux_posterior" begin
             φ = TupleVectors.unwrap(aux_posterior(lik, y, qf).pars) # TupleVector
             φ_opt = vcat(values(φ)...)
             s = keys(φ)
             n_var = length(s)
             function loss(φ)
-                q = ProductMeasure(
+                q = For(
                     qΩ.f,
                     TupleVector(
                         NamedTuple{s}(
@@ -217,7 +224,7 @@ function test_auglik(
             ϵ = 1e-2
             # Test that by perturbing the value in random directions, the loss does not decrease
             for i in n_var * n
-                (lik isa PoissonLikelihood && i <= n) && continue # We do not want to vary y
+                (lik isa PoissonLikelihood && i <= n) && continue # We do not want to vary y and Integer parameters.
                 Δ = zeros(n_var * n)
                 Δ[i] = ϵ # We try one element at a time
                 @test loss(φ_opt) <= loss(φ_opt + Δ)
